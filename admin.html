@@ -14,7 +14,6 @@ padding:10px;
 margin:5px 0;
 border-radius:8px;
 border:none;
-outline:none;
 }
 
 button{
@@ -34,20 +33,12 @@ padding:10px;
 margin:10px 0;
 border-radius:10px;
 }
-
-.small{
-background:#3b82f6;
-margin-top:5px;
-}
-.red{
-background:#ef4444;
-}
 </style>
 </head>
 
 <body>
 
-<h2>🔐 Admin PRO Panel</h2>
+<h2>🔐 Admin PRO</h2>
 
 <input id="name" placeholder="Name">
 <input id="image" placeholder="Image URL">
@@ -57,7 +48,7 @@ background:#ef4444;
 <input id="price" placeholder="Price">
 <input id="phone" placeholder="Phone">
 
-<button onclick="add()">➕ Add / Update</button>
+<button onclick="add()">➕ Add Product</button>
 
 <hr>
 
@@ -65,15 +56,7 @@ background:#ef4444;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-deleteDoc,
-doc,
-updateDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "YOUR_KEY",
@@ -84,12 +67,10 @@ projectId: "YOUR_ID"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let editId = null;
-
-/* ADD OR UPDATE */
+/* ADD */
 window.add = async function(){
 
-let data = {
+await addDoc(collection(db,"products"),{
 name:name.value,
 image:image.value,
 url:url.value,
@@ -97,68 +78,33 @@ category:category.value.toLowerCase(),
 description:description.value,
 price:price.value,
 phone:phone.value
-};
+});
 
-if(editId){
-await updateDoc(doc(db,"products",editId),data);
-editId = null;
-}else{
-await addDoc(collection(db,"products"),data);
-}
-
-clear();
 load();
-}
-
-function clear(){
-name.value="";
-image.value="";
-url.value="";
-category.value="";
-description.value="";
-price.value="";
-phone.value="";
 }
 
 /* LOAD */
 async function load(){
 const snap = await getDocs(collection(db,"products"));
-let box = document.getElementById("list");
+let box=document.getElementById("list");
 box.innerHTML="";
 
 snap.forEach(d=>{
-let p = d.data();
+let p=d.data();
 
-box.innerHTML += `
+box.innerHTML+=`
 <div class="card">
 <b>${p.name}</b>
-
-<button class="small" onclick="edit('${d.id}','${encodeURIComponent(JSON.stringify(p))}')">✏ Edit</button>
-<button class="red" onclick="del('${d.id}')">🗑 Delete</button>
+<button onclick="del('${d.id}')">Delete</button>
 </div>
 `;
 });
 }
 
 /* DELETE */
-window.del = async function(id){
+window.del=async function(id){
 await deleteDoc(doc(db,"products",id));
 load();
-}
-
-/* EDIT */
-window.edit = function(id,data){
-let p = JSON.parse(decodeURIComponent(data));
-
-name.value=p.name;
-image.value=p.image;
-url.value=p.url;
-category.value=p.category;
-description.value=p.description;
-price.value=p.price;
-phone.value=p.phone;
-
-editId=id;
 }
 
 load();
