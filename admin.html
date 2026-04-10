@@ -8,18 +8,20 @@
 <style>
 body{font-family:Arial;background:#0f172a;color:white;padding:15px}
 
+h2{text-align:center}
+
 input{
 width:100%;
 padding:10px;
-margin:5px 0;
-border-radius:8px;
+margin:6px 0;
 border:none;
+border-radius:8px;
+outline:none;
 }
 
 button{
 width:100%;
 padding:10px;
-margin-top:5px;
 border:none;
 border-radius:10px;
 background:#22c55e;
@@ -43,12 +45,12 @@ border-radius:10px;
 <input id="name" placeholder="Name">
 <input id="image" placeholder="Image URL">
 <input id="url" placeholder="URL">
-<input id="category" placeholder="Category (iptv/products/apps)">
+<input id="category" placeholder="Category (iptv / apps / products)">
 <input id="description" placeholder="Description">
 <input id="price" placeholder="Price">
 <input id="phone" placeholder="Phone">
 
-<button onclick="add()">➕ Add Product</button>
+<button onclick="addProduct()">➕ Add Product</button>
 
 <hr>
 
@@ -56,7 +58,14 @@ border-radius:10px;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "YOUR_KEY",
@@ -67,42 +76,61 @@ projectId: "YOUR_ID"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ADD */
-window.add = async function(){
+/* ➕ ADD PRODUCT */
+window.addProduct = async function(){
+
+if(!name.value || !image.value){
+alert("Fill required fields");
+return;
+}
 
 await addDoc(collection(db,"products"),{
-name:name.value,
-image:image.value,
-url:url.value,
-category:category.value.toLowerCase(),
-description:description.value,
-price:price.value,
-phone:phone.value
+name: name.value,
+image: image.value,
+url: url.value,
+category: (category.value || "apps").toLowerCase(),
+description: description.value,
+price: price.value,
+phone: phone.value
 });
 
+clear();
 load();
 }
 
-/* LOAD */
+function clear(){
+name.value="";
+image.value="";
+url.value="";
+category.value="";
+description.value="";
+price.value="";
+phone.value="";
+}
+
+/* 📦 LOAD */
 async function load(){
 const snap = await getDocs(collection(db,"products"));
-let box=document.getElementById("list");
+let box = document.getElementById("list");
 box.innerHTML="";
 
 snap.forEach(d=>{
-let p=d.data();
+let p = d.data();
 
-box.innerHTML+=`
+box.innerHTML += `
 <div class="card">
 <b>${p.name}</b>
-<button onclick="del('${d.id}')">Delete</button>
+<br>
+<small>${p.category}</small>
+<br><br>
+<button onclick="del('${d.id}')">🗑 Delete</button>
 </div>
 `;
 });
 }
 
-/* DELETE */
-window.del=async function(id){
+/* 🗑 DELETE */
+window.del = async function(id){
 await deleteDoc(doc(db,"products",id));
 load();
 }
