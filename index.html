@@ -85,22 +85,7 @@ button{
 </div>
 
 <script>
-let apps = [];
-
-/* 🔥 Load from LocalStorage OR fallback to apps.json */
-let localData = localStorage.getItem("apps");
-
-if(localData && localData !== "[]"){
-  apps = JSON.parse(localData);
-  render();
-}else{
-  fetch('apps.json')
-  .then(res => res.json())
-  .then(data => {
-    apps = data;
-    render();
-  });
-}
+let apps = JSON.parse(localStorage.getItem("apps") || "[]");
 
 function render(){
   let box = document.getElementById("apps");
@@ -147,6 +132,8 @@ function openApp(i){
 document.getElementById("modal").onclick = ()=>{
   document.getElementById("modal").style.display="none";
 }
+
+render();
 </script>
 
 </body>
