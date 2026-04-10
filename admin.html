@@ -6,6 +6,7 @@
 
 <style>
 body{font-family:Arial;background:#0f172a;color:white;padding:20px;}
+
 input,select{
   width:100%;
   padding:10px;
@@ -13,6 +14,7 @@ input,select{
   border:none;
   border-radius:8px;
 }
+
 button{
   width:100%;
   padding:10px;
@@ -20,7 +22,9 @@ button{
   border-radius:8px;
   background:#22c55e;
   font-weight:bold;
+  cursor:pointer;
 }
+
 .item{
   background:#1f2937;
   padding:10px;
@@ -48,31 +52,43 @@ button{
 
 <input id="desc" placeholder="Description">
 <input id="price" placeholder="Price (only products)">
+<input id="phone" placeholder="Phone (only products)">
 
-<button onclick="add()">➕ Add</button>
+<button onclick="addApp()">➕ Add / Update</button>
 
 <h3>📦 List</h3>
 <div id="list"></div>
 
 <script>
 let apps = JSON.parse(localStorage.getItem("apps") || "[]");
+let editIndex = -1;
 
 function save(){
   localStorage.setItem("apps", JSON.stringify(apps));
 }
 
-function add(){
-  apps.push({
-    name:name.value,
-    image:image.value,
-    url:url.value,
-    category:category.value,
-    description:desc.value,
-    price:price.value
-  });
+function addApp(){
+
+  let app = {
+    name: document.getElementById("name").value,
+    image: document.getElementById("image").value,
+    url: document.getElementById("url").value,
+    category: document.getElementById("category").value,
+    description: document.getElementById("desc").value,
+    price: document.getElementById("price").value,
+    phone: document.getElementById("phone").value
+  };
+
+  if(editIndex === -1){
+    apps.push(app);
+  }else{
+    apps[editIndex] = app;
+    editIndex = -1;
+  }
 
   save();
   render();
+  clear();
 }
 
 function render(){
@@ -83,16 +99,41 @@ function render(){
     list.innerHTML += `
       <div class="item">
         <b>${a.name}</b> (${a.category})
-        <button onclick="del(${i})" style="background:red;margin-top:5px">Delete</button>
+
+        <button onclick="editApp(${i})">Edit</button>
+        <button onclick="deleteApp(${i})" style="background:red;margin-top:5px">Delete</button>
       </div>
     `;
   });
 }
 
-function del(i){
+function editApp(i){
+  let a = apps[i];
+
+  document.getElementById("name").value = a.name;
+  document.getElementById("image").value = a.image;
+  document.getElementById("url").value = a.url;
+  document.getElementById("category").value = a.category;
+  document.getElementById("desc").value = a.description;
+  document.getElementById("price").value = a.price;
+  document.getElementById("phone").value = a.phone;
+
+  editIndex = i;
+}
+
+function deleteApp(i){
   apps.splice(i,1);
   save();
   render();
+}
+
+function clear(){
+  document.getElementById("name").value="";
+  document.getElementById("image").value="";
+  document.getElementById("url").value="";
+  document.getElementById("desc").value="";
+  document.getElementById("price").value="";
+  document.getElementById("phone").value="";
 }
 
 render();
