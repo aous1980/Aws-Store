@@ -6,4 +6,22 @@
     "category": "iptv",
     "description": "Best IPTV app"
   }
+  {
+    "name": "Android TV Box",
+    "image": "https://via.placeholder.com/300",
+    "url": "#",
+    "category": "products",
+    "description": "4K Smart TV Box",
+    "price": "$45",
+    "phone": "49123456789"
+  },
+  {
+    "name": "IPTV Subscription",
+    "image": "https://via.placeholder.com/300",
+    "url": "#",
+    "category": "products",
+    "description": "1 Year IPTV Subscription",
+    "price": "$30",
+    "phone": "49123456789"
+  }
 ]
