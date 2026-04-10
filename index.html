@@ -16,7 +16,6 @@ font-size:20px;
 font-weight:bold;
 }
 
-/* filters */
 .filters{
 display:flex;
 justify-content:center;
@@ -34,7 +33,6 @@ color:white;
 cursor:pointer;
 }
 
-/* grid */
 .container{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
@@ -59,7 +57,6 @@ object-fit:cover;
 border-radius:10px;
 }
 
-/* modal */
 .modal{
 display:none;
 position:fixed;
@@ -132,7 +129,7 @@ const db = getFirestore(app);
 let products = [];
 let filter = "all";
 
-/* LOAD DATA */
+/* LOAD */
 async function load(){
 const snap = await getDocs(collection(db,"products"));
 products = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -141,7 +138,7 @@ buildFilters();
 render();
 }
 
-/* BUILD FILTERS */
+/* FILTERS */
 function buildFilters(){
 let cats = ["all"];
 
@@ -154,13 +151,10 @@ let box = document.getElementById("filters");
 box.innerHTML="";
 
 cats.forEach(c=>{
-box.innerHTML += `
-<button onclick="setFilter('${c}')">${c}</button>
-`;
+box.innerHTML += `<button onclick="setFilter('${c}')">${c}</button>`;
 });
 }
 
-/* FILTER */
 window.setFilter = function(f){
 filter = f;
 render();
@@ -176,9 +170,9 @@ products
 let c = (p.category||"").toLowerCase();
 return filter==="all" || c===filter;
 })
-.forEach((p,i)=>{
+.forEach(p=>{
 box.innerHTML += `
-<div class="card" onclick="openApp(${i})">
+<div class="card" onclick="openApp('${p.id}')">
 <img src="${p.image}">
 <h3>${p.name}</h3>
 </div>
@@ -186,18 +180,19 @@ box.innerHTML += `
 });
 }
 
-/* OPEN */
-window.openApp = function(i){
-let p = products[i];
+/* OPEN BY ID */
+window.openApp = function(id){
 
-document.getElementById("img").src=p.image;
-document.getElementById("name").innerText=p.name;
-document.getElementById("desc").innerText=p.description||"";
+let p = products.find(x=>x.id===id);
 
-let btn=document.getElementById("btn");
-let link=document.getElementById("btnLink");
+document.getElementById("img").src = p.image;
+document.getElementById("name").innerText = p.name;
+document.getElementById("desc").innerText = p.description || "";
 
-let cat=(p.category||"").toLowerCase();
+let btn = document.getElementById("btn");
+let link = document.getElementById("btnLink");
+
+let cat = (p.category||"").toLowerCase();
 
 if(cat==="products"){
 btn.innerText="🛒 Order Now";
