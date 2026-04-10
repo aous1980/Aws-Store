@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+
+<style>
+body{font-family:Arial;background:#0f172a;color:white;padding:20px;}
+
+input,select{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border:none;
+  border-radius:8px;
+}
+
+button{
+  width:100%;
+  padding:10px;
+  background:#22c55e;
+  border:none;
+  font-weight:bold;
+  border-radius:8px;
+  cursor:pointer;
+  margin-top:5px;
+}
+
+.card{
+  background:#1f2937;
+  padding:10px;
+  margin:10px 0;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🔐 Admin Panel</h2>
+
+<input id="name" placeholder="Name">
+<input id="image" placeholder="Image URL">
+<input id="url" placeholder="URL">
+
+<select id="category">
+  <option value="iptv">IPTV</option>
+  <option value="cinema">Cinema</option>
+  <option value="tools">Tools</option>
+  <option value="sat_software">SAT Software</option>
+  <option value="products">Products</option>
+</select>
+
+<input id="desc" placeholder="Description">
+<input id="price" placeholder="Price (products only)">
+<input id="phone" placeholder="Phone (products only)">
+
+<button onclick="add()">➕ Add / Update</button>
+
+<h3>📦 List</h3>
+<div id="list"></div>
+
+<script>
+let apps = JSON.parse(localStorage.getItem("apps") || "[]");
+let editIndex = -1;
+
+function save(){
+  localStorage.setItem("apps", JSON.stringify(apps));
+}
+
+function add(){
+  let app = {
+    name:name.value,
+    image:image.value,
+    url:url.value,
+    category:category.value,
+    description:desc.value,
+    price:price.value,
+    phone:phone.value
+  };
+
+  if(editIndex === -1){
+    apps.push(app);
+  }else{
+    apps[editIndex] = app;
+    editIndex = -1;
+  }
+
+  save();
+  render();
+  clear();
+}
+
+function render(){
+  let box = document.getElementById("list");
+  box.innerHTML = "";
+
+  apps.forEach((a,i)=>{
+    box.innerHTML += `
+      <div class="card">
+        <b>${a.name}</b> (${a.category})
+
+        <button onclick="editApp(${i})">✏ Edit</button>
+        <button onclick="deleteApp(${i})" style="background:red">🗑 Delete</button>
+      </div>
+    `;
+  });
+}
+
+function editApp(i){
+  let a = apps[i];
+
+  name.value = a.name;
+  image.value = a.image;
+  url.value = a.url;
+  category.value = a.category;
+  desc.value = a.description;
+  price.value = a.price;
+  phone.value = a.phone;
+
+  editIndex = i;
+}
+
+function deleteApp(i){
+  apps.splice(i,1);
+  save();
+  render();
+}
+
+function clear(){
+  name.value="";
+  image.value="";
+  url.value="";
+  desc.value="";
+  price.value="";
+  phone.value="";
+}
+
+render();
+</script>
+
+</body>
+</html>
