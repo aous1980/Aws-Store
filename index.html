@@ -217,7 +217,6 @@ function openModal(i){
   let btn = document.getElementById('mainBtn');
   let link = document.getElementById('mlink');
 
-  // 👇 شرط المنتجات فقط
   if(app.category === "products"){
     document.getElementById('mprice').innerText = app.price ? "Price: " + app.price : "";
     document.getElementById('mphone').innerText = app.phone ? "Call: " + app.phone : "";
@@ -225,7 +224,9 @@ function openModal(i){
     btn.innerText = "🛒 اطلب الآن";
 
     if(app.phone){
-      link.href = "https://wa.me/" + app.phone;
+      let message = "مرحباً، أريد طلب " + app.name + " - السعر: " + (app.price || "");
+      let url = "https://wa.me/" + app.phone + "?text=" + encodeURIComponent(message);
+      link.href = url;
     }
 
   }else{
