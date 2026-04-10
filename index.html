@@ -8,7 +8,6 @@
 <style>
 body{margin:0;font-family:Arial;background:#0f172a;color:white}
 
-/* header */
 header{
 padding:15px;
 background:#111827;
@@ -17,20 +16,7 @@ font-size:20px;
 font-weight:bold;
 }
 
-/* search */
-.searchBox{
-padding:10px;
-text-align:center;
-}
-input{
-width:90%;
-padding:10px;
-border:none;
-border-radius:10px;
-outline:none;
-}
-
-/* filter */
+/* filters */
 .filters{
 display:flex;
 justify-content:center;
@@ -38,6 +24,7 @@ gap:10px;
 padding:10px;
 flex-wrap:wrap;
 }
+
 .filters button{
 padding:8px 15px;
 border:none;
@@ -98,6 +85,7 @@ right:10px;
 cursor:pointer;
 font-size:20px;
 }
+
 button{
 width:100%;
 padding:10px;
@@ -113,16 +101,7 @@ font-weight:bold;
 
 <header>🚀 AWS Store PRO</header>
 
-<div class="searchBox">
-<input type="text" id="search" placeholder="Search products...">
-</div>
-
-<div class="filters">
-<button onclick="setFilter('all')">All</button>
-<button onclick="setFilter('iptv')">IPTV</button>
-<button onclick="setFilter('apps')">Apps</button>
-<button onclick="setFilter('products')">Products</button>
-</div>
+<div class="filters" id="filters"></div>
 
 <div class="container" id="apps"></div>
 
@@ -153,23 +132,49 @@ const db = getFirestore(app);
 let products = [];
 let filter = "all";
 
+/* LOAD DATA */
 async function load(){
 const snap = await getDocs(collection(db,"products"));
-products = snap.docs.map(d=>d.data());
+products = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+buildFilters();
 render();
 }
 
+/* BUILD FILTERS */
+function buildFilters(){
+let cats = ["all"];
+
+products.forEach(p=>{
+let c = (p.category||"").toLowerCase();
+if(c && !cats.includes(c)) cats.push(c);
+});
+
+let box = document.getElementById("filters");
+box.innerHTML="";
+
+cats.forEach(c=>{
+box.innerHTML += `
+<button onclick="setFilter('${c}')">${c}</button>
+`;
+});
+}
+
+/* FILTER */
+window.setFilter = function(f){
+filter = f;
+render();
+}
+
+/* RENDER */
 function render(){
 let box = document.getElementById("apps");
-let search = document.getElementById("search").value.toLowerCase();
-
-box.innerHTML = "";
+box.innerHTML="";
 
 products
 .filter(p=>{
-let matchFilter = filter==="all" || (p.category||"").toLowerCase()===filter;
-let matchSearch = (p.name||"").toLowerCase().includes(search);
-return matchFilter && matchSearch;
+let c = (p.category||"").toLowerCase();
+return filter==="all" || c===filter;
 })
 .forEach((p,i)=>{
 box.innerHTML += `
@@ -181,37 +186,35 @@ box.innerHTML += `
 });
 }
 
+/* OPEN */
 window.openApp = function(i){
 let p = products[i];
 
-document.getElementById("img").src = p.image;
-document.getElementById("name").innerText = p.name;
-document.getElementById("desc").innerText = p.description;
+document.getElementById("img").src=p.image;
+document.getElementById("name").innerText=p.name;
+document.getElementById("desc").innerText=p.description||"";
 
-let btn = document.getElementById("btn");
-let link = document.getElementById("btnLink");
+let btn=document.getElementById("btn");
+let link=document.getElementById("btnLink");
 
-if((p.category||"").toLowerCase()==="products"){
-btn.innerText = "Order Now";
-link.href = "https://wa.me/"+p.phone+"?text="+p.name;
-document.getElementById("price").innerText = p.price;
+let cat=(p.category||"").toLowerCase();
+
+if(cat==="products"){
+btn.innerText="🛒 Order Now";
+link.href="https://wa.me/"+p.phone+"?text="+encodeURIComponent(p.name);
+document.getElementById("price").innerText=p.price||"";
 }else{
-btn.innerText = "Download";
-link.href = p.url;
-document.getElementById("price").innerText = "";
+btn.innerText="Download";
+link.href=p.url||"#";
+document.getElementById("price").innerText="";
 }
 
 document.getElementById("modal").style.display="flex";
 }
 
-window.closeModal = ()=>document.getElementById("modal").style.display="none";
-
-window.setFilter = (f)=>{
-filter=f;
-render();
+window.closeModal=()=>{
+document.getElementById("modal").style.display="none";
 }
-
-document.getElementById("search").oninput = render;
 
 load();
 </script>
