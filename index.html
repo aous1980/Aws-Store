@@ -136,6 +136,16 @@ button:hover{
   opacity:0.8;
   margin:5px 0;
 }
+
+.price{
+  color:#22c55e;
+  margin-top:5px;
+}
+
+.phone{
+  color:#60a5fa;
+  font-size:13px;
+}
 </style>
 </head>
 
@@ -146,12 +156,12 @@ button:hover{
 <input type="text" id="search" placeholder="Search apps..." onkeyup="applyFilters()" />
 
 <div class="filters">
-  <button class="filter-btn" onclick="setCategory('all')">All</button>
-  <button class="filter-btn" onclick="setCategory('iptv')">IPTV</button>
-  <button class="filter-btn" onclick="setCategory('cinema')">Cinema</button>
-  <button class="filter-btn" onclick="setCategory('tools')">Tools</button>
-  <button class="filter-btn" onclick="setCategory('sat_software')">SAT & Software</button>
-  <button class="filter-btn" onclick="setCategory('products')">Products</button>
+  <button onclick="setCategory('all')" class="filter-btn">All</button>
+  <button onclick="setCategory('iptv')" class="filter-btn">IPTV</button>
+  <button onclick="setCategory('cinema')" class="filter-btn">Cinema</button>
+  <button onclick="setCategory('tools')" class="filter-btn">Tools</button>
+  <button onclick="setCategory('sat_software')" class="filter-btn">SAT & Software</button>
+  <button onclick="setCategory('products')" class="filter-btn">Products</button>
 </div>
 
 <div class="container" id="apps"></div>
@@ -163,8 +173,11 @@ button:hover{
     <img id="mimg" />
     <h3 id="mname"></h3>
     <p class="desc" id="mdesc"></p>
+    <div class="price" id="mprice"></div>
+    <div class="phone" id="mphone"></div>
+
     <a id="mlink" href="#" target="_blank">
-      <button>Download / Open</button>
+      <button id="mainBtn">Download</button>
     </a>
   </div>
 </div>
@@ -197,16 +210,32 @@ function displayApps(data){
 function openModal(i){
   let app = appsData[i];
 
- document.getElementById('mdesc').innerText = app.description || "No description";
+  document.getElementById('mimg').src = app.image;
+  document.getElementById('mname').innerText = app.name;
+  document.getElementById('mdesc').innerText = app.description || "";
 
-// يظهر السعر والرقم فقط في المنتجات
-if(app.category === "products"){
-  document.getElementById('mprice').innerText = app.price ? "Price: " + app.price : "";
-  document.getElementById('mphone').innerText = app.phone ? "Call: " + app.phone : "";
-}else{
-  document.getElementById('mprice').innerText = "";
-  document.getElementById('mphone').innerText = "";
-}
+  let btn = document.getElementById('mainBtn');
+  let link = document.getElementById('mlink');
+
+  // 👇 شرط المنتجات فقط
+  if(app.category === "products"){
+    document.getElementById('mprice').innerText = app.price ? "Price: " + app.price : "";
+    document.getElementById('mphone').innerText = app.phone ? "Call: " + app.phone : "";
+
+    btn.innerText = "🛒 اطلب الآن";
+
+    if(app.phone){
+      link.href = "https://wa.me/" + app.phone;
+    }
+
+  }else{
+    document.getElementById('mprice').innerText = "";
+    document.getElementById('mphone').innerText = "";
+
+    btn.innerText = "Download";
+    link.href = app.url;
+  }
+
   document.getElementById('modal').style.display = "flex";
 }
 
