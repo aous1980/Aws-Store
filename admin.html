@@ -2,98 +2,85 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AWS Store</title>
+<title>Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{font-family:Arial;margin:0;background:#0f172a;color:white;}
-header{padding:20px;text-align:center;background:#111827;font-size:22px;font-weight:bold;}
-.container{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px;}
-.card{background:#1f2937;padding:10px;border-radius:15px;text-align:center;cursor:pointer}
-.card img{width:100%;height:120px;object-fit:cover;border-radius:10px}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);justify-content:center;align-items:center}
-.modal-content{background:#1f2937;padding:20px;border-radius:12px;width:300px;text-align:center}
-button{width:100%;padding:10px;border:none;border-radius:10px;background:#22c55e;font-weight:bold}
+body{font-family:Arial;background:#0f172a;color:white;padding:20px}
+input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:none}
+button{width:100%;padding:10px;background:#22c55e;border:none;border-radius:10px;font-weight:bold}
+.card{background:#1f2937;padding:10px;margin:10px 0;border-radius:10px}
 </style>
 </head>
 
 <body>
 
-<header>🚀 AWS Store</header>
+<h2>🔐 Admin Panel</h2>
 
-<div class="container" id="apps"></div>
+<input id="name" placeholder="Name">
+<input id="image" placeholder="Image URL">
+<input id="url" placeholder="URL">
+<input id="category" placeholder="Category">
+<input id="description" placeholder="Description">
+<input id="price" placeholder="Price (optional)">
+<input id="phone" placeholder="Phone (optional)">
 
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <img id="img" style="width:100%;border-radius:10px">
-    <h3 id="name"></h3>
-    <p id="desc"></p>
-    <div id="price"></div>
-    <a id="btnLink"><button id="btn">Action</button></a>
-  </div>
-</div>
+<button onclick="add()">➕ Add Product</button>
+
+<hr>
+
+<div id="list"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* 🔥 ضع Firebase هنا */
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
   projectId: "YOUR_PROJECT_ID",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let products = [];
+window.add = async function(){
+  await addDoc(collection(db,"products"),{
+    name:name.value,
+    image:image.value,
+    url:url.value,
+    category:category.value,
+    description:description.value,
+    price:price.value,
+    phone:phone.value
+  });
 
-async function loadData(){
-  const snap = await getDocs(collection(db,"products"));
-  products = snap.docs.map(doc => ({id:doc.id,...doc.data()}));
-  render();
+  alert("Added!");
+  load();
 }
 
-function render(){
-  let box = document.getElementById("apps");
+async function load(){
+  const snap = await getDocs(collection(db,"products"));
+  let box = document.getElementById("list");
   box.innerHTML = "";
-  products.forEach((p,i)=>{
+
+  snap.forEach(d=>{
     box.innerHTML += `
-      <div class="card" onclick="openApp(${i})">
-        <img src="${p.image}">
-        <h3>${p.name}</h3>
-      </div>`;
+      <div class="card">
+        <b>${d.data().name}</b>
+        <button onclick="del('${d.id}')">Delete</button>
+      </div>
+    `;
   });
 }
 
-window.openApp = function(i){
-  let p = products[i];
-
-  document.getElementById("img").src = p.image;
-  document.getElementById("name").innerText = p.name;
-  document.getElementById("desc").innerText = p.description;
-
-  let btn = document.getElementById("btn");
-  let link = document.getElementById("btnLink");
-
-  if(p.category === "products"){
-    btn.innerText = "🛒 Order Now";
-    link.href = "https://wa.me/" + p.phone + "?text=" + encodeURIComponent("I want " + p.name);
-    document.getElementById("price").innerText = p.price;
-  } else {
-    btn.innerText = "Download";
-    link.href = p.url;
-    document.getElementById("price").innerText = "";
-  }
-
-  document.getElementById("modal").style.display="flex";
+window.del = async function(id){
+  await deleteDoc(doc(db,"products",id));
+  load();
 }
 
-document.getElementById("modal").onclick = ()=> {
-  document.getElementById("modal").style.display="none";
-}
-
-loadData();
+load();
 </script>
 
 </body>
