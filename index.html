@@ -3,11 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AWS Store</title>
+<title>AWS Store V2</title>
 
 <style>
 body{font-family:Arial;margin:0;background:#0f172a;color:white;}
-header{padding:20px;text-align:center;background:#111827;font-size:22px;font-weight:bold;}
+
+header{
+  padding:20px;
+  text-align:center;
+  background:#111827;
+  font-size:22px;
+  font-weight:bold;
+}
+
+#search{
+  width:90%;
+  padding:10px;
+  margin:10px auto;
+  display:block;
+  border-radius:8px;
+  border:none;
+}
+
+.filters{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin:10px;
+}
+
+.filters button{
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  background:#1f2937;
+  color:white;
+  cursor:pointer;
+}
 
 .container{
   display:grid;
@@ -19,7 +52,7 @@ header{padding:20px;text-align:center;background:#111827;font-size:22px;font-wei
 .card{
   background:#1f2937;
   padding:10px;
-  border-radius:15px;
+  border-radius:12px;
   text-align:center;
   cursor:pointer;
 }
@@ -47,6 +80,7 @@ header{padding:20px;text-align:center;background:#111827;font-size:22px;font-wei
   width:300px;
   text-align:center;
 }
+
 button{
   width:100%;
   padding:10px;
@@ -60,10 +94,18 @@ button{
 
 <body>
 
-<header>🚀 AWS Store</header>
+<header>🚀 AWS Store V2</header>
 
-<div style="text-align:center;margin:10px;">
-<a href="admin.html" style="color:#60a5fa">⚙ Admin Panel</a>
+<a href="admin.html" style="color:#60a5fa;display:block;text-align:center">⚙ Admin Panel</a>
+
+<input id="search" placeholder="Search..." onkeyup="render()">
+
+<div class="filters">
+  <button onclick="setFilter('all')">All</button>
+  <button onclick="setFilter('iptv')">IPTV</button>
+  <button onclick="setFilter('cinema')">Cinema</button>
+  <button onclick="setFilter('tools')">Tools</button>
+  <button onclick="setFilter('products')">Products</button>
 </div>
 
 <div class="container" id="box"></div>
@@ -75,17 +117,31 @@ button{
     <h3 id="name"></h3>
     <p id="desc"></p>
     <div id="price"></div>
-    <a id="link"><button id="btn">Action</button></a>
+    <a id="link"><button id="btn"></button></a>
   </div>
 </div>
 
 <script>
 let apps = JSON.parse(localStorage.getItem("apps") || "[]");
+let filter = "all";
+
+function setFilter(f){
+  filter = f;
+  render();
+}
 
 function render(){
   let box = document.getElementById("box");
+  let search = document.getElementById("search").value.toLowerCase();
+
   box.innerHTML = "";
-  apps.forEach((a,i)=>{
+
+  apps
+  .filter(a =>
+    (filter==="all" || a.category===filter) &&
+    a.name.toLowerCase().includes(search)
+  )
+  .forEach((a,i)=>{
     box.innerHTML += `
       <div class="card" onclick="openApp(${i})">
         <img src="${a.image}">
@@ -103,17 +159,20 @@ function openApp(i){
   document.getElementById("desc").innerText = a.description || "";
 
   let phone = "9647730492020";
+  let link = document.getElementById("link");
+  let btn = document.getElementById("btn");
 
-  if(a.category === "products"){
+  if(a.category==="products"){
     document.getElementById("price").innerText = "Price: " + a.price;
-    document.getElementById("btn").innerText = "🛒 Order Now";
-    document.getElementById("link").href =
-      "https://wa.me/" + phone + "?text=" +
-      encodeURIComponent("I want " + a.name + " - " + a.price);
-  }else{
+    btn.innerText = "🛒 Order";
+
+    link.href = "https://wa.me/" + phone +
+    "?text=" + encodeURIComponent("I want " + a.name + " - " + a.price);
+
+  } else {
     document.getElementById("price").innerText = "";
-    document.getElementById("btn").innerText = "Download";
-    document.getElementById("link").href = a.url;
+    btn.innerText = "Download";
+    link.href = a.url;
   }
 
   document.getElementById("modal").style.display="flex";
