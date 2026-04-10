@@ -2,30 +2,62 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>Admin PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{font-family:Arial;background:#0f172a;color:white;padding:20px}
-input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:none}
-button{width:100%;padding:10px;background:#22c55e;border:none;border-radius:10px;font-weight:bold}
-.card{background:#1f2937;padding:10px;margin:10px 0;border-radius:10px}
+body{font-family:Arial;background:#0f172a;color:white;padding:15px}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+outline:none;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:none;
+border-radius:10px;
+background:#22c55e;
+font-weight:bold;
+cursor:pointer;
+}
+
+.card{
+background:#1f2937;
+padding:10px;
+margin:10px 0;
+border-radius:10px;
+}
+
+.small{
+background:#3b82f6;
+margin-top:5px;
+}
+.red{
+background:#ef4444;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🔐 Admin Panel</h2>
+<h2>🔐 Admin PRO Panel</h2>
 
 <input id="name" placeholder="Name">
 <input id="image" placeholder="Image URL">
 <input id="url" placeholder="URL">
-<input id="category" placeholder="Category">
+<input id="category" placeholder="Category (iptv/products/apps)">
 <input id="description" placeholder="Description">
-<input id="price" placeholder="Price (optional)">
-<input id="phone" placeholder="Phone (optional)">
+<input id="price" placeholder="Price">
+<input id="phone" placeholder="Phone">
 
-<button onclick="add()">➕ Add Product</button>
+<button onclick="add()">➕ Add / Update</button>
 
 <hr>
 
@@ -33,52 +65,100 @@ button{width:100%;padding:10px;background:#22c55e;border:none;border-radius:10px
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc,
+updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
-  authDomain: "aws-store-aaf40.firebaseapp.com",
-  projectId: "aws-store-aaf40",
-  storageBucket: "aws-store-aaf40.firebasestorage.app",
-  appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
+apiKey: "YOUR_KEY",
+authDomain: "YOUR_DOMAIN",
+projectId: "YOUR_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+let editId = null;
+
+/* ADD OR UPDATE */
 window.add = async function(){
-  await addDoc(collection(db,"products"),{
-    name:name.value,
-    image:image.value,
-    url:url.value,
-    category:category.value,
-    description:description.value,
-    price:price.value,
-    phone:phone.value
-  });
 
-  alert("Added!");
-  load();
+let data = {
+name:name.value,
+image:image.value,
+url:url.value,
+category:category.value.toLowerCase(),
+description:description.value,
+price:price.value,
+phone:phone.value
+};
+
+if(editId){
+await updateDoc(doc(db,"products",editId),data);
+editId = null;
+}else{
+await addDoc(collection(db,"products"),data);
 }
 
+clear();
+load();
+}
+
+function clear(){
+name.value="";
+image.value="";
+url.value="";
+category.value="";
+description.value="";
+price.value="";
+phone.value="";
+}
+
+/* LOAD */
 async function load(){
-  const snap = await getDocs(collection(db,"products"));
-  let box = document.getElementById("list");
-  box.innerHTML = "";
+const snap = await getDocs(collection(db,"products"));
+let box = document.getElementById("list");
+box.innerHTML="";
 
-  snap.forEach(d=>{
-    box.innerHTML += `
-      <div class="card">
-        <b>${d.data().name}</b>
-        <button onclick="del('${d.id}')">Delete</button>
-      </div>
-    `;
-  });
+snap.forEach(d=>{
+let p = d.data();
+
+box.innerHTML += `
+<div class="card">
+<b>${p.name}</b>
+
+<button class="small" onclick="edit('${d.id}','${encodeURIComponent(JSON.stringify(p))}')">✏ Edit</button>
+<button class="red" onclick="del('${d.id}')">🗑 Delete</button>
+</div>
+`;
+});
 }
 
+/* DELETE */
 window.del = async function(id){
-  await deleteDoc(doc(db,"products",id));
-  load();
+await deleteDoc(doc(db,"products",id));
+load();
+}
+
+/* EDIT */
+window.edit = function(id,data){
+let p = JSON.parse(decodeURIComponent(data));
+
+name.value=p.name;
+image.value=p.image;
+url.value=p.url;
+category.value=p.category;
+description.value=p.description;
+price.value=p.price;
+phone.value=p.phone;
+
+editId=id;
 }
 
 load();
