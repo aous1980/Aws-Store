@@ -8,9 +8,7 @@
 <style>
 body{font-family:Arial;background:#0f172a;color:white;padding:15px}
 
-h2{text-align:center}
-
-input{
+input, select{
 width:100%;
 padding:10px;
 margin:6px 0;
@@ -45,7 +43,13 @@ border-radius:10px;
 <input id="name" placeholder="Name">
 <input id="image" placeholder="Image URL">
 <input id="url" placeholder="URL">
-<input id="category" placeholder="Category (iptv / apps / products)">
+
+<select id="category">
+  <option value="iptv">IPTV</option>
+  <option value="apps">Apps</option>
+  <option value="products">Products</option>
+</select>
+
 <input id="description" placeholder="Description">
 <input id="price" placeholder="Price">
 <input id="phone" placeholder="Phone">
@@ -76,19 +80,14 @@ projectId: "YOUR_ID"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ➕ ADD PRODUCT */
+/* ADD */
 window.addProduct = async function(){
-
-if(!name.value || !image.value){
-alert("Fill required fields");
-return;
-}
 
 await addDoc(collection(db,"products"),{
 name: name.value,
 image: image.value,
 url: url.value,
-category: (category.value || "apps").toLowerCase(),
+category: category.value, // 🔥 جاهز بدون أخطاء
 description: description.value,
 price: price.value,
 phone: phone.value
@@ -102,35 +101,33 @@ function clear(){
 name.value="";
 image.value="";
 url.value="";
-category.value="";
 description.value="";
 price.value="";
 phone.value="";
 }
 
-/* 📦 LOAD */
+/* LOAD */
 async function load(){
 const snap = await getDocs(collection(db,"products"));
-let box = document.getElementById("list");
+let box=document.getElementById("list");
 box.innerHTML="";
 
 snap.forEach(d=>{
-let p = d.data();
+let p=d.data();
 
-box.innerHTML += `
+box.innerHTML+=`
 <div class="card">
 <b>${p.name}</b>
-<br>
-<small>${p.category}</small>
+<br>${p.category}
 <br><br>
-<button onclick="del('${d.id}')">🗑 Delete</button>
+<button onclick="del('${d.id}')">Delete</button>
 </div>
 `;
 });
 }
 
-/* 🗑 DELETE */
-window.del = async function(id){
+/* DELETE */
+window.del=async function(id){
 await deleteDoc(doc(db,"products",id));
 load();
 }
