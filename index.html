@@ -1,263 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>AWS Store PRO MAX</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel IPTV</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0f172a;color:white}
-
-header{
-padding:15px;
-background:#111827;
-text-align:center;
-font-size:22px;
-font-weight:bold;
-}
-
-/* search */
-.search{
-padding:10px;
-text-align:center;
-}
-.search input{
-width:90%;
-padding:10px;
-border-radius:10px;
-border:none;
-}
-
-/* filters */
-.filters{
-display:flex;
-justify-content:center;
-gap:10px;
-padding:10px;
-flex-wrap:wrap;
-}
-
-.filters button{
-padding:8px 15px;
-border:none;
-border-radius:8px;
-background:#1f2937;
-color:white;
-cursor:pointer;
-}
-
-/* featured */
-.featured{
-padding:10px;
-overflow-x:auto;
-display:flex;
-gap:10px;
-}
-
-.featured .card{
-min-width:140px;
-}
-
-/* grid */
-.container{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-gap:10px;
-padding:10px;
-}
-
-.card{
-background:#1f2937;
-padding:10px;
-border-radius:12px;
-text-align:center;
-cursor:pointer;
-transition:0.2s;
-}
-.card:hover{transform:scale(1.05)}
-
-.card img{
-width:100%;
-height:110px;
-object-fit:cover;
-border-radius:10px;
-}
-
-/* modal */
-.modal{
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.85);
-justify-content:center;
-align-items:center;
-}
-
-.modal-content{
-background:#1f2937;
+body{
+font-family: Arial;
+background:#111;
+color:#fff;
 padding:20px;
-border-radius:12px;
-width:300px;
-text-align:center;
-position:relative;
 }
 
-.close{
-position:absolute;
-top:5px;
-right:10px;
-cursor:pointer;
+input, button, textarea{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
 }
 
 button{
-width:100%;
+background:#00c853;
+color:#fff;
+cursor:pointer;
+font-weight:bold;
+}
+
+.card{
+background:#222;
 padding:10px;
-border:none;
+margin-top:10px;
 border-radius:10px;
-background:#22c55e;
 }
 </style>
 </head>
 
 <body>
 
-<header>🚀 AWS Store</header>
+<h2>🔐 Admin Panel</h2>
 
-<div class="search">
-<input id="search" placeholder="🔍 Search..." oninput="render()">
-</div>
+<input id="name" placeholder="Name">
+<input type="file" id="file">
+<input id="imageUrl" placeholder="Image URL">
+<input id="url" placeholder="URL">
+<input id="iptv" placeholder="IPTV">
+<textarea id="desc" placeholder="Description"></textarea>
+<input id="price" placeholder="Price">
+<input id="phone" placeholder="Phone (WhatsApp)">
 
-<div class="filters" id="filters"></div>
+<button onclick="uploadAndSet()">📤 رفع الصورة</button>
+<button onclick="saveProduct()">➕ إضافة</button>
 
-<h3 style="padding:10px">⭐ Featured</h3>
-<div class="featured" id="featured"></div>
+<h3>📦 المنتجات</h3>
+<div id="list"></div>
 
-<div class="container" id="apps"></div>
+<script>
 
-<div class="modal" id="modal">
-<div class="modal-content">
-<span class="close" onclick="closeModal()">✖</span>
-<img id="img" style="width:100%">
-<h3 id="name"></h3>
-<p id="desc"></p>
-<div id="price"></div>
-<a id="btnLink"><button id="btn"></button></a>
-</div>
-</div>
+const API_KEY = "YOUR_API_KEY_HERE";
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// 🔥 رفع الصورة إلى imgbb
+async function uploadImage(file){
+let formData = new FormData();
+formData.append("image", file);
 
-const firebaseConfig = {
-apiKey: "YOUR_KEY",
-authDomain: "YOUR_DOMAIN",
-projectId: "YOUR_ID"
+let res = await fetch("https://api.imgbb.com/1/upload?key=" + API_KEY,{
+method:"POST",
+body:formData
+});
+
+let data = await res.json();
+return data.data.display_url; // الرابط المباشر
+}
+
+// 📤 زر رفع الصورة
+async function uploadAndSet(){
+let file = document.getElementById("file").files[0];
+if(!file){
+alert("اختر صورة");
+return;
+}
+
+let url = await uploadImage(file);
+document.getElementById("imageUrl").value = url;
+alert("تم رفع الصورة ✅");
+}
+
+// 💾 حفظ المنتج
+function saveProduct(){
+
+let product = {
+name: document.getElementById("name").value,
+image: document.getElementById("imageUrl").value,
+url: document.getElementById("url").value,
+iptv: document.getElementById("iptv").value,
+desc: document.getElementById("desc").value,
+price: document.getElementById("price").value,
+phone: document.getElementById("phone").value
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let data = JSON.parse(localStorage.getItem("products") || "[]");
+data.push(product);
+localStorage.setItem("products", JSON.stringify(data));
 
-let products=[];
-let filter="all";
-
-/* LOAD */
-async function load(){
-const snap = await getDocs(collection(db,"products"));
-products = snap.docs.map(d=>({id:d.id,...d.data()}));
-
-buildFilters();
 render();
-buildFeatured();
+alert("تمت الإضافة ✅");
 }
 
-/* FILTERS */
-function buildFilters(){
-let cats=["all"];
-products.forEach(p=>{
-let c=(p.category||"").toLowerCase();
-if(c && !cats.includes(c)) cats.push(c);
-});
-
-let box=document.getElementById("filters");
-box.innerHTML="";
-
-cats.forEach(c=>{
-box.innerHTML+=`<button onclick="setFilter('${c}')">${c}</button>`;
-});
-}
-
-window.setFilter=function(f){
-filter=f;
-render();
-}
-
-/* FEATURED */
-function buildFeatured(){
-let box=document.getElementById("featured");
-box.innerHTML="";
-
-products.slice(0,5).forEach(p=>{
-box.innerHTML+=`
-<div class="card" onclick="openApp('${p.id}')">
-<img src="${p.image}">
-<h4>${p.name}</h4>
-</div>
-`;
-});
-}
-
-/* RENDER */
+// 📦 عرض المنتجات
 function render(){
-let box=document.getElementById("apps");
-box.innerHTML="";
+let data = JSON.parse(localStorage.getItem("products") || "[]");
+let list = document.getElementById("list");
 
-let q = search.value.toLowerCase();
+list.innerHTML = "";
 
-products
-.filter(p=>{
-let c=(p.category||"").toLowerCase();
-let name=(p.name||"").toLowerCase();
-
-return (filter==="all" || c===filter) &&
-       name.includes(q);
-})
-.forEach(p=>{
-box.innerHTML+=`
-<div class="card" onclick="openApp('${p.id}')">
-<img src="${p.image}">
-<h3>${p.name}</h3>
+data.forEach((p,i)=>{
+list.innerHTML += `
+<div class="card">
+<b>${p.name}</b><br>
+<img src="${p.image}" width="100%"><br>
+<a href="${p.url}" target="_blank">رابط</a><br>
+IPTV: ${p.iptv}<br>
+السعر: ${p.price}<br>
+الواتساب: ${p.phone}<br>
+<p>${p.desc}</p>
 </div>
 `;
 });
 }
 
-/* OPEN */
-window.openApp=function(id){
-let p=products.find(x=>x.id===id);
+render();
 
-img.src=p.image;
-name.innerText=p.name;
-desc.innerText=p.description||"";
-
-let cat=(p.category||"").toLowerCase();
-
-if(cat==="products"){
-btn.innerText="🛒 Order";
-btnLink.href="https://wa.me/"+p.phone;
-price.innerText=p.price||"";
-}else{
-btn.innerText="Download";
-btnLink.href=p.url||"#";
-price.innerText="";
-}
-
-modal.style.display="flex";
-}
-
-window.closeModal=()=>modal.style.display="none";
-
-load();
 </script>
 
 </body>
