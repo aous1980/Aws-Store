@@ -19,11 +19,17 @@ img{max-width:100%}
 
 <script>
 
+// 🔥 نفس المفتاح تماماً
 let products = JSON.parse(localStorage.getItem("products") || "[]");
 
 let list = document.getElementById("list");
 
-products.forEach(p=>{
+// ⚠️ إذا لا يوجد منتجات
+if(products.length === 0){
+list.innerHTML = "🛒 لا توجد منتجات حالياً";
+}
+
+products.forEach((p)=>{
 list.innerHTML += `
 <div class="card">
 <b>${p.name}</b><br>
