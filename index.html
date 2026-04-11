@@ -2,18 +2,111 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin PRO+</title>
+<title>AWS Store PRO MAX</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{font-family:Arial;background:#0f172a;color:white;padding:15px}
+body{margin:0;font-family:Arial;background:#0f172a;color:white}
 
-input, select{
-width:100%;
+header{
+padding:15px;
+background:#111827;
+text-align:center;
+font-size:22px;
+font-weight:bold;
+}
+
+/* search */
+.search{
 padding:10px;
-margin:6px 0;
+text-align:center;
+}
+.search input{
+width:90%;
+padding:10px;
+border-radius:10px;
+border:none;
+}
+
+/* filters */
+.filters{
+display:flex;
+justify-content:center;
+gap:10px;
+padding:10px;
+flex-wrap:wrap;
+}
+
+.filters button{
+padding:8px 15px;
 border:none;
 border-radius:8px;
+background:#1f2937;
+color:white;
+cursor:pointer;
+}
+
+/* featured */
+.featured{
+padding:10px;
+overflow-x:auto;
+display:flex;
+gap:10px;
+}
+
+.featured .card{
+min-width:140px;
+}
+
+/* grid */
+.container{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+gap:10px;
+padding:10px;
+}
+
+.card{
+background:#1f2937;
+padding:10px;
+border-radius:12px;
+text-align:center;
+cursor:pointer;
+transition:0.2s;
+}
+.card:hover{transform:scale(1.05)}
+
+.card img{
+width:100%;
+height:110px;
+object-fit:cover;
+border-radius:10px;
+}
+
+/* modal */
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.85);
+justify-content:center;
+align-items:center;
+}
+
+.modal-content{
+background:#1f2937;
+padding:20px;
+border-radius:12px;
+width:300px;
+text-align:center;
+position:relative;
+}
+
+.close{
+position:absolute;
+top:5px;
+right:10px;
+cursor:pointer;
 }
 
 button{
@@ -22,67 +115,39 @@ padding:10px;
 border:none;
 border-radius:10px;
 background:#22c55e;
-font-weight:bold;
-cursor:pointer;
-margin-top:5px;
 }
-
-.card{
-background:#1f2937;
-padding:10px;
-margin:10px 0;
-border-radius:10px;
-}
-
-img.preview{
-width:100%;
-max-height:150px;
-object-fit:cover;
-border-radius:10px;
-margin-top:5px;
-}
-.small{background:#3b82f6}
-.red{background:#ef4444}
 </style>
 </head>
 
 <body>
 
-<h2>🚀 Admin PRO+</h2>
+<header>🚀 AWS Store</header>
 
-<input id="name" placeholder="Name">
-<input id="image" placeholder="Image URL" oninput="previewImg()">
-<img id="preview" class="preview" src="">
+<div class="search">
+<input id="search" placeholder="🔍 Search..." oninput="render()">
+</div>
 
-<input id="url" placeholder="URL">
+<div class="filters" id="filters"></div>
 
-<select id="category">
-  <option value="iptv">IPTV</option>
-  <option value="apps">Apps</option>
-  <option value="products">Products</option>
-</select>
+<h3 style="padding:10px">⭐ Featured</h3>
+<div class="featured" id="featured"></div>
 
-<input id="description" placeholder="Description">
-<input id="price" placeholder="Price">
-<input id="phone" placeholder="Phone">
+<div class="container" id="apps"></div>
 
-<button onclick="save()">💾 Save Product</button>
-
-<hr>
-
-<div id="list"></div>
+<div class="modal" id="modal">
+<div class="modal-content">
+<span class="close" onclick="closeModal()">✖</span>
+<img id="img" style="width:100%">
+<h3 id="name"></h3>
+<p id="desc"></p>
+<div id="price"></div>
+<a id="btnLink"><button id="btn"></button></a>
+</div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-deleteDoc,
-doc,
-updateDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "YOUR_KEY",
@@ -93,91 +158,104 @@ projectId: "YOUR_ID"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let editId = null;
+let products=[];
+let filter="all";
 
-/* 🖼 Preview */
-window.previewImg = function(){
-preview.src = image.value;
-}
-
-/* 💾 SAVE (ADD + EDIT) */
-window.save = async function(){
-
-let data = {
-name:name.value,
-image:image.value,
-url:url.value,
-category:category.value,
-description:description.value,
-price:price.value,
-phone:phone.value
-};
-
-if(editId){
-await updateDoc(doc(db,"products",editId),data);
-editId=null;
-}else{
-await addDoc(collection(db,"products"),data);
-}
-
-clear();
-load();
-}
-
-/* ✏️ EDIT */
-window.edit = function(id,data){
-let p = JSON.parse(decodeURIComponent(data));
-
-name.value=p.name;
-image.value=p.image;
-url.value=p.url;
-category.value=p.category;
-description.value=p.description;
-price.value=p.price;
-phone.value=p.phone;
-
-preview.src=p.image;
-
-editId=id;
-}
-
-/* 🗑 DELETE */
-window.del = async function(id){
-await deleteDoc(doc(db,"products",id));
-load();
-}
-
-function clear(){
-name.value="";
-image.value="";
-url.value="";
-description.value="";
-price.value="";
-phone.value="";
-preview.src="";
-}
-
-/* 📦 LOAD */
+/* LOAD */
 async function load(){
 const snap = await getDocs(collection(db,"products"));
-let box=document.getElementById("list");
+products = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+buildFilters();
+render();
+buildFeatured();
+}
+
+/* FILTERS */
+function buildFilters(){
+let cats=["all"];
+products.forEach(p=>{
+let c=(p.category||"").toLowerCase();
+if(c && !cats.includes(c)) cats.push(c);
+});
+
+let box=document.getElementById("filters");
 box.innerHTML="";
 
-snap.forEach(d=>{
-let p=d.data();
+cats.forEach(c=>{
+box.innerHTML+=`<button onclick="setFilter('${c}')">${c}</button>`;
+});
+}
 
+window.setFilter=function(f){
+filter=f;
+render();
+}
+
+/* FEATURED */
+function buildFeatured(){
+let box=document.getElementById("featured");
+box.innerHTML="";
+
+products.slice(0,5).forEach(p=>{
 box.innerHTML+=`
-<div class="card">
-<b>${p.name}</b>
-<br>${p.category}
-
-<br><br>
-<button class="small" onclick="edit('${d.id}','${encodeURIComponent(JSON.stringify(p))}')">✏ Edit</button>
-<button class="red" onclick="del('${d.id}')">🗑 Delete</button>
+<div class="card" onclick="openApp('${p.id}')">
+<img src="${p.image}">
+<h4>${p.name}</h4>
 </div>
 `;
 });
 }
+
+/* RENDER */
+function render(){
+let box=document.getElementById("apps");
+box.innerHTML="";
+
+let q = search.value.toLowerCase();
+
+products
+.filter(p=>{
+let c=(p.category||"").toLowerCase();
+let name=(p.name||"").toLowerCase();
+
+return (filter==="all" || c===filter) &&
+       name.includes(q);
+})
+.forEach(p=>{
+box.innerHTML+=`
+<div class="card" onclick="openApp('${p.id}')">
+<img src="${p.image}">
+<h3>${p.name}</h3>
+</div>
+`;
+});
+}
+
+/* OPEN */
+window.openApp=function(id){
+let p=products.find(x=>x.id===id);
+
+img.src=p.image;
+name.innerText=p.name;
+desc.innerText=p.description||"";
+
+let cat=(p.category||"").toLowerCase();
+
+if(cat==="products"){
+btn.innerText="🛒 Order";
+btnLink.href="https://wa.me/"+p.phone;
+price.innerText=p.price||"";
+}else{
+btn.innerText="Download";
+btnLink.href=p.url||"#";
+price.innerText="";
+}
+
+modal.style.display="flex";
+}
+
+window.closeModal=()=>modal.style.display="none";
 
 load();
 </script>
