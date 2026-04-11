@@ -1,54 +1,64 @@
-<script>
-let products = JSON.parse(localStorage.getItem("products") || "[]");
 
-// 💾 حفظ المنتج
-function saveProduct(){
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-let name = document.getElementById("name").value;
-let image = document.getElementById("imageUrl").value;
-let url = document.getElementById("url").value;
-let iptv = document.getElementById("iptv").value;
-let desc = document.getElementById("desc").value;
-let price = document.getElementById("price").value;
-let phone = document.getElementById("phone").value;
-
-// ⚠️ تحقق
-if(!name || !image){
-alert("أدخل الاسم والصورة");
-return;
-}
-
-let product = {
-name, image, url, iptv, desc, price, phone
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  appId: "YOUR_APP_ID"
 };
 
-products.push(product);
-localStorage.setItem("products", JSON.stringify(products));
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-renderProducts();
-alert("تمت الإضافة ✅");
-}
+let imageURL = "";
 
-// 📦 عرض المنتجات
-function renderProducts(){
-let list = document.getElementById("list");
-list.innerHTML = "";
+/* 📤 رفع صورة */
+window.uploadImage = async function () {
+  let file = document.getElementById("file").files[0];
+  if (!file) return alert("اختر صورة");
 
-products.forEach((p)=>{
-list.innerHTML += `
-<div class="card">
-<b>${p.name}</b><br>
-<img src="${p.image}" width="100%"><br>
-<a href="${p.url}" target="_blank">فتح الرابط</a><br>
-IPTV: ${p.iptv}<br>
-السعر: ${p.price}<br>
-واتساب: ${p.phone}<br>
-<p>${p.desc}</p>
-</div>
-`;
-});
-}
+  let storageRef = ref(storage, "images/" + Date.now() + file.name);
 
-// 🚀 تشغيل عند فتح الصفحة
-renderProducts();
+  await uploadBytes(storageRef, file);
+  imageURL = await getDownloadURL(storageRef);
+
+  document.getElementById("imageUrl").value = imageURL;
+
+  alert("تم رفع الصورة ✅");
+};
+
+/* 💾 إضافة منتج */
+window.saveProduct = async function () {
+
+  let name = document.getElementById("name").value;
+  let url = document.getElementById("url").value;
+  let iptv = document.getElementById("iptv").value;
+  let desc = document.getElementById("desc").value;
+  let price = document.getElementById("price").value;
+  let phone = document.getElementById("phone").value;
+
+  if (!name) {
+    alert("اكتب الاسم");
+    return;
+  }
+
+  await addDoc(collection(db, "products"), {
+    name,
+    image: imageURL,
+    url,
+    iptv,
+    desc,
+    price,
+    phone,
+    time: Date.now()
+  });
+
+  alert("تمت الإضافة ✅");
+};
 </script>
