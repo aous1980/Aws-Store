@@ -1,137 +1,54 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-<meta charset="UTF-8">
-<title>Admin Panel IPTV</title>
-
-<style>
-body{
-font-family: Arial;
-background:#111;
-color:#fff;
-padding:20px;
-}
-
-input, button, textarea{
-width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:8px;
-border:none;
-}
-
-button{
-background:#00c853;
-color:#fff;
-cursor:pointer;
-font-weight:bold;
-}
-
-.card{
-background:#222;
-padding:10px;
-margin-top:10px;
-border-radius:10px;
-}
-</style>
-</head>
-
-<body>
-
-<h2>🔐 Admin Panel</h2>
-
-<input id="name" placeholder="Name">
-<input type="file" id="file">
-<input id="imageUrl" placeholder="Image URL">
-<input id="url" placeholder="URL">
-<input id="iptv" placeholder="IPTV">
-<textarea id="desc" placeholder="Description"></textarea>
-<input id="price" placeholder="Price">
-<input id="phone" placeholder="Phone (WhatsApp)">
-
-<button onclick="uploadAndSet()">📤 رفع الصورة</button>
-<button onclick="saveProduct()">➕ إضافة</button>
-
-<h3>📦 المنتجات</h3>
-<div id="list"></div>
-
 <script>
-
-const API_KEY = "YOUR_API_KEY_HERE";
-
-// 🔥 رفع الصورة إلى imgbb
-async function uploadImage(file){
-let formData = new FormData();
-formData.append("image", file);
-
-let res = await fetch("https://api.imgbb.com/1/upload?key=" + API_KEY,{
-method:"POST",
-body:formData
-});
-
-let data = await res.json();
-return data.data.display_url; // الرابط المباشر
-}
-
-// 📤 زر رفع الصورة
-async function uploadAndSet(){
-let file = document.getElementById("file").files[0];
-if(!file){
-alert("اختر صورة");
-return;
-}
-
-let url = await uploadImage(file);
-document.getElementById("imageUrl").value = url;
-alert("تم رفع الصورة ✅");
-}
+let products = JSON.parse(localStorage.getItem("products") || "[]");
 
 // 💾 حفظ المنتج
 function saveProduct(){
 
+let name = document.getElementById("name").value;
+let image = document.getElementById("imageUrl").value;
+let url = document.getElementById("url").value;
+let iptv = document.getElementById("iptv").value;
+let desc = document.getElementById("desc").value;
+let price = document.getElementById("price").value;
+let phone = document.getElementById("phone").value;
+
+// ⚠️ تحقق
+if(!name || !image){
+alert("أدخل الاسم والصورة");
+return;
+}
+
 let product = {
-name: document.getElementById("name").value,
-image: document.getElementById("imageUrl").value,
-url: document.getElementById("url").value,
-iptv: document.getElementById("iptv").value,
-desc: document.getElementById("desc").value,
-price: document.getElementById("price").value,
-phone: document.getElementById("phone").value
+name, image, url, iptv, desc, price, phone
 };
 
-let data = JSON.parse(localStorage.getItem("products") || "[]");
-data.push(product);
-localStorage.setItem("products", JSON.stringify(data));
+products.push(product);
+localStorage.setItem("products", JSON.stringify(products));
 
-render();
+renderProducts();
 alert("تمت الإضافة ✅");
 }
 
 // 📦 عرض المنتجات
-function render(){
-let data = JSON.parse(localStorage.getItem("products") || "[]");
+function renderProducts(){
 let list = document.getElementById("list");
-
 list.innerHTML = "";
 
-data.forEach((p,i)=>{
+products.forEach((p)=>{
 list.innerHTML += `
 <div class="card">
 <b>${p.name}</b><br>
 <img src="${p.image}" width="100%"><br>
-<a href="${p.url}" target="_blank">رابط</a><br>
+<a href="${p.url}" target="_blank">فتح الرابط</a><br>
 IPTV: ${p.iptv}<br>
 السعر: ${p.price}<br>
-الواتساب: ${p.phone}<br>
+واتساب: ${p.phone}<br>
 <p>${p.desc}</p>
 </div>
 `;
 });
 }
 
-render();
-
+// 🚀 تشغيل عند فتح الصفحة
+renderProducts();
 </script>
-
-</body>
-</html>
