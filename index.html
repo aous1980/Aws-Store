@@ -2,101 +2,82 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Aws Store</title>
+<title>Aws Store</title>
+
+<style>
+body{
+  background:#111;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+}
+
+h1{color:#00c3ff}
+
+.container{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.card{
+  background:#1e1e1e;
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+  width:180px;
+}
+
+.card img{
+  width:100%;
+  border-radius:8px;
+}
+
+button{
+  background:#00c3ff;
+  border:none;
+  padding:8px;
+  border-radius:5px;
+}
+
+a{text-decoration:none;color:#fff}
+</style>
 </head>
 
-<body style="background:#111;color:#fff;font-family:Arial;text-align:center">
+<body>
 
-<h1>🔐 لوحة التحكم</h1>
+<h1>🛒 Aws Store</h1>
 
-<input id="img" placeholder="رابط الصورة"><br><br>
-<input id="url" placeholder="رابط التحميل"><br><br>
+<h2>📱 التطبيقات</h2>
+<div id="apps" class="container"></div>
 
-<select id="type">
-  <option value="apps">📱 تطبيقات</option>
-  <option value="sat">🛰️ SatSoftware</option>
-</select>
-
-<br><br>
-
-<button onclick="add()">➕ إضافة</button>
-
-<hr>
-
-<h2>📦 المنتجات</h2>
-<div id="list"></div>
+<h2>🛰️ SatSoftware</h2>
+<div id="sat" class="container"></div>
 
 <script>
 
-// تحميل المنتجات
 function load(){
   let data = JSON.parse(localStorage.getItem("store")) || [];
-  let box = document.getElementById("list");
-  box.innerHTML = "";
 
-  data.forEach((item,index)=>{
-    box.innerHTML += `
-      <div style="margin:10px;padding:10px;background:#222">
-        <img src="${item.img}" width="80"><br>
-        <a href="${item.url}" target="_blank" style="color:#00c3ff">فتح</a><br><br>
+  let apps = document.getElementById("apps");
+  let sat = document.getElementById("sat");
 
-        <button onclick="edit(${index})">✏️ تعديل</button>
-        <button onclick="del(${index})" style="background:red;color:#fff">🗑️ حذف</button>
+  apps.innerHTML = "";
+  sat.innerHTML = "";
+
+  data.forEach(item=>{
+    let card = `
+      <div class="card">
+        <img src="${item.img}">
+        <a href="${item.url}" target="_blank">
+          <button>تحميل</button>
+        </a>
       </div>
     `;
+
+    if(item.type === "apps") apps.innerHTML += card;
+    if(item.type === "sat") sat.innerHTML += card;
   });
-}
-
-// إضافة
-function add(){
-  let img = document.getElementById("img").value;
-  let url = document.getElementById("url").value;
-  let type = document.getElementById("type").value;
-
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  data.push({img,url,type});
-
-  localStorage.setItem("store", JSON.stringify(data));
-
-  document.getElementById("img").value = "";
-  document.getElementById("url").value = "";
-
-  load();
-}
-
-// حذف
-function del(i){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  data.splice(i,1);
-
-  localStorage.setItem("store", JSON.stringify(data));
-
-  load();
-}
-
-// ✏️ تعديل (مهم جداً)
-function edit(i){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  let newImg = prompt("رابط الصورة الجديد:", data[i].img);
-  if(newImg === null) return;
-
-  let newUrl = prompt("رابط التحميل الجديد:", data[i].url);
-  if(newUrl === null) return;
-
-  if(newImg.trim() === "" || newUrl.trim() === ""){
-    alert("❌ لا يمكن ترك الحقول فارغة");
-    return;
-  }
-
-  data[i].img = newImg.trim();
-  data[i].url = newUrl.trim();
-
-  localStorage.setItem("store", JSON.stringify(data));
-
-  load();
 }
 
 load();
