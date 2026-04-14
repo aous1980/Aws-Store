@@ -2,30 +2,61 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Aws Store</title>
+<title>Aws Store</title>
+
+<style>
+body{background:#111;color:#fff;font-family:Arial;text-align:center}
+h1{color:#00c3ff}
+.container{display:flex;flex-wrap:wrap;justify-content:center}
+.card{background:#1e1e1e;margin:10px;padding:10px;border-radius:10px;width:180px}
+.card img{width:100%;border-radius:8px}
+button{background:#00c3ff;border:none;padding:8px;border-radius:5px;cursor:pointer}
+</style>
 </head>
 
-<body style="background:#111;color:#fff;text-align:center;font-family:Arial">
+<body>
 
-<h1>🔐 لوحة التحكم</h1>
+<h1>🛒 Aws Store</h1>
 
-<input id="img" placeholder="رابط الصورة"><br><br>
-<input id="url" placeholder="رابط التطبيق"><br><br>
+<h2>📱 التطبيقات</h2>
+<div id="apps" class="container"></div>
 
-<button onclick="add('apps')">📱 إضافة للتطبيقات</button>
-<button onclick="add('sat')">🛰️ إضافة SatSoftware</button>
+<h2>🛰️ SatSoftware</h2>
+<div id="sat" class="container"></div>
 
 <script>
-function add(type){
-  let img = document.getElementById("img").value;
-  let url = document.getElementById("url").value;
 
-  let data = JSON.parse(localStorage.getItem(type)) || [];
-  data.push({img,url});
-  localStorage.setItem(type, JSON.stringify(data));
+// تحميل التطبيقات من ملف JSON
+async function loadData(){
+  let res = await fetch("apps.json");
+  let data = await res.json();
 
-  alert("تمت الإضافة");
+  let appsBox = document.getElementById("apps");
+  let satBox = document.getElementById("sat");
+
+  appsBox.innerHTML = "";
+  satBox.innerHTML = "";
+
+  data.forEach(item=>{
+    let html = `
+      <div class="card">
+        <img src="${item.img}">
+        <a href="${item.url}" target="_blank">
+          <button>تحميل</button>
+        </a>
+      </div>
+    `;
+
+    if(item.type === "apps"){
+      appsBox.innerHTML += html;
+    } else {
+      satBox.innerHTML += html;
+    }
+  });
 }
+
+loadData();
+
 </script>
 
 </body>
