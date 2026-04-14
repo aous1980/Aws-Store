@@ -3,49 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <title>Aws Store</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f0f0f;
+  color: white;
+  text-align: center;
+}
+
+h1 {
+  color: #00c3ff;
+}
+
+input {
+  padding: 10px;
+  width: 250px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+}
+
+button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  background: #00c3ff;
+  cursor: pointer;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  background: #1e1e1e;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  width: 180px;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.delete {
+  background: red;
+  margin-top: 5px;
+}
+</style>
+
 </head>
 
-<body style="background:#111;color:#fff;text-align:center;font-family:Arial">
+<body>
 
 <h1>🛒 Aws Store</h1>
 
-<h2>لوحة التحكم</h2>
+<h2>🔐 لوحة التحكم</h2>
 
-<input id="img" placeholder="رابط الصورة"><br><br>
-<input id="url" placeholder="رابط التطبيق"><br><br>
+<input id="img" placeholder="رابط الصورة"><br>
+<input id="url" placeholder="رابط التطبيق"><br>
 
-<button onclick="addApp()">إضافة للتطبيقات</button>
-<button onclick="addSat()">إضافة لـ SatSoftware</button>
+<button onclick="addItem('apps')">📱 إضافة للتطبيقات</button>
+<button onclick="addItem('sat')">🛰️ إضافة لـ SatSoftware</button>
 
 <hr>
 
 <h2>📱 التطبيقات</h2>
-<div id="apps"></div>
+<div id="apps" class="container"></div>
 
 <h2>🛰️ SatSoftware</h2>
-<div id="sat"></div>
+<div id="sat" class="container"></div>
 
 <script>
-function createItem(img, url) {
-  return `
-    <div style="margin:10px">
-      <img src="${img}" width="150"><br>
-      <a href="${url}" target="_blank">تحميل</a>
-    </div>
-  `;
+
+// تحميل البيانات عند فتح الصفحة
+window.onload = function() {
+  loadData('apps');
+  loadData('sat');
 }
 
-function addApp() {
+// إضافة عنصر
+function addItem(type) {
   let img = document.getElementById("img").value;
   let url = document.getElementById("url").value;
-  document.getElementById("apps").innerHTML += createItem(img, url);
+
+  if (!img || !url) {
+    alert("املأ الحقول");
+    return;
+  }
+
+  let data = JSON.parse(localStorage.getItem(type)) || [];
+  data.push({img, url});
+  localStorage.setItem(type, JSON.stringify(data));
+
+  displayItems(type);
 }
 
-function addSat() {
-  let img = document.getElementById("img").value;
-  let url = document.getElementById("url").value;
-  document.getElementById("sat").innerHTML += createItem(img, url);
+// عرض العناصر
+function loadData(type) {
+  displayItems(type);
 }
+
+function displayItems(type) {
+  let container = document.getElementById(type);
+  container.innerHTML = "";
+
+  let data = JSON.parse(localStorage.getItem(type)) || [];
+
+  data.forEach((item, index) => {
+    container.innerHTML += `
+      <div class="card">
+        <img src="${item.img}">
+        <br>
+        <a href="${item.url}" target="_blank">
+          <button>تحميل</button>
+        </a>
+        <br>
+        <button class="delete" onclick="deleteItem('${type}', ${index})">حذف</button>
+      </div>
+    `;
+  });
+}
+
+// حذف عنصر
+function deleteItem(type, index) {
+  let data = JSON.parse(localStorage.getItem(type));
+  data.splice(index, 1);
+  localStorage.setItem(type, JSON.stringify(data));
+  displayItems(type);
+}
+
 </script>
 
 </body>
