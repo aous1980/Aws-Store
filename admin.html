@@ -2,122 +2,78 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم - الأقسام والترتيب</title>
+    <title>مُولد بيانات المتجر - Aws Store</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; direction: rtl; }
-        .admin-box { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 12px; border: 2px solid #000; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        .save-btn { width: 100%; padding: 15px; background: #000; color: #fff; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; }
-        .list-item { background: #fff; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .controls button { margin-left: 5px; cursor: pointer; padding: 5px 10px; }
-        .badge { background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; text-align: center; }
+        .box { max-width: 500px; margin: auto; background: #fff; padding: 20px; border: 2px solid #000; border-radius: 10px; }
+        input, select { width: 95%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; }
+        .btn { padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; }
+        .add-btn { background: #000; color: #fff; width: 100%; }
+        .json-output { background: #eee; padding: 10px; margin-top: 20px; border: 1px dashed #666; font-family: monospace; font-size: 12px; text-align: left; overflow-x: auto; white-space: pre-wrap; }
+        .item { display: flex; justify-content: space-between; background: #fff; border: 1px solid #ddd; padding: 10px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="admin-box">
-        <h2 id="title">إضافة تطبيق</h2>
-        <input type="text" id="name" placeholder="اسم التطبيق">
-        <input type="text" id="link" placeholder="رابط التحميل">
-        <input type="text" id="img" placeholder="رابط الصورة">
-        <select id="cat">
-            <option value="apps">التطبيقات (Apps)</option>
-            <option value="sat">Sat Softwar</option>
-        </select>
-        <button class="save-btn" id="saveBtn">حفظ التطبيق</button>
-        <button id="cancelBtn" style="display:none; width:100%; margin-top:5px;" onclick="reset()">إلغاء التعديل</button>
+<div class="box">
+    <h2>إدارة تطبيقات المتجر</h2>
+    <input type="text" id="name" placeholder="اسم التطبيق">
+    <input type="text" id="url" placeholder="رابط التحميل">
+    <input type="text" id="img" placeholder="رابط الصورة">
+    <select id="cat">
+        <option value="apps">التطبيقات (Apps)</option>
+        <option value="sat">Sat Softwar</option>
+    </select>
+    <button class="btn add-btn" onclick="addItem()">إضافة للقائمة</button>
 
-        <div id="list" style="margin-top:30px;">
-            <h3>القائمة الحالية (اسحب للترتيب):</h3>
-            <div id="itemsBox"></div>
-        </div>
-    </div>
+    <div id="list" style="margin-top:20px;"></div>
 
-    <script>
-        const DB_KEY = "aws_store_v1";
-        let editId = -1;
+    <hr>
+    <h3>انسخ الكود أدناه وضعه في ملف apps.json:</h3>
+    <div class="json-output" id="jsonBox">[]</div>
+    <button class="btn" style="background:blue; color:#fff;" onclick="copyJSON()">نسخ الكود بالكامل</button>
+</div>
 
-        document.getElementById('saveBtn').onclick = function() {
-            const name = document.getElementById('name').value;
-            const url = document.getElementById('link').value;
-            const img = document.getElementById('img').value;
-            const cat = document.getElementById('cat').value;
+<script>
+    let currentData = [];
 
-            if(name && url && img) {
-                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-                if(editId === -1) {
-                    data.push({name, url, img, cat});
-                } else {
-                    data[editId] = {name, url, img, cat};
-                }
-                localStorage.setItem(DB_KEY, JSON.stringify(data));
-                reset();
-                render();
-            }
+    function addItem() {
+        const name = document.getElementById('name').value;
+        const url = document.getElementById('url').value;
+        const img = document.getElementById('img').value;
+        const cat = document.getElementById('cat').value;
+
+        if(name && url && img) {
+            currentData.push({name, url, img, cat});
+            updateUI();
+            document.getElementById('name').value = '';
+            document.getElementById('url').value = '';
+            document.getElementById('img').value = '';
         }
+    }
 
-        function render() {
-            const box = document.getElementById('itemsBox');
-            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            box.innerHTML = "";
-            data.forEach((item, index) => {
-                box.innerHTML += `
-                    <div class="list-item">
-                        <div>
-                            <strong>${item.name}</strong> <span class="badge">${item.cat}</span>
-                        </div>
-                        <div class="controls">
-                            <button onclick="move(${index}, -1)">🔼</button>
-                            <button onclick="move(${index}, 1)">🔽</button>
-                            <button style="color:blue" onclick="startEdit(${index})">تعديل</button>
-                            <button style="color:red" onclick="del(${index})">حذف</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+    function updateUI() {
+        const list = document.getElementById('list');
+        list.innerHTML = "";
+        currentData.forEach((item, index) => {
+            list.innerHTML += `<div class="item">
+                <span>${item.name}</span>
+                <button onclick="removeItem(${index})" style="color:red">حذف</button>
+            </div>`;
+        });
+        document.getElementById('jsonBox').innerText = JSON.stringify(currentData, null, 4);
+    }
 
-        function move(index, step) {
-            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            let target = index + step;
-            if(target >= 0 && target < data.length) {
-                [data[index], data[target]] = [data[target], data[index]];
-                localStorage.setItem(DB_KEY, JSON.stringify(data));
-                render();
-            }
-        }
+    function removeItem(index) {
+        currentData.splice(index, 1);
+        updateUI();
+    }
 
-        function startEdit(index) {
-            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            let itm = data[index];
-            document.getElementById('name').value = itm.name;
-            document.getElementById('link').value = itm.url;
-            document.getElementById('img').value = itm.img;
-            document.getElementById('cat').value = itm.cat;
-            editId = index;
-            document.getElementById('saveBtn').innerText = "تحديث البيانات";
-            document.getElementById('cancelBtn').style.display = "block";
-        }
-
-        function reset() {
-            document.getElementById('name').value = "";
-            document.getElementById('link').value = "";
-            document.getElementById('img').value = "";
-            editId = -1;
-            document.getElementById('saveBtn').innerText = "حفظ التطبيق";
-            document.getElementById('cancelBtn').style.display = "none";
-        }
-
-        function del(index) {
-            if(confirm("حذف؟")) {
-                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-                data.splice(index, 1);
-                localStorage.setItem(DB_KEY, JSON.stringify(data));
-                render();
-            }
-        }
-
-        window.onload = render;
-    </script>
+    function copyJSON() {
+        const text = document.getElementById('jsonBox').innerText;
+        navigator.clipboard.writeText(text);
+        alert("تم نسخ الكود! اذهب لملف apps.json في جيت هاب والصقه هناك.");
+    }
+</script>
 </body>
 </html>
