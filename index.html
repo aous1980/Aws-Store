@@ -55,18 +55,18 @@ function load(){
 
     if(item.links){
       item.links.forEach(l=>{
-        links += `
-          <a href="${l.url}" target="_blank">
-            <button>${l.label}</button>
-          </a>
-        `;
+        links += `<a href="${l.url}" target="_blank">
+          <button>${l.label}</button>
+        </a>`;
       });
     }
 
     box.innerHTML += `
       <div class="card">
         <h3>${item.name}</h3>
-        <div>${links}</div>
+        <div>${item.type === "apps" ? "📱 تطبيق" : "🛰️ سوفتوير"}</div>
+        <br>
+        ${links}
       </div>
     `;
   });
