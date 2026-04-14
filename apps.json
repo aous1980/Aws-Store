@@ -1,27 +1,12 @@
 [
   {
-    "name": "Show Plus",
-    "image": "https://dso6.raed.net:447/files/3-0.png",
-    "url": "https://sh-apps.cyou/apk/Show+v3.0.apk",
-    "category": "iptv",
-    "description": "Best IPTV app"
+    "type": "apps",
+    "img": "https://via.placeholder.com/150",
+    "url": "https://example.com/app1.apk"
   },
   {
-    "name": "Android TV Box",
-    "image": "https://via.placeholder.com/300",
-    "url": "#",
-    "category": "products",
-    "description": "4K Smart TV Box",
-    "price": "$45",
-    "phone": "49123456789"
-  },
-  {
-    "name": "IPTV Subscription",
-    "image": "https://via.placeholder.com/300",
-    "url": "#",
-    "category": "products",
-    "description": "1 Year IPTV Subscription",
-    "price": "$30",
-    "phone": "49123456789"
+    "type": "sat",
+    "img": "https://via.placeholder.com/150",
+    "url": "https://example.com/sat1.bin"
   }
 ]
