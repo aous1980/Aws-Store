@@ -2,21 +2,56 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin</title>
+<title>Admin - Aws Store</title>
+
+<style>
+body{
+  background:#111;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+}
+
+input{
+  width:260px;
+  padding:10px;
+  margin:8px;
+  border-radius:5px;
+  border:none;
+  outline:none;
+}
+
+button{
+  padding:10px 20px;
+  background:#00c3ff;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.card{
+  background:#222;
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+}
+</style>
 </head>
 
-<body style="background:#111;color:#fff;font-family:Arial;text-align:center">
+<body>
 
 <h1>🔐 لوحة التحكم</h1>
 
-<!-- اسم التطبيق (مهم جداً) -->
-<input id="name" type="text" placeholder="اسم التطبيق"><br><br>
+<!-- مهم: input واضح ومفعل -->
+<input id="name" type="text" placeholder="اسم التطبيق"><br>
 
-<input id="label1" placeholder="اسم زر 1">
-<input id="url1" placeholder="رابط 1"><br><br>
+<input id="label1" type="text" placeholder="اسم زر 1"><br>
+<input id="url1" type="text" placeholder="رابط 1"><br>
 
-<input id="label2" placeholder="اسم زر 2 (اختياري)">
-<input id="url2" placeholder="رابط 2"><br><br>
+<input id="label2" type="text" placeholder="اسم زر 2 (اختياري)"><br>
+<input id="url2" type="text" placeholder="رابط 2"><br>
+
+<br>
 
 <button onclick="add()">➕ إضافة</button>
 
@@ -33,7 +68,7 @@ function load(){
 
   data.forEach((item,i)=>{
     box.innerHTML += `
-      <div style="background:#222;margin:10px;padding:10px">
+      <div class="card">
         <h3>${item.name}</h3>
         <button onclick="del(${i})" style="background:red;color:#fff">حذف</button>
       </div>
@@ -44,13 +79,9 @@ function load(){
 // إضافة
 function add(){
 
-  let nameInput = document.getElementById("name");
+  let name = document.getElementById("name").value;
 
-  let name = nameInput.value;
-
-  console.log("NAME:", name); // 🔥 للتأكد
-
-  if(!name || name.trim() === ""){
+  if(name.trim() === ""){
     alert("❌ اكتب اسم التطبيق");
     return;
   }
@@ -74,14 +105,14 @@ function add(){
   let data = JSON.parse(localStorage.getItem("store")) || [];
 
   data.push({
-    name: name.trim(),
-    links: links
+    name:name.trim(),
+    links:links
   });
 
   localStorage.setItem("store", JSON.stringify(data));
 
-  // تفريغ الحقل بعد الإضافة
-  nameInput.value = "";
+  // تنظيف الحقول
+  document.getElementById("name").value = "";
   document.getElementById("label1").value = "";
   document.getElementById("url1").value = "";
   document.getElementById("label2").value = "";
