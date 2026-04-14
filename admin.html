@@ -12,8 +12,8 @@ body{
   text-align:center;
 }
 
-input, select{
-  width:260px;
+input{
+  width:280px;
   padding:10px;
   margin:6px;
   border:none;
@@ -22,18 +22,24 @@ input, select{
 }
 
 button{
-  padding:10px 20px;
+  padding:10px 15px;
   background:#00c3ff;
   border:none;
   border-radius:5px;
   cursor:pointer;
+  margin:3px;
 }
 
 .card{
   background:#222;
-  margin:10px;
+  margin:10px auto;
   padding:10px;
   border-radius:10px;
+  width:300px;
+}
+img{
+  width:100px;
+  border-radius:5px;
 }
 </style>
 </head>
@@ -42,22 +48,9 @@ button{
 
 <h1>🔐 لوحة التحكم</h1>
 
-<!-- الاسم -->
 <input id="name" placeholder="اسم التطبيق"><br>
-
-<!-- 🔥 خيار التطبيقات والسوفتوير -->
-<select id="type">
-  <option value="apps">📱 التطبيقات</option>
-  <option value="sat">🛰️ السوفتوير</option>
-</select>
-
-<br>
-
-<input id="label1" placeholder="اسم زر 1"><br>
-<input id="url1" placeholder="رابط 1"><br>
-
-<input id="label2" placeholder="اسم زر 2 (اختياري)"><br>
-<input id="url2" placeholder="رابط 2"><br>
+<input id="img" placeholder="رابط الصورة"><br>
+<input id="url" placeholder="رابط التطبيق"><br>
 
 <br>
 
@@ -69,6 +62,7 @@ button{
 
 <script>
 
+// تحميل البيانات
 function load(){
   let data = JSON.parse(localStorage.getItem("store")) || [];
   let box = document.getElementById("list");
@@ -78,63 +72,80 @@ function load(){
     box.innerHTML += `
       <div class="card">
         <h3>${item.name}</h3>
-        <div>${item.type === "apps" ? "📱 تطبيق" : "🛰️ سوفتوير"}</div>
+        <img src="${item.img}"><br><br>
 
-        <button onclick="del(${i})" style="background:red;color:#fff">حذف</button>
+        <a href="${item.url}" target="_blank">فتح التطبيق</a><br><br>
+
+        <button onclick="edit(${i})">✏️ تعديل</button>
+        <button onclick="del(${i})" style="background:red">🗑️ حذف</button>
       </div>
     `;
   });
 }
 
+// إضافة
 function add(){
 
   let name = document.getElementById("name").value;
-  let type = document.getElementById("type").value;
+  let img = document.getElementById("img").value;
+  let url = document.getElementById("url").value;
 
-  if(name.trim() === ""){
-    alert("❌ اكتب اسم التطبيق");
+  if(name.trim() === "" || img.trim() === "" || url.trim() === ""){
+    alert("❌ املأ كل الحقول");
     return;
-  }
-
-  let label1 = document.getElementById("label1").value;
-  let url1 = document.getElementById("url1").value;
-
-  let label2 = document.getElementById("label2").value;
-  let url2 = document.getElementById("url2").value;
-
-  let links = [];
-
-  if(label1 && url1){
-    links.push({label:label1,url:url1});
-  }
-
-  if(label2 && url2){
-    links.push({label:label2,url:url2});
   }
 
   let data = JSON.parse(localStorage.getItem("store")) || [];
 
   data.push({
     name:name.trim(),
-    type:type,
-    links:links
+    img:img.trim(),
+    url:url.trim()
   });
 
   localStorage.setItem("store", JSON.stringify(data));
 
   document.getElementById("name").value = "";
-  document.getElementById("label1").value = "";
-  document.getElementById("url1").value = "";
-  document.getElementById("label2").value = "";
-  document.getElementById("url2").value = "";
+  document.getElementById("img").value = "";
+  document.getElementById("url").value = "";
 
   load();
 }
 
+// حذف
 function del(i){
   let data = JSON.parse(localStorage.getItem("store")) || [];
   data.splice(i,1);
   localStorage.setItem("store", JSON.stringify(data));
+  load();
+}
+
+// ✏️ تعديل (صورة + رابط التطبيق)
+function edit(i){
+  let data = JSON.parse(localStorage.getItem("store")) || [];
+
+  let newName = prompt("اسم التطبيق:", data[i].name);
+  if(newName === null) return;
+
+  let newImg = prompt("رابط الصورة:", data[i].img);
+  if(newImg === null) return;
+
+  let newUrl = prompt("رابط التطبيق:", data[i].url);
+  if(newUrl === null) return;
+
+  if(newName.trim() === "" || newImg.trim() === "" || newUrl.trim() === ""){
+    alert("❌ لا يمكن ترك الحقول فارغة");
+    return;
+  }
+
+  data[i] = {
+    name:newName.trim(),
+    img:newImg.trim(),
+    url:newUrl.trim()
+  };
+
+  localStorage.setItem("store", JSON.stringify(data));
+
   load();
 }
 
