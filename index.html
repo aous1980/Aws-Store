@@ -6,10 +6,11 @@
 
 <style>
 body{background:#111;color:#fff;font-family:Arial;text-align:center}
+h1{color:#00c3ff}
 .container{display:flex;flex-wrap:wrap;justify-content:center}
 .card{background:#1e1e1e;margin:10px;padding:10px;border-radius:10px;width:180px}
 .card img{width:100%;border-radius:8px}
-button{background:#00c3ff;border:none;padding:8px;border-radius:5px}
+button{background:#00c3ff;border:none;padding:8px;border-radius:5px;cursor:pointer}
 </style>
 </head>
 
@@ -24,23 +25,38 @@ button{background:#00c3ff;border:none;padding:8px;border-radius:5px}
 <div id="sat" class="container"></div>
 
 <script>
-function load(type){
-  let data = JSON.parse(localStorage.getItem(type)) || [];
-  let box = document.getElementById(type);
-  box.innerHTML = "";
+
+// تحميل التطبيقات من ملف JSON
+async function loadData(){
+  let res = await fetch("apps.json");
+  let data = await res.json();
+
+  let appsBox = document.getElementById("apps");
+  let satBox = document.getElementById("sat");
+
+  appsBox.innerHTML = "";
+  satBox.innerHTML = "";
 
   data.forEach(item=>{
-    box.innerHTML += `
+    let html = `
       <div class="card">
         <img src="${item.img}">
-        <a href="${item.url}" target="_blank"><button>تحميل</button></a>
+        <a href="${item.url}" target="_blank">
+          <button>تحميل</button>
+        </a>
       </div>
     `;
+
+    if(item.type === "apps"){
+      appsBox.innerHTML += html;
+    } else {
+      satBox.innerHTML += html;
+    }
   });
 }
 
-load("apps");
-load("sat");
+loadData();
+
 </script>
 
 </body>
