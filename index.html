@@ -68,7 +68,7 @@ function load(){
   satBox.innerHTML = "";
 
   data.forEach(item=>{
-    let html = `
+    let card = `
       <div class="card">
         <img src="${item.img}">
         <a href="${item.url}" target="_blank">
@@ -78,9 +78,9 @@ function load(){
     `;
 
     if(item.type === "apps"){
-      appsBox.innerHTML += html;
+      appsBox.innerHTML += card;
     } else {
-      satBox.innerHTML += html;
+      satBox.innerHTML += card;
     }
   });
 }
