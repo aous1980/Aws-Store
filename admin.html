@@ -2,60 +2,44 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Aws Store</title>
-
-<style>
-body{background:#111;color:#fff;font-family:Arial;text-align:center}
-h1{color:#00c3ff}
-.container{display:flex;flex-wrap:wrap;justify-content:center}
-.card{background:#1e1e1e;margin:10px;padding:10px;border-radius:10px;width:180px}
-.card img{width:100%;border-radius:8px}
-button{background:#00c3ff;border:none;padding:8px;border-radius:5px;cursor:pointer}
-</style>
+<title>Admin - Aws Store</title>
 </head>
 
-<body>
+<body style="background:#111;color:#fff;text-align:center;font-family:Arial">
 
-<h1>🛒 Aws Store</h1>
+<h1>🔐 لوحة التحكم</h1>
 
-<h2>📱 التطبيقات</h2>
-<div id="apps" class="container"></div>
+<input id="img" placeholder="رابط الصورة"><br><br>
+<input id="url" placeholder="رابط التحميل"><br><br>
 
-<h2>🛰️ SatSoftware</h2>
-<div id="sat" class="container"></div>
+<select id="type">
+  <option value="apps">تطبيقات</option>
+  <option value="sat">SatSoftware</option>
+</select>
+
+<br><br>
+
+<button onclick="addItem()">➕ إضافة</button>
 
 <script>
 
-// تحميل التطبيقات من ملف JSON
-async function loadData(){
+async function addItem(){
+  let img = document.getElementById("img").value;
+  let url = document.getElementById("url").value;
+  let type = document.getElementById("type").value;
+
   let res = await fetch("apps.json");
   let data = await res.json();
 
-  let appsBox = document.getElementById("apps");
-  let satBox = document.getElementById("sat");
+  data.push({type,img,url});
 
-  appsBox.innerHTML = "";
-  satBox.innerHTML = "";
-
-  data.forEach(item=>{
-    let html = `
-      <div class="card">
-        <img src="${item.img}">
-        <a href="${item.url}" target="_blank">
-          <button>تحميل</button>
-        </a>
-      </div>
-    `;
-
-    if(item.type === "apps"){
-      appsBox.innerHTML += html;
-    } else {
-      satBox.innerHTML += html;
-    }
+  await fetch("apps.json", {
+    method: "PUT",
+    body: JSON.stringify(data)
   });
-}
 
-loadData();
+  alert("تمت الإضافة (ملاحظة: GitHub يحتاج رفع يدوي للملف)");
+}
 
 </script>
 
