@@ -12,8 +12,6 @@ body{
   text-align:center;
 }
 
-h1{color:#00c3ff}
-
 .container{
   display:flex;
   flex-wrap:wrap;
@@ -28,20 +26,12 @@ h1{color:#00c3ff}
   width:220px;
 }
 
-h3{margin:5px 0}
-
-.small{
-  color:#aaa;
-  font-size:13px;
-}
-
 button{
   background:#00c3ff;
   border:none;
   padding:6px;
   margin:3px;
   border-radius:5px;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -76,9 +66,7 @@ function load(){
     box.innerHTML += `
       <div class="card">
         <h3>${item.name}</h3>
-        <div class="small">${item.version}</div>
-        <br>
-        ${links}
+        <div>${links}</div>
       </div>
     `;
   });
