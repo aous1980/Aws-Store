@@ -2,152 +2,86 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Aws Store</title>
-
-<style>
-body{
-  background:#111;
-  color:#fff;
-  font-family:Arial;
-  text-align:center;
-}
-
-h1{color:#00c3ff}
-
-input, select{
-  width:250px;
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:5px;
-}
-
-button{
-  padding:10px;
-  margin:5px;
-  background:#00c3ff;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-}
-
-.card{
-  background:#1e1e1e;
-  margin:10px auto;
-  padding:10px;
-  border-radius:10px;
-  width:220px;
-}
-a{color:#00c3ff;text-decoration:none}
-</style>
-
+<title>Admin</title>
 </head>
 
-<body>
+<body style="background:#111;color:#fff;font-family:Arial;text-align:center">
 
 <h1>🔐 لوحة التحكم</h1>
 
-<input id="img" placeholder="رابط الصورة"><br>
-<input id="url" placeholder="رابط التحميل"><br>
+<input id="name" placeholder="اسم التطبيق"><br><br>
 
-<select id="type">
-  <option value="apps">📱 تطبيقات</option>
-  <option value="sat">🛰️ SatSoftware</option>
-</select>
+<input id="label1" placeholder="اسم زر 1">
+<input id="url1" placeholder="رابط 1"><br><br>
 
-<br>
+<input id="label2" placeholder="اسم زر 2 (اختياري)">
+<input id="url2" placeholder="رابط 2"><br><br>
 
 <button onclick="add()">➕ إضافة</button>
 
 <hr>
 
-<h2>📦 الإدارة</h2>
 <div id="list"></div>
 
 <script>
 
-// تحميل
 function load(){
   let data = JSON.parse(localStorage.getItem("store")) || [];
   let box = document.getElementById("list");
   box.innerHTML = "";
 
-  data.forEach((item,index)=>{
+  data.forEach((item,i)=>{
     box.innerHTML += `
-      <div class="card">
-        <img src="${item.img}" width="100"><br><br>
+      <div style="background:#222;margin:10px;padding:10px">
+        <h3>${item.name}</h3>
 
-        <a href="${item.url}" target="_blank">فتح</a><br><br>
-
-        <button onclick="edit(${index})">✏️ تعديل</button>
-        <button onclick="del(${index})" style="background:red">🗑️ حذف</button>
+        <button onclick="del(${i})" style="background:red;color:#fff">
+          حذف
+        </button>
       </div>
     `;
   });
 }
 
-// إضافة
 function add(){
-  let img = document.getElementById("img").value;
-  let url = document.getElementById("url").value;
-  let type = document.getElementById("type").value;
 
-  if(img === "" || url === ""){
-    alert("❌ املأ الحقول");
-    return;
+  let name = document.getElementById("name").value;
+
+  let label1 = document.getElementById("label1").value;
+  let url1 = document.getElementById("url1").value;
+
+  let label2 = document.getElementById("label2").value;
+  let url2 = document.getElementById("url2").value;
+
+  let links = [];
+
+  if(label1 && url1){
+    links.push({label:label1,url:url1});
+  }
+
+  if(label2 && url2){
+    links.push({label:label2,url:url2});
   }
 
   let data = JSON.parse(localStorage.getItem("store")) || [];
 
-  data.push({img,url,type});
+  data.push({
+    name,
+    links
+  });
 
   localStorage.setItem("store", JSON.stringify(data));
 
-  document.getElementById("img").value = "";
-  document.getElementById("url").value = "";
+  document.getElementById("name").value = "";
 
   load();
 }
 
-// حذف
 function del(i){
   let data = JSON.parse(localStorage.getItem("store")) || [];
-
   data.splice(i,1);
-
   localStorage.setItem("store", JSON.stringify(data));
-
   load();
-}
-
-// ✏️ تعديل (صورة + رابط)
-function edit(i){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  if(!data[i]) return;
-
-  let newImg = prompt("رابط الصورة:", data[i].img);
-  if(newImg === null) return;
-
-  let newUrl = prompt("رابط التطبيق:", data[i].url);
-  if(newUrl === null) return;
-
-  newImg = newImg.trim();
-  newUrl = newUrl.trim();
-
-  if(newImg === "" || newUrl === ""){
-    alert("❌ لا يمكن ترك الحقول فارغة");
-    return;
-  }
-
-  data[i].img = newImg;
-  data[i].url = newUrl;
-
-  localStorage.setItem("store", JSON.stringify(data));
-
-  load();
-
-  alert("✅ تم التعديل بنجاح");
 }
 
 load();
