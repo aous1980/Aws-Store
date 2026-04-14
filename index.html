@@ -14,6 +14,25 @@ body{
 
 h1{color:#00c3ff}
 
+.icons{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin:20px;
+}
+
+.icon{
+  background:#1e1e1e;
+  padding:15px 25px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.icon:hover{
+  background:#00c3ff;
+}
+
 .container{
   display:flex;
   flex-wrap:wrap;
@@ -48,11 +67,17 @@ a{text-decoration:none;color:#fff}
 
 <h1>🛒 Aws Store</h1>
 
-<h2>📱 التطبيقات</h2>
-<div id="apps" class="container"></div>
+<!-- الأيقونات -->
+<div class="icons">
+  <div class="icon" onclick="show('apps')">📱 التطبيقات</div>
+  <div class="icon" onclick="show('sat')">🛰️ السوفتوير</div>
+</div>
 
-<h2>🛰️ SatSoftware</h2>
-<div id="sat" class="container"></div>
+<!-- الأقسام -->
+<h2 id="title">📱 التطبيقات</h2>
+
+<div id="apps" class="container"></div>
+<div id="sat" class="container" style="display:none"></div>
 
 <script>
 
@@ -66,7 +91,7 @@ function load(){
   sat.innerHTML = "";
 
   data.forEach(item=>{
-    let card = `
+    let box = `
       <div class="card">
         <img src="${item.img}">
         <a href="${item.url}" target="_blank">
@@ -75,9 +100,17 @@ function load(){
       </div>
     `;
 
-    if(item.type === "apps") apps.innerHTML += card;
-    if(item.type === "sat") sat.innerHTML += card;
+    if(item.type === "apps") apps.innerHTML += box;
+    if(item.type === "sat") sat.innerHTML += box;
   });
+}
+
+function show(type){
+  document.getElementById("apps").style.display = type === "apps" ? "flex" : "none";
+  document.getElementById("sat").style.display = type === "sat" ? "flex" : "none";
+
+  document.getElementById("title").innerText =
+    type === "apps" ? "📱 التطبيقات" : "🛰️ السوفتوير";
 }
 
 load();
