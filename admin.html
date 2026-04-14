@@ -2,43 +2,48 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم 🔐 - إدارة التطبيقات</title>
+    <title>لوحة التحكم 🔐 - Aws Store</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; direction: rtl; }
-        .admin-panel { width: 500px; background: white; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; }
-        h1 { font-size: 26px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; padding: 20px; direction: rtl; }
+        .admin-panel { width: 500px; background: white; margin: auto; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; }
+        h1 { font-size: 24px; color: #333; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
         .field-container { margin-bottom: 20px; text-align: right; }
-        .label-text { display: block; font-weight: bold; margin-bottom: 5px; }
+        .label-text { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
         
-        .input-row { display: flex; border: 1px solid #000; border-radius: 5px; overflow: hidden; background: #fff; }
-        .input-row input { flex: 1; border: none; padding: 10px; outline: none; text-align: center; }
-        .input-row button { border: none; background: #eee; padding: 0 15px; cursor: pointer; border-right: 1px solid #000; }
-        .input-row button:hover { background: #ddd; }
+        .input-row { display: flex; border: 1px solid #333; border-radius: 8px; overflow: hidden; }
+        .input-row input { flex: 1; border: none; padding: 12px; outline: none; text-align: center; font-size: 15px; }
+        .input-row button { border: none; background: #e0e0e0; padding: 0 15px; cursor: pointer; border-right: 1px solid #333; font-weight: bold; }
+        .input-row button:hover { background: #d0d0d0; }
 
-        .category-section { margin: 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        select { padding: 5px; font-weight: bold; border-radius: 5px; }
+        .category-section { margin: 25px 0; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        select { padding: 8px 15px; font-size: 16px; font-weight: bold; border: 1px solid #333; border-radius: 5px; cursor: pointer; }
 
-        .add-btn { background: #333; color: white; border: none; padding: 10px 30px; border-radius: 5px; cursor: pointer; font-size: 18px; width: 100%; margin-bottom: 30px; }
-        .add-btn:hover { background: #000; }
+        .add-btn { background: #1a1a1a; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 20px; width: 100%; transition: 0.3s; }
+        .add-btn:hover { background: #000; transform: translateY(-2px); }
 
-        /* قسم قائمة التطبيقات للحذف */
-        .manage-section { text-align: right; border-top: 2px dashed #ccc; padding-top: 20px; }
-        .app-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px; border: 1px solid #ddd; margin-bottom: 5px; border-radius: 5px; }
-        .app-item span { font-weight: bold; }
-        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-        .delete-btn:hover { background: #cc0000; }
-        .cat-tag { font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 3px; margin-right: 5px; }
+        /* قسم إدارة التطبيقات أسفل اللوحة */
+        .manage-section { margin-top: 40px; text-align: right; border-top: 2px solid #eee; padding-top: 20px; }
+        .manage-section h3 { color: #333; margin-bottom: 15px; }
+        .app-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px; border: 1px solid #ddd; margin-bottom: 8px; border-radius: 8px; transition: 0.2s; }
+        .app-item:hover { border-color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .app-info { display: flex; flex-direction: column; }
+        .app-name { font-weight: bold; font-size: 16px; }
+        .app-cat { font-size: 11px; color: #777; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-top: 4px; }
+        .delete-btn { background: #ff4757; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .delete-btn:hover { background: #ff6b81; }
     </style>
 </head>
 <body>
 
     <div class="admin-panel">
-        <h1>🔐 لوحة التحكم</h1>
+        <h1>🔐 لوحة التحكم (إدارة المتجر)</h1>
 
         <div class="field-container">
             <span class="label-text">اسم التطبيق</span>
-            <div class="input-row"><input type="text" id="appName" placeholder="اكتب الاسم"></div>
+            <div class="input-row">
+                <input type="text" id="appName" placeholder="اكتب اسم التطبيق هنا">
+            </div>
         </div>
 
         <div class="field-container">
@@ -46,37 +51,41 @@
             <div class="input-row">
                 <button onclick="document.getElementById('appUrl').focus()">تعديل</button>
                 <button onclick="document.getElementById('appUrl').value=''">حذف</button>
-                <input type="text" id="appUrl" placeholder="الرابط">
+                <input type="text" id="appUrl" placeholder="ضع رابط التحميل المباشر">
             </div>
         </div>
 
         <div class="field-container">
-            <span class="label-text">رابط الصورة</span>
+            <span class="label-text">رابط صورة اللوجو</span>
             <div class="input-row">
                 <button onclick="document.getElementById('appImg').focus()">تعديل</button>
                 <button onclick="document.getElementById('appImg').value=''">حذف</button>
-                <input type="text" id="appImg" placeholder="رابط الصورة">
+                <input type="text" id="appImg" placeholder="ضع رابط الصورة هنا">
             </div>
         </div>
 
         <div class="category-section">
-            <label>التثبيت في:</label>
+            <label>تثبيت في قسم:</label>
             <select id="category">
-                <option value="apps">التطبيقات</option>
+                <option value="apps">التطبيقات (Apps)</option>
                 <option value="sat">Sat Softwar</option>
             </select>
         </div>
 
-        <button class="add-btn" onclick="saveData()">➕ إضافة للمتجر</button>
+        <button class="add-btn" onclick="saveData()">➕ إضافة التطبيق الآن</button>
 
         <div class="manage-section">
-            <h3>📦 إدارة التطبيقات الحالية:</h3>
-            <div id="currentApps"></div>
+            <h3>📦 التطبيقات المثبتة حالياً:</h3>
+            <div id="currentAppsList">
+                </div>
         </div>
     </div>
 
     <script>
-        // وظيفة حفظ البيانات
+        // اسم مفتاح التخزين الموحد
+        const STORAGE_KEY = 'aws_store_data';
+
+        // 1. وظيفة الحفظ
         function saveData() {
             const name = document.getElementById('appName').value;
             const url = document.getElementById('appUrl').value;
@@ -84,52 +93,58 @@
             const cat = document.getElementById('category').value;
 
             if (name && url && img) {
-                let store = JSON.parse(localStorage.getItem('aws_store_data')) || [];
+                let store = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
                 store.push({ name, url, img, cat });
-                localStorage.setItem('aws_store_data', JSON.stringify(store));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
                 
-                // مسح الحقول وتحديث القائمة
+                // تصفير الخانات
                 document.getElementById('appName').value = "";
                 document.getElementById('appUrl').value = "";
                 document.getElementById('appImg').value = "";
-                renderAppList();
+                
                 alert("تمت الإضافة بنجاح!");
+                renderList(); // تحديث القائمة فوراً بعد الإضافة
             } else {
-                alert("يرجى ملء جميع الخانات");
+                alert("يرجى تعبئة جميع الخانات أولاً");
             }
         }
 
-        // وظيفة عرض قائمة التطبيقات الحالية للحذف
-        function renderAppList() {
-            const container = document.getElementById('currentApps');
-            const store = JSON.parse(localStorage.getItem('aws_store_data')) || [];
-            container.innerHTML = "";
+        // 2. وظيفة عرض القائمة في لوحة التحكم
+        function renderList() {
+            const listDiv = document.getElementById('currentAppsList');
+            const store = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            
+            if (store.length === 0) {
+                listDiv.innerHTML = "<p style='color:#999; text-align:center;'>لا توجد تطبيقات مضافة حالياً</p>";
+                return;
+            }
 
+            listDiv.innerHTML = "";
             store.forEach((item, index) => {
-                container.innerHTML += `
+                listDiv.innerHTML += `
                     <div class="app-item">
-                        <div>
-                            <span class="cat-tag">${item.cat === 'apps' ? 'تطبيقات' : 'Sat'}</span>
-                            <span>${item.name}</span>
+                        <div class="app-info">
+                            <span class="app-name">${item.name}</span>
+                            <span class="app-cat">${item.cat === 'apps' ? 'قسم التطبيقات' : 'قسم Sat Softwar'}</span>
                         </div>
-                        <button class="delete-btn" onclick="deleteApp(${index})">إزالة نهائية</button>
+                        <button class="delete-btn" onclick="deleteItem(${index})">حذف نهائي</button>
                     </div>
                 `;
             });
         }
 
-        // وظيفة الحذف
-        function deleteApp(index) {
-            if(confirm("هل أنت متأكد من حذف هذا التطبيق من المتجر؟")) {
-                let store = JSON.parse(localStorage.getItem('aws_store_data')) || [];
+        // 3. وظيفة الحذف من القائمة
+        function deleteItem(index) {
+            if (confirm("هل تريد إزالة هذا التطبيق نهائياً من المتجر؟")) {
+                let store = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
                 store.splice(index, 1);
-                localStorage.setItem('aws_store_data', JSON.stringify(store));
-                renderAppList(); // تحديث القائمة فوراً
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+                renderList(); // تحديث العرض فوراً بعد الحذف
             }
         }
 
-        // تشغيل القائمة عند فتح الصفحة
-        window.onload = renderAppList;
+        // تشغيل العرض بمجرد فتح الصفحة
+        window.onload = renderList;
     </script>
 </body>
 </html>
