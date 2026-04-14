@@ -21,7 +21,31 @@
 
 <button onclick="add()">➕ إضافة</button>
 
+<hr>
+
+<h2>📦 المنتجات</h2>
+<div id="list"></div>
+
 <script>
+
+function load(){
+  let data = JSON.parse(localStorage.getItem("store")) || [];
+  let box = document.getElementById("list");
+  box.innerHTML = "";
+
+  data.forEach((item,index)=>{
+    box.innerHTML += `
+      <div style="margin:10px;padding:10px;background:#222">
+        <img src="${item.img}" width="80"><br>
+        <a href="${item.url}" target="_blank">فتح</a><br><br>
+
+        <button onclick="removeItem(${index})" style="background:red;color:white">
+          حذف
+        </button>
+      </div>
+    `;
+  });
+}
 
 function add(){
   let img = document.getElementById("img").value;
@@ -34,11 +58,20 @@ function add(){
 
   localStorage.setItem("store", JSON.stringify(data));
 
-  alert("تمت الإضافة بنجاح");
-
-  document.getElementById("img").value = "";
-  document.getElementById("url").value = "";
+  load();
 }
+
+function removeItem(index){
+  let data = JSON.parse(localStorage.getItem("store")) || [];
+
+  data.splice(index,1);
+
+  localStorage.setItem("store", JSON.stringify(data));
+
+  load();
+}
+
+load();
 
 </script>
 
