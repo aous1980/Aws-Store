@@ -2,71 +2,66 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Aws Store - المتجر الذكي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aws Store - المتجر العالمي</title>
     <style>
-        body { background: #111; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 20px; margin: 0; }
-        
-        /* شريط الأقسام العلوي */
-        .filter-bar { margin-bottom: 30px; position: sticky; top: 0; background: #111; padding: 15px; z-index: 100; border-bottom: 1px solid #333; }
-        .filter-btn { background: #222; color: #fff; border: 1px solid #444; padding: 10px 20px; margin: 5px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .filter-btn:hover, .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
-
-        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 10px; }
-        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 15px; width: 200px; padding: 15px; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); border-color: #555; }
-        .card img { width: 100%; height: 120px; border-radius: 10px; object-fit: cover; background: #222; }
-        .card h3 { font-size: 17px; margin: 15px 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .btn-down { background: #fff; color: #000; text-decoration: none; padding: 10px 0; width: 100%; display: block; border-radius: 5px; font-weight: bold; }
-        
-        .no-data { color: #555; margin-top: 50px; font-size: 18px; }
+        body { background: #111; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 10px; margin: 0; }
+        .filter-bar { margin-bottom: 20px; position: sticky; top: 0; background: #111; padding: 10px; z-index: 100; border-bottom: 1px solid #333; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .filter-btn { background: #222; color: #fff; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; }
+        .filter-btn.active { background: #fff; color: #000; }
+        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; width: 160px; padding: 12px; text-align: center; }
+        .card img { width: 100%; height: 100px; border-radius: 8px; object-fit: cover; }
+        .card h3 { font-size: 15px; margin: 10px 0; height: 35px; overflow: hidden; }
+        .btn-down { background: #fff; color: #000; text-decoration: none; padding: 8px; width: 100%; display: block; border-radius: 5px; font-weight: bold; font-size: 13px; }
+        @media (max-width: 480px) { .card { width: 140px; } }
     </style>
 </head>
 <body>
 
-    <div class="filter-bar" id="filterBar">
-        <button class="filter-btn active" onclick="filterApps('all')">عرض الكل</button>
-        <button class="filter-btn" onclick="filterApps('apps')">التطبيقات</button>
-        <button class="filter-btn" onclick="filterApps('sat')">Sat Softwar</button>
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterApps('all', this)">الكل</button>
+        <button class="filter-btn" onclick="filterApps('apps', this)">تطبيقات</button>
+        <button class="filter-btn" onclick="filterApps('sat', this)">Sat Softwar</button>
     </div>
 
-    <div id="main_container" class="container"></div>
+    <div id="main_container" class="container">جاري تحميل البيانات...</div>
 
     <script>
-        const DB_KEY = "aws_store_v1";
+        // الرابط المباشر لملف البيانات على جيت هاب
+        const JSON_URL = "https://raw.githubusercontent.com/aous1980/Aws-Store/main/apps.json";
 
-        function loadStore(category = 'all') {
-            const data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-            const container = document.getElementById("main_container");
-            container.innerHTML = "";
+        async function loadStore(category = 'all') {
+            try {
+                // إضافة timestamp لمنع المتصفح من كاش البيانات القديمة
+                const response = await fetch(JSON_URL + '?t=' + new Date().getTime());
+                const data = await response.json();
+                const container = document.getElementById("main_container");
+                container.innerHTML = "";
 
-            // تصفية البيانات بناءً على القسم المختار
-            const filteredData = category === 'all' 
-                ? data 
-                : data.filter(item => item.cat === category);
+                const filteredData = category === 'all' ? data : data.filter(item => item.cat === category);
 
-            if (filteredData.length === 0) {
-                container.innerHTML = "<p class='no-data'>لا توجد تطبيقات في هذا القسم حالياً</p>";
-                return;
+                if (filteredData.length === 0) {
+                    container.innerHTML = "<p style='color:#555'>لا توجد تطبيقات حالياً</p>";
+                    return;
+                }
+
+                filteredData.forEach(item => {
+                    container.innerHTML += `
+                        <div class="card">
+                            <img src="${item.img}" onerror="this.src='https://via.placeholder.com/100'">
+                            <h3>${item.name}</h3>
+                            <a href="${item.url}" class="btn-down" target="_blank">Download</a>
+                        </div>`;
+                });
+            } catch (e) {
+                document.getElementById("main_container").innerHTML = "خطأ في جلب البيانات من السيرفر";
             }
-
-            filteredData.forEach(item => {
-                container.innerHTML += `
-                    <div class="card">
-                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/150?text=Logo'">
-                        <h3>${item.name}</h3>
-                        <a href="${item.url}" class="btn-down" target="_blank">downloade</a>
-                    </div>
-                `;
-            });
         }
 
-        function filterApps(category) {
-            // تحديث شكل الأزرار (النشط)
-            const btns = document.querySelectorAll('.filter-btn');
-            btns.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // تحميل البيانات
+        function filterApps(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
             loadStore(category);
         }
         
