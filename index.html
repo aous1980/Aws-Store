@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Aws Store</title>
+<title>Aws Store</title>
 
 <style>
 body{
@@ -12,112 +12,77 @@ body{
   text-align:center;
 }
 
-input, select{
-  width:250px;
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:5px;
-}
+h1{color:#00c3ff}
 
-button{
-  padding:10px;
-  margin:5px;
-  background:#00c3ff;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
+.container{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
 }
 
 .card{
   background:#1e1e1e;
-  margin:10px auto;
+  margin:10px;
   padding:10px;
   border-radius:10px;
-  width:220px;
+  width:180px;
 }
+
+.card img{
+  width:100%;
+  border-radius:8px;
+}
+
+button{
+  background:#00c3ff;
+  border:none;
+  padding:8px;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+a{text-decoration:none;color:#fff}
 </style>
+
 </head>
 
 <body>
 
-<h1>🔐 لوحة التحكم</h1>
+<h1>🛒 Aws Store</h1>
 
-<input id="img" placeholder="رابط الصورة"><br>
-<input id="url" placeholder="رابط التحميل"><br>
+<h2>📱 التطبيقات</h2>
+<div id="apps" class="container"></div>
 
-<select id="type">
-  <option value="apps">📱 تطبيقات</option>
-  <option value="sat">🛰️ SatSoftware</option>
-</select>
-
-<br>
-
-<button onclick="add()">➕ إضافة</button>
-
-<hr>
-
-<h2>📦 المنتجات</h2>
-<div id="list"></div>
+<h2>🛰️ SatSoftware</h2>
+<div id="sat" class="container"></div>
 
 <script>
 
 function load(){
   let data = JSON.parse(localStorage.getItem("store")) || [];
-  let box = document.getElementById("list");
-  box.innerHTML = "";
 
-  data.forEach((item,index)=>{
-    box.innerHTML += `
+  let appsBox = document.getElementById("apps");
+  let satBox = document.getElementById("sat");
+
+  appsBox.innerHTML = "";
+  satBox.innerHTML = "";
+
+  data.forEach(item=>{
+    let html = `
       <div class="card">
-        <img src="${item.img}" width="100"><br><br>
-
-        <a href="${item.url}" target="_blank" style="color:#00c3ff">فتح</a><br><br>
-
-        <button onclick="edit(${index})">✏️ تعديل</button>
-        <button onclick="del(${index})" style="background:red">🗑️ حذف</button>
+        <img src="${item.img}">
+        <a href="${item.url}" target="_blank">
+          <button>تحميل</button>
+        </a>
       </div>
     `;
+
+    if(item.type === "apps"){
+      appsBox.innerHTML += html;
+    } else {
+      satBox.innerHTML += html;
+    }
   });
-}
-
-// إضافة
-function add(){
-  let img = document.getElementById("img").value;
-  let url = document.getElementById("url").value;
-  let type = document.getElementById("type").value;
-
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  data.push({img,url,type});
-
-  localStorage.setItem("store", JSON.stringify(data));
-
-  load();
-}
-
-// حذف
-function del(i){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-  data.splice(i,1);
-  localStorage.setItem("store", JSON.stringify(data));
-  load();
-}
-
-// تعديل
-function edit(i){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  let newImg = prompt("رابط الصورة الجديد:", data[i].img);
-  let newUrl = prompt("رابط التحميل الجديد:", data[i].url);
-
-  if(newImg && newUrl){
-    data[i].img = newImg;
-    data[i].url = newUrl;
-
-    localStorage.setItem("store", JSON.stringify(data));
-    load();
-  }
 }
 
 load();
