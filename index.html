@@ -5,74 +5,17 @@
 <title>Aws Store</title>
 
 <style>
-body {
-  font-family: Arial;
-  background: #0f0f0f;
-  color: white;
-  text-align: center;
-}
-
-h1 {
-  color: #00c3ff;
-}
-
-input {
-  padding: 10px;
-  width: 250px;
-  margin: 5px;
-  border-radius: 5px;
-  border: none;
-}
-
-button {
-  padding: 10px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
-  background: #00c3ff;
-  cursor: pointer;
-}
-
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.card {
-  background: #1e1e1e;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  width: 180px;
-}
-
-.card img {
-  width: 100%;
-  border-radius: 8px;
-}
-
-.delete {
-  background: red;
-  margin-top: 5px;
-}
+body{background:#111;color:#fff;font-family:Arial;text-align:center}
+.container{display:flex;flex-wrap:wrap;justify-content:center}
+.card{background:#1e1e1e;margin:10px;padding:10px;border-radius:10px;width:180px}
+.card img{width:100%;border-radius:8px}
+button{background:#00c3ff;border:none;padding:8px;border-radius:5px}
 </style>
-
 </head>
 
 <body>
 
 <h1>🛒 Aws Store</h1>
-
-<h2>🔐 لوحة التحكم</h2>
-
-<input id="img" placeholder="رابط الصورة"><br>
-<input id="url" placeholder="رابط التطبيق"><br>
-
-<button onclick="addItem('apps')">📱 إضافة للتطبيقات</button>
-<button onclick="addItem('sat')">🛰️ إضافة لـ SatSoftware</button>
-
-<hr>
 
 <h2>📱 التطبيقات</h2>
 <div id="apps" class="container"></div>
@@ -81,64 +24,23 @@ button {
 <div id="sat" class="container"></div>
 
 <script>
-
-// تحميل البيانات عند فتح الصفحة
-window.onload = function() {
-  loadData('apps');
-  loadData('sat');
-}
-
-// إضافة عنصر
-function addItem(type) {
-  let img = document.getElementById("img").value;
-  let url = document.getElementById("url").value;
-
-  if (!img || !url) {
-    alert("املأ الحقول");
-    return;
-  }
-
+function load(type){
   let data = JSON.parse(localStorage.getItem(type)) || [];
-  data.push({img, url});
-  localStorage.setItem(type, JSON.stringify(data));
+  let box = document.getElementById(type);
+  box.innerHTML = "";
 
-  displayItems(type);
-}
-
-// عرض العناصر
-function loadData(type) {
-  displayItems(type);
-}
-
-function displayItems(type) {
-  let container = document.getElementById(type);
-  container.innerHTML = "";
-
-  let data = JSON.parse(localStorage.getItem(type)) || [];
-
-  data.forEach((item, index) => {
-    container.innerHTML += `
+  data.forEach(item=>{
+    box.innerHTML += `
       <div class="card">
         <img src="${item.img}">
-        <br>
-        <a href="${item.url}" target="_blank">
-          <button>تحميل</button>
-        </a>
-        <br>
-        <button class="delete" onclick="deleteItem('${type}', ${index})">حذف</button>
+        <a href="${item.url}" target="_blank"><button>تحميل</button></a>
       </div>
     `;
   });
 }
 
-// حذف عنصر
-function deleteItem(type, index) {
-  let data = JSON.parse(localStorage.getItem(type));
-  data.splice(index, 1);
-  localStorage.setItem(type, JSON.stringify(data));
-  displayItems(type);
-}
-
+load("apps");
+load("sat");
 </script>
 
 </body>
