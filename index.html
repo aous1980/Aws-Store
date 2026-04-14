@@ -3,85 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <title>Akkadian Store</title>
-<style>
-body {
-  font-family: Arial;
-  background: #111;
-  color: #fff;
-  text-align: center;
-}
-
-h2 { color: #00c3ff; }
-
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.card {
-  background: #1e1e1e;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  width: 200px;
-}
-
-.card img {
-  width: 100%;
-  border-radius: 8px;
-}
-
-button {
-  background: #00c3ff;
-  border: none;
-  padding: 8px;
-  margin-top: 5px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-</style>
 </head>
 
-<body>
+<body style="background:#111;color:#fff;text-align:center;font-family:Arial">
 
-<h2>🔐 لوحة التحكم</h2>
+<h2>لوحة التحكم</h2>
 
 <input id="img" placeholder="رابط الصورة"><br><br>
 <input id="url" placeholder="رابط التطبيق"><br><br>
-<select id="type">
-  <option value="apps">قسم التطبيقات</option>
-  <option value="sat">قسم SatSoftware</option>
-</select><br><br>
 
-<button onclick="addItem()">➕ إضافة</button>
+<button onclick="addApp()">إضافة للتطبيقات</button>
+<button onclick="addSat()">إضافة لـ SatSoftware</button>
 
 <hr>
 
 <h2>📱 التطبيقات</h2>
-<div id="apps" class="container"></div>
+<div id="apps"></div>
 
 <h2>🛰️ SatSoftware</h2>
-<div id="sat" class="container"></div>
+<div id="sat"></div>
 
 <script>
-function addItem() {
+function createItem(img, url) {
+  return `
+    <div style="margin:10px">
+      <img src="${img}" width="150"><br>
+      <a href="${url}" target="_blank">تحميل</a>
+    </div>
+  `;
+}
+
+function addApp() {
   let img = document.getElementById("img").value;
   let url = document.getElementById("url").value;
-  let type = document.getElementById("type").value;
+  document.getElementById("apps").innerHTML += createItem(img, url);
+}
 
-  let card = document.createElement("div");
-  card.className = "card";
-
-  card.innerHTML = `
-    <img src="${img}">
-    <br>
-    <a href="${url}" target="_blank">
-      <button>تحميل</button>
-    </a>
-  `;
-
-  document.getElementById(type).appendChild(card);
+function addSat() {
+  let img = document.getElementById("img").value;
+  let url = document.getElementById("url").value;
+  document.getElementById("sat").innerHTML += createItem(img, url);
 }
 </script>
 
