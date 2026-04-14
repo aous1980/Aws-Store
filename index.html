@@ -2,47 +2,87 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Store</title>
-
+<title>Akkadian Store</title>
 <style>
-body{font-family:Arial;background:#f4f4f4;padding:20px}
-.card{background:#fff;padding:10px;margin:10px 0;border-radius:10px}
-img{max-width:100%}
+body {
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+  text-align: center;
+}
+
+h2 { color: #00c3ff; }
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  background: #1e1e1e;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  width: 200px;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+button {
+  background: #00c3ff;
+  border: none;
+  padding: 8px;
+  margin-top: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🛒 المتجر</h2>
+<h2>🔐 لوحة التحكم</h2>
 
-<div id="list"></div>
+<input id="img" placeholder="رابط الصورة"><br><br>
+<input id="url" placeholder="رابط التطبيق"><br><br>
+<select id="type">
+  <option value="apps">قسم التطبيقات</option>
+  <option value="sat">قسم SatSoftware</option>
+</select><br><br>
+
+<button onclick="addItem()">➕ إضافة</button>
+
+<hr>
+
+<h2>📱 التطبيقات</h2>
+<div id="apps" class="container"></div>
+
+<h2>🛰️ SatSoftware</h2>
+<div id="sat" class="container"></div>
 
 <script>
+function addItem() {
+  let img = document.getElementById("img").value;
+  let url = document.getElementById("url").value;
+  let type = document.getElementById("type").value;
 
-// 🔥 نفس المفتاح تماماً
-let products = JSON.parse(localStorage.getItem("products") || "[]");
+  let card = document.createElement("div");
+  card.className = "card";
 
-let list = document.getElementById("list");
+  card.innerHTML = `
+    <img src="${img}">
+    <br>
+    <a href="${url}" target="_blank">
+      <button>تحميل</button>
+    </a>
+  `;
 
-// ⚠️ إذا لا يوجد منتجات
-if(products.length === 0){
-list.innerHTML = "🛒 لا توجد منتجات حالياً";
+  document.getElementById(type).appendChild(card);
 }
-
-products.forEach((p)=>{
-list.innerHTML += `
-<div class="card">
-<b>${p.name}</b><br>
-<img src="${p.image}"><br>
-<a href="${p.url}" target="_blank">تحميل</a><br>
-IPTV: ${p.iptv}<br>
-السعر: ${p.price}<br>
-واتساب: ${p.phone}<br>
-<p>${p.desc}</p>
-</div>
-`;
-});
-
 </script>
 
 </body>
