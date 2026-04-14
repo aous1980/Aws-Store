@@ -1,12 +1,14 @@
 [
-  {
-    "type": "apps",
-    "img": "https://via.placeholder.com/150",
-    "url": "https://example.com/app1.apk"
-  },
-  {
-    "type": "sat",
-    "img": "https://via.placeholder.com/150",
-    "url": "https://example.com/sat1.bin"
-  }
+    {
+        "name": "YouTube",
+        "url": "https://www.youtube.com/download",
+        "img": "https://i.ibb.co/X7R0GZ0/youtube.png",
+        "cat": "apps"
+    },
+    {
+        "name": "Sat Software V1",
+        "url": "https://example.com/sat-file.zip",
+        "img": "https://via.placeholder.com/150",
+        "cat": "sat"
+    }
 ]
