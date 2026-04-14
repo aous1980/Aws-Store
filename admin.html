@@ -2,57 +2,68 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم - Aws Store</title>
+    <title>لوحة التحكم المتقدمة</title>
     <style>
-        body { background: #fff; font-family: Arial; text-align: center; padding: 20px; }
-        .admin-box { max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 5px; }
-        .input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        input { flex-grow: 1; padding: 8px; margin: 0 10px; border: 1px solid #ddd; }
-        label { min-width: 100px; font-weight: bold; }
-        button { cursor: pointer; padding: 5px 15px; }
-        .btn-main { background: #333; color: #fff; width: 100%; padding: 10px; margin-top: 20px; font-size: 18px; }
-        .btn-del { background: #f0f0f0; border: 1px solid #ccc; }
-        .btn-edit { background: #f0f0f0; border: 1px solid #ccc; }
+        body { background: #f9f9f9; font-family: Arial; text-align: center; padding: 20px; }
+        .admin-container { background: white; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
+        .row { display: flex; align-items: center; margin-bottom: 15px; gap: 10px; }
+        input, select { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        label { width: 120px; font-weight: bold; text-align: right; }
+        button { padding: 8px 15px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; }
+        .btn-edit { background: #fff1c1; }
+        .btn-del { background: #ffd1d1; }
+        .btn-add { background: #333; color: white; width: 100%; font-size: 18px; margin-top: 15px; height: 45px; }
     </style>
 </head>
 <body>
 
-    <div class="admin-box">
+    <div class="admin-container">
         <h1>لوحة التحكم</h1>
-
-        <div class="input-row">
-            <label>اسم التطبيق</label>
-            <input type="text" id="appName">
+        
+        <div class="row">
+            <label>اسم التطبيق:</label>
+            <input type="text" id="appName" placeholder="مثلاً: YouTube Mod">
         </div>
 
-        <div class="input-row">
-            <button class="btn-edit">تعديل</button>
+        <div class="row">
+            <label>رابط التطبيق:</label>
+            <input type="text" id="appUrl" placeholder="https://...">
             <button class="btn-del" onclick="document.getElementById('appUrl').value=''">حذف</button>
-            <input type="text" id="appUrl" placeholder="رابط التطبيق">
+            <button class="btn-edit" onclick="document.getElementById('appUrl').focus()">تعديل</button>
         </div>
 
-        <div class="input-row">
-            <button class="btn-edit">تعديل</button>
+        <div class="row">
+            <label>رابط الصورة:</label>
+            <input type="text" id="appImg" placeholder="https://...">
             <button class="btn-del" onclick="document.getElementById('appImg').value=''">حذف</button>
-            <input type="text" id="appImg" placeholder="رابط صورة التطبيق">
+            <button class="btn-edit" onclick="document.getElementById('appImg').focus()">تعديل</button>
         </div>
 
-        <button class="btn-main" onclick="saveData()">إضافة إلى المتجر</button>
+        <div class="row">
+            <label>تثبيت في قسم:</label>
+            <select id="appCategory">
+                <option value="apps">التطبيقات (Apps)</option>
+                <option value="sat">Sat Softwar</option>
+            </select>
+        </div>
+
+        <button class="btn-add" onclick="saveToStore()">إضافة التطبيق الآن</button>
     </div>
 
     <script>
-        function saveData() {
-            let name = document.getElementById("appName").value;
-            let url = document.getElementById("appUrl").value;
-            let img = document.getElementById("appImg").value;
+        function saveToStore() {
+            const name = document.getElementById("appName").value;
+            const url = document.getElementById("appUrl").value;
+            const img = document.getElementById("appImg").value;
+            const category = document.getElementById("appCategory").value;
 
             if(name && url && img) {
-                let store = JSON.parse(localStorage.getItem("store")) || [];
-                store.push({ name, url, img });
-                localStorage.setItem("store", JSON.stringify(store));
-                alert("تم الحفظ بنجاح! اذهب لصفحة المتجر لمشاهدته.");
+                let store = JSON.parse(localStorage.getItem("store_data")) || [];
+                store.push({ name, url, img, category });
+                localStorage.setItem("store_data", JSON.stringify(store));
+                alert("تم التثبيت في قسم: " + (category === 'apps' ? 'التطبيقات' : 'Sat Softwar'));
             } else {
-                alert("يرجى إكمال البيانات");
+                alert("يرجى ملء كافة البيانات");
             }
         }
     </script>
