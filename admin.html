@@ -12,6 +12,8 @@ body{
   text-align:center;
 }
 
+h1{color:#00c3ff}
+
 input, select{
   width:250px;
   padding:10px;
@@ -31,9 +33,10 @@ button{
 
 .card{
   background:#1e1e1e;
-  margin:10px;
+  margin:10px auto;
   padding:10px;
   border-radius:10px;
+  width:220px;
 }
 </style>
 
@@ -41,7 +44,7 @@ button{
 
 <body>
 
-<h1>🔐 لوحة التحكم</h1>
+<h1>🔐 لوحة التحكم - Aws Store</h1>
 
 <input id="img" placeholder="رابط الصورة"><br>
 <input id="url" placeholder="رابط التحميل"><br>
@@ -62,6 +65,7 @@ button{
 
 <script>
 
+// تحميل البيانات
 function load(){
   let data = JSON.parse(localStorage.getItem("store")) || [];
   let box = document.getElementById("list");
@@ -70,18 +74,29 @@ function load(){
   data.forEach((item,index)=>{
     box.innerHTML += `
       <div class="card">
-        <img src="${item.img}" width="100"><br>
-        <a href="${item.url}" target="_blank" style="color:#00c3ff">فتح الرابط</a><br><br>
-        <button style="background:red" onclick="del(${index})">حذف</button>
+        <img src="${item.img}" width="100"><br><br>
+
+        <a href="${item.url}" target="_blank" style="color:#00c3ff">
+          فتح الرابط
+        </a><br><br>
+
+        <button onclick="edit(${index})">✏️ تعديل</button>
+        <button onclick="del(${index})" style="background:red">🗑️ حذف</button>
       </div>
     `;
   });
 }
 
+// إضافة منتج
 function add(){
   let img = document.getElementById("img").value;
   let url = document.getElementById("url").value;
   let type = document.getElementById("type").value;
+
+  if(img === "" || url === ""){
+    alert("❌ املأ الحقول");
+    return;
+  }
 
   let data = JSON.parse(localStorage.getItem("store")) || [];
 
@@ -89,9 +104,13 @@ function add(){
 
   localStorage.setItem("store", JSON.stringify(data));
 
+  document.getElementById("img").value = "";
+  document.getElementById("url").value = "";
+
   load();
 }
 
+// حذف منتج
 function del(i){
   let data = JSON.parse(localStorage.getItem("store")) || [];
 
@@ -102,6 +121,30 @@ function del(i){
   load();
 }
 
+// تعديل منتج
+function edit(i){
+  let data = JSON.parse(localStorage.getItem("store")) || [];
+
+  let newImg = prompt("✏️ عدل رابط الصورة:", data[i].img);
+  if(newImg === null) return;
+
+  let newUrl = prompt("✏️ عدل رابط التحميل:", data[i].url);
+  if(newUrl === null) return;
+
+  if(newImg.trim() === "" || newUrl.trim() === ""){
+    alert("❌ لا يمكن ترك الحقول فارغة");
+    return;
+  }
+
+  data[i].img = newImg.trim();
+  data[i].url = newUrl.trim();
+
+  localStorage.setItem("store", JSON.stringify(data));
+
+  load();
+}
+
+// تشغيل
 load();
 
 </script>
