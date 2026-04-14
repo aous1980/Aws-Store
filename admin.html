@@ -9,7 +9,8 @@
 
 <h1>🔐 لوحة التحكم</h1>
 
-<input id="name" placeholder="اسم التطبيق"><br><br>
+<!-- اسم التطبيق (مهم جداً) -->
+<input id="name" type="text" placeholder="اسم التطبيق"><br><br>
 
 <input id="label1" placeholder="اسم زر 1">
 <input id="url1" placeholder="رابط 1"><br><br>
@@ -34,18 +35,25 @@ function load(){
     box.innerHTML += `
       <div style="background:#222;margin:10px;padding:10px">
         <h3>${item.name}</h3>
-
-        <button onclick="del(${i})" style="background:red;color:#fff">
-          حذف
-        </button>
+        <button onclick="del(${i})" style="background:red;color:#fff">حذف</button>
       </div>
     `;
   });
 }
 
+// إضافة
 function add(){
 
-  let name = document.getElementById("name").value;
+  let nameInput = document.getElementById("name");
+
+  let name = nameInput.value;
+
+  console.log("NAME:", name); // 🔥 للتأكد
+
+  if(!name || name.trim() === ""){
+    alert("❌ اكتب اسم التطبيق");
+    return;
+  }
 
   let label1 = document.getElementById("label1").value;
   let url1 = document.getElementById("url1").value;
@@ -66,17 +74,23 @@ function add(){
   let data = JSON.parse(localStorage.getItem("store")) || [];
 
   data.push({
-    name,
-    links
+    name: name.trim(),
+    links: links
   });
 
   localStorage.setItem("store", JSON.stringify(data));
 
-  document.getElementById("name").value = "";
+  // تفريغ الحقل بعد الإضافة
+  nameInput.value = "";
+  document.getElementById("label1").value = "";
+  document.getElementById("url1").value = "";
+  document.getElementById("label2").value = "";
+  document.getElementById("url2").value = "";
 
   load();
 }
 
+// حذف
 function del(i){
   let data = JSON.parse(localStorage.getItem("store")) || [];
   data.splice(i,1);
