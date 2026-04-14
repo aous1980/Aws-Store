@@ -2,81 +2,30 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
-
-<style>
-body{font-family:Arial;background:#111;color:#fff;padding:20px}
-input,button,textarea{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px}
-button{background:#00c853;color:#fff;font-weight:bold}
-.card{background:#222;padding:10px;margin-top:10px;border-radius:10px}
-</style>
+<title>Admin - Aws Store</title>
 </head>
 
-<body>
+<body style="background:#111;color:#fff;text-align:center;font-family:Arial">
 
-<h2>🔐 Admin Panel</h2>
+<h1>🔐 لوحة التحكم</h1>
 
-<input id="name" placeholder="Name">
-<input id="image" placeholder="Image URL">
-<input id="url" placeholder="URL">
-<input id="iptv" placeholder="IPTV">
-<textarea id="desc" placeholder="Description"></textarea>
-<input id="price" placeholder="Price">
-<input id="phone" placeholder="WhatsApp">
+<input id="img" placeholder="رابط الصورة"><br><br>
+<input id="url" placeholder="رابط التطبيق"><br><br>
 
-<button onclick="addProduct()">➕ إضافة المنتج</button>
-
-<h3>📦 المنتجات</h3>
-<div id="list"></div>
+<button onclick="add('apps')">📱 إضافة للتطبيقات</button>
+<button onclick="add('sat')">🛰️ إضافة لـ SatSoftware</button>
 
 <script>
+function add(type){
+  let img = document.getElementById("img").value;
+  let url = document.getElementById("url").value;
 
-// 🔥 مهم: نفس المفتاح في كل مكان
-let products = JSON.parse(localStorage.getItem("products") || "[]");
+  let data = JSON.parse(localStorage.getItem(type)) || [];
+  data.push({img,url});
+  localStorage.setItem(type, JSON.stringify(data));
 
-function addProduct(){
-
-let product = {
-name: document.getElementById("name").value,
-image: document.getElementById("image").value,
-url: document.getElementById("url").value,
-iptv: document.getElementById("iptv").value,
-desc: document.getElementById("desc").value,
-price: document.getElementById("price").value,
-phone: document.getElementById("phone").value
-};
-
-products.push(product);
-
-// 🔥 حفظ صحيح
-localStorage.setItem("products", JSON.stringify(products));
-
-render();
-alert("تمت الإضافة ✅");
+  alert("تمت الإضافة");
 }
-
-function render(){
-
-let list = document.getElementById("list");
-list.innerHTML = "";
-
-products.forEach((p)=>{
-list.innerHTML += `
-<div class="card">
-<b>${p.name}</b><br>
-<img src="${p.image}" width="100%"><br>
-<a href="${p.url}" target="_blank">فتح</a><br>
-IPTV: ${p.iptv}<br>
-السعر: ${p.price}<br>
-واتساب: ${p.phone}<br>
-<p>${p.desc}</p>
-</div>
-`;
-});
-}
-
-render();
-
 </script>
 
 </body>
