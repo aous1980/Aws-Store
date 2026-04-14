@@ -10,7 +10,8 @@ h1{color:#00c3ff}
 .container{display:flex;flex-wrap:wrap;justify-content:center}
 .card{background:#1e1e1e;margin:10px;padding:10px;border-radius:10px;width:180px}
 .card img{width:100%;border-radius:8px}
-button{background:#00c3ff;border:none;padding:8px;border-radius:5px;cursor:pointer}
+button{background:#00c3ff;border:none;padding:8px;border-radius:5px}
+a{text-decoration:none;color:#fff}
 </style>
 </head>
 
@@ -26,16 +27,14 @@ button{background:#00c3ff;border:none;padding:8px;border-radius:5px;cursor:point
 
 <script>
 
-// تحميل التطبيقات من ملف JSON
-async function loadData(){
-  let res = await fetch("apps.json");
-  let data = await res.json();
+function load(){
+  let data = JSON.parse(localStorage.getItem("store")) || [];
 
-  let appsBox = document.getElementById("apps");
-  let satBox = document.getElementById("sat");
+  let apps = document.getElementById("apps");
+  let sat = document.getElementById("sat");
 
-  appsBox.innerHTML = "";
-  satBox.innerHTML = "";
+  apps.innerHTML = "";
+  sat.innerHTML = "";
 
   data.forEach(item=>{
     let html = `
@@ -48,14 +47,14 @@ async function loadData(){
     `;
 
     if(item.type === "apps"){
-      appsBox.innerHTML += html;
+      apps.innerHTML += html;
     } else {
-      satBox.innerHTML += html;
+      sat.innerHTML += html;
     }
   });
 }
 
-loadData();
+load();
 
 </script>
 
