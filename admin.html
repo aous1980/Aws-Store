@@ -7,58 +7,43 @@
         body { font-family: Arial, sans-serif; background-color: #fff; display: flex; justify-content: center; padding-top: 40px; }
         .admin-panel { width: 450px; text-align: center; }
         h1 { font-size: 28px; font-weight: bold; margin-bottom: 40px; text-decoration: underline; }
-
         .field-container { margin-bottom: 25px; }
         .label-text { display: block; text-align: center; font-size: 20px; margin-bottom: 10px; font-weight: bold; }
-        
-        /* جعل الأزرار والخانة في سطر واحد مدمج */
         .input-row { display: flex; border: 1px solid #000; overflow: hidden; }
         .input-row input { flex: 1; border: none; padding: 10px; font-size: 16px; outline: none; text-align: center; }
         .input-row button { border: none; background: #eee; padding: 0 15px; cursor: pointer; border-right: 1px solid #000; font-size: 14px; }
         .input-row button:last-child { border-right: none; border-left: 1px solid #000; }
         .input-row button:hover { background: #ddd; }
-
-        /* قسم الكاتاجوري (الأقسام) */
         .category-section { margin: 30px 0; display: flex; align-items: center; justify-content: center; gap: 15px; }
-        .category-section label { font-size: 18px; font-weight: bold; }
-        .category-section select { font-size: 22px; font-weight: bold; border: none; border-bottom: 2px solid #000; cursor: pointer; padding: 5px; }
-
-        /* زر الإضافة الكبير */
+        .category-section select { font-size: 22px; font-weight: bold; border: none; border-bottom: 2px solid #000; cursor: pointer; }
         .add-btn { background: none; border: none; cursor: pointer; margin-top: 20px; }
         .add-btn .icon { font-size: 60px; display: block; line-height: 1; }
         .add-btn .text { font-size: 24px; font-weight: bold; display: block; }
     </style>
 </head>
 <body>
-
     <div class="admin-panel">
         <h1>لوحة التحكم</h1>
-
         <div class="field-container">
             <span class="label-text">اسم التطبيق</span>
-            <div class="input-row">
-                <input type="text" id="appName" placeholder="اكتب الاسم هنا">
-            </div>
+            <div class="input-row"><input type="text" id="appName" placeholder="اكتب الاسم"></div>
         </div>
-
         <div class="field-container">
             <span class="label-text">رابط التطبيق</span>
             <div class="input-row">
-                <button onclick="editField('appUrl')">تعديل</button>
-                <button onclick="clearField('appUrl')">حذف</button>
-                <input type="text" id="appUrl" placeholder="ضع الرابط هنا">
+                <button onclick="document.getElementById('appUrl').focus()">تعديل</button>
+                <button onclick="document.getElementById('appUrl').value=''">حذف</button>
+                <input type="text" id="appUrl" placeholder="الرابط">
             </div>
         </div>
-
         <div class="field-container">
             <span class="label-text">رابط صورة التطبيق</span>
             <div class="input-row">
-                <button onclick="editField('appImg')">تعديل</button>
-                <button onclick="clearField('appImg')">حذف</button>
+                <button onclick="document.getElementById('appImg').focus()">تعديل</button>
+                <button onclick="document.getElementById('appImg').value=''">حذف</button>
                 <input type="text" id="appImg" placeholder="رابط الصورة">
             </div>
         </div>
-
         <div class="category-section">
             <label>زر اختيار</label>
             <select id="category">
@@ -66,7 +51,6 @@
                 <option value="sat">Sat Softwar</option>
             </select>
         </div>
-
         <button class="add-btn" onclick="saveData()">
             <span class="icon">➕</span>
             <span class="text">إضافة</span>
@@ -74,9 +58,6 @@
     </div>
 
     <script>
-        function clearField(id) { document.getElementById(id).value = ""; }
-        function editField(id) { document.getElementById(id).focus(); }
-
         function saveData() {
             const name = document.getElementById('appName').value;
             const url = document.getElementById('appUrl').value;
@@ -87,16 +68,11 @@
                 let store = JSON.parse(localStorage.getItem('aws_store_data')) || [];
                 store.push({ name, url, img, cat });
                 localStorage.setItem('aws_store_data', JSON.stringify(store));
-                
-                alert("تمت الإضافة بنجاح إلى قسم: " + (cat === 'apps' ? 'التطبيقات' : 'Sat Softwar'));
-                
-                // تصفير الحقول
+                alert("تم الحفظ! اذهب للمتجر وحدث الصفحة.");
                 document.getElementById('appName').value = "";
                 document.getElementById('appUrl').value = "";
                 document.getElementById('appImg').value = "";
-            } else {
-                alert("يرجى ملء جميع الحقول");
-            }
+            } else { alert("اكمل البيانات"); }
         }
     </script>
 </body>
