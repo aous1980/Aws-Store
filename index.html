@@ -3,61 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <title>Aws Store</title>
-
-<style>
-body{background:#111;color:#fff;font-family:Arial;text-align:center}
-h1{color:#00c3ff}
-.container{display:flex;flex-wrap:wrap;justify-content:center}
-.card{background:#1e1e1e;margin:10px;padding:10px;border-radius:10px;width:180px}
-.card img{width:100%;border-radius:8px}
-button{background:#00c3ff;border:none;padding:8px;border-radius:5px}
-a{text-decoration:none;color:#fff}
-</style>
 </head>
 
-<body>
+<body style="background:#111;color:#fff;font-family:Arial;text-align:center">
 
 <h1>🛒 Aws Store</h1>
 
 <h2>📱 التطبيقات</h2>
-<div id="apps" class="container"></div>
+<div id="apps"></div>
 
 <h2>🛰️ SatSoftware</h2>
-<div id="sat" class="container"></div>
+<div id="sat"></div>
 
 <script>
+let data = JSON.parse(localStorage.getItem("store")) || [];
 
-function load(){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
+let apps = document.getElementById("apps");
+let sat = document.getElementById("sat");
 
-  let appsBox = document.getElementById("apps");
-  let satBox = document.getElementById("sat");
+apps.innerHTML = "";
+sat.innerHTML = "";
 
-  appsBox.innerHTML = "";
-  satBox.innerHTML = "";
+data.forEach(item=>{
+  let box = `
+    <div style="margin:10px">
+      <img src="${item.img}" width="120"><br>
+      <a href="${item.url}" target="_blank">تحميل</a>
+    </div>
+  `;
 
-  data.forEach(item=>{
-    let card = `
-      <div class="card">
-        <img src="${item.img}">
-        <a href="${item.url}" target="_blank">
-          <button>تحميل</button>
-        </a>
-      </div>
-    `;
-
-    if(item.type === "apps"){
-      appsBox.innerHTML += card;
-    }
-
-    if(item.type === "sat"){
-      satBox.innerHTML += card;
-    }
-  });
-}
-
-load();
-
+  if(item.type === "apps") apps.innerHTML += box;
+  if(item.type === "sat") sat.innerHTML += box;
+});
 </script>
 
 </body>
