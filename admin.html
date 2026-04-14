@@ -3,21 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <title>Admin - Aws Store</title>
+
+<style>
+body{
+  background:#111;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+}
+
+input, select{
+  width:250px;
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:5px;
+}
+
+button{
+  padding:10px;
+  margin:5px;
+  background:#00c3ff;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.card{
+  background:#1e1e1e;
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+}
+</style>
+
 </head>
 
-<body style="background:#111;color:#fff;text-align:center;font-family:Arial">
+<body>
 
 <h1>🔐 لوحة التحكم</h1>
 
-<input id="img" placeholder="رابط الصورة"><br><br>
-<input id="url" placeholder="رابط التحميل"><br><br>
+<input id="img" placeholder="رابط الصورة"><br>
+<input id="url" placeholder="رابط التحميل"><br>
 
 <select id="type">
   <option value="apps">📱 تطبيقات</option>
   <option value="sat">🛰️ SatSoftware</option>
 </select>
 
-<br><br>
+<br>
 
 <button onclick="add()">➕ إضافة</button>
 
@@ -35,13 +69,10 @@ function load(){
 
   data.forEach((item,index)=>{
     box.innerHTML += `
-      <div style="margin:10px;padding:10px;background:#222">
-        <img src="${item.img}" width="80"><br>
-        <a href="${item.url}" target="_blank">فتح</a><br><br>
-
-        <button onclick="removeItem(${index})" style="background:red;color:white">
-          حذف
-        </button>
+      <div class="card">
+        <img src="${item.img}" width="100"><br>
+        <a href="${item.url}" target="_blank" style="color:#00c3ff">فتح الرابط</a><br><br>
+        <button style="background:red" onclick="del(${index})">حذف</button>
       </div>
     `;
   });
@@ -61,10 +92,10 @@ function add(){
   load();
 }
 
-function removeItem(index){
+function del(i){
   let data = JSON.parse(localStorage.getItem("store")) || [];
 
-  data.splice(index,1);
+  data.splice(i,1);
 
   localStorage.setItem("store", JSON.stringify(data));
 
