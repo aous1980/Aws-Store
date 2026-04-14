@@ -4,29 +4,29 @@
     <meta charset="UTF-8">
     <title>🔐 لوحة التحكم - Aws Store</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #fff; display: flex; flex-direction: column; align-items: center; padding-top: 40px; }
-        .admin-panel { width: 450px; text-align: center; }
-        h1 { font-size: 28px; font-weight: bold; margin-bottom: 40px; text-decoration: underline; }
+        body { font-family: Arial, sans-serif; background-color: #fff; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .admin-panel { width: 100%; max-width: 450px; text-align: center; }
+        h1 { font-size: 28px; font-weight: bold; margin-bottom: 30px; text-decoration: underline; }
 
-        .field-container { margin-bottom: 25px; }
-        .label-text { display: block; text-align: center; font-size: 20px; margin-bottom: 10px; font-weight: bold; }
+        .field-container { margin-bottom: 20px; text-align: right; }
+        .label-text { display: block; font-size: 18px; margin-bottom: 8px; font-weight: bold; }
         
-        .input-row { display: flex; border: 2px solid #000; overflow: hidden; border-radius: 5px; }
+        .input-row { display: flex; border: 2px solid #000; overflow: hidden; border-radius: 5px; background: #fff; }
         .input-row input { flex: 1; border: none; padding: 12px; font-size: 16px; outline: none; text-align: center; }
         .input-row button { border: none; background: #eee; padding: 0 15px; cursor: pointer; border-right: 2px solid #000; font-weight: bold; }
         .input-row button:last-child { border-right: none; border-left: 2px solid #000; }
 
-        .category-section { margin: 30px 0; display: flex; align-items: center; justify-content: center; gap: 15px; }
-        .category-section select { font-size: 22px; font-weight: bold; border: none; border-bottom: 2px solid #000; cursor: pointer; background: transparent; }
+        .category-section { margin: 25px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .category-section select { font-size: 20px; font-weight: bold; border: none; border-bottom: 2px solid #000; cursor: pointer; background: transparent; }
 
-        .add-btn { background: none; border: none; cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        .add-btn { background: none; border: none; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .add-btn:hover { transform: scale(1.1); }
-        .add-btn .icon { font-size: 65px; display: block; line-height: 1; }
-        .add-btn .text { font-size: 24px; font-weight: bold; display: block; }
+        .add-btn .icon { font-size: 60px; display: block; line-height: 1; color: #000; }
+        .add-btn .text { font-size: 22px; font-weight: bold; display: block; color: #000; }
 
         .manage-list { width: 100%; margin-top: 40px; border-top: 2px dashed #ccc; padding-top: 20px; text-align: right; }
-        .app-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .del-x { color: red; font-weight: bold; cursor: pointer; border: 1px solid red; padding: 2px 8px; border-radius: 4px; }
+        .app-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #eee; margin-bottom: 8px; border-radius: 8px; background: #f9f9f9; }
+        .del-x { color: #fff; background: red; font-weight: bold; cursor: pointer; padding: 5px 10px; border-radius: 5px; font-size: 14px; border: none; }
     </style>
 </head>
 <body>
@@ -44,7 +44,7 @@
             <div class="input-row">
                 <button onclick="document.getElementById('appUrl').focus()">تعديل</button>
                 <button onclick="document.getElementById('appUrl').value=''">حذف</button>
-                <input type="text" id="appUrl" placeholder="الرابط">
+                <input type="text" id="appUrl" placeholder="رابط التحميل">
             </div>
         </div>
 
@@ -58,22 +58,85 @@
         </div>
 
         <div class="category-section">
-            <label>زر اختيار</label>
+            <label>القسم:</label>
             <select id="category">
                 <option value="apps">التطبيقات</option>
                 <option value="sat">Sat Softwar</option>
             </select>
         </div>
 
-        <button class="add-btn" id="finalAddBtn">
+        <button class="add-btn" id="saveActionBtn">
             <span class="icon">➕</span>
             <span class="text">إضافة</span>
         </button>
 
         <div class="manage-list">
-            <h3>التطبيقات المثبتة حالياً:</h3>
+            <h3>📦 التطبيقات المضافة حالياً:</h3>
             <div id="statusList"></div>
         </div>
     </div>
 
     <script>
+        const DB_KEY = "aws_store_v1";
+
+        // وظيفة الإضافة
+        document.getElementById('saveActionBtn').onclick = function() {
+            const name = document.getElementById('appName').value.trim();
+            const url = document.getElementById('appUrl').value.trim();
+            const img = document.getElementById('appImg').value.trim();
+            const cat = document.getElementById('category').value;
+
+            if(name && url && img) {
+                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+                data.push({ name, url, img, cat });
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                
+                alert("✅ تم الحفظ بنجاح!");
+                
+                document.getElementById('appName').value = "";
+                document.getElementById('appUrl').value = "";
+                document.getElementById('appImg').value = "";
+                
+                renderList();
+            } else {
+                alert("⚠️ يرجى تعبئة جميع الخانات");
+            }
+        };
+
+        // وظيفة العرض في لوحة التحكم
+        function renderList() {
+            const listDiv = document.getElementById('statusList');
+            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            listDiv.innerHTML = "";
+
+            if(data.length === 0) {
+                listDiv.innerHTML = "<p style='color:gray; text-align:center;'>لا يوجد تطبيقات</p>";
+                return;
+            }
+
+            data.forEach((item, index) => {
+                listDiv.innerHTML += `
+                    <div class="app-item">
+                        <div>
+                            <strong>${item.name}</strong> <br>
+                            <small>${item.cat === 'apps' ? 'التطبيقات' : 'Sat Softwar'}</small>
+                        </div>
+                        <button class="del-x" onclick="deleteItem(${index})">حذف</button>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteItem(index) {
+            if(confirm("هل تريد الحذف؟")) {
+                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+                data.splice(index, 1);
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                renderList();
+            }
+        }
+
+        window.onload = renderList;
+    </script>
+</body>
+</html>
