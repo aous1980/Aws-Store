@@ -1,157 +1,60 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>Admin - Aws Store</title>
-
-<style>
-body{
-  background:#111;
-  color:#fff;
-  font-family:Arial;
-  text-align:center;
-}
-
-input{
-  width:280px;
-  padding:10px;
-  margin:6px;
-  border:none;
-  border-radius:5px;
-  outline:none;
-}
-
-button{
-  padding:10px 15px;
-  background:#00c3ff;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-  margin:3px;
-}
-
-.card{
-  background:#222;
-  margin:10px auto;
-  padding:10px;
-  border-radius:10px;
-  width:300px;
-}
-img{
-  width:100px;
-  border-radius:5px;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>لوحة التحكم - Aws Store</title>
+    <style>
+        body { background: #fff; font-family: Arial; text-align: center; padding: 20px; }
+        .admin-box { max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px; border-radius: 5px; }
+        .input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        input { flex-grow: 1; padding: 8px; margin: 0 10px; border: 1px solid #ddd; }
+        label { min-width: 100px; font-weight: bold; }
+        button { cursor: pointer; padding: 5px 15px; }
+        .btn-main { background: #333; color: #fff; width: 100%; padding: 10px; margin-top: 20px; font-size: 18px; }
+        .btn-del { background: #f0f0f0; border: 1px solid #ccc; }
+        .btn-edit { background: #f0f0f0; border: 1px solid #ccc; }
+    </style>
 </head>
-
 <body>
 
-<h1>🔐 لوحة التحكم</h1>
+    <div class="admin-box">
+        <h1>لوحة التحكم</h1>
 
-<input id="name" placeholder="اسم التطبيق"><br>
-<input id="img" placeholder="رابط الصورة"><br>
-<input id="url" placeholder="رابط التطبيق"><br>
+        <div class="input-row">
+            <label>اسم التطبيق</label>
+            <input type="text" id="appName">
+        </div>
 
-<br>
+        <div class="input-row">
+            <button class="btn-edit">تعديل</button>
+            <button class="btn-del" onclick="document.getElementById('appUrl').value=''">حذف</button>
+            <input type="text" id="appUrl" placeholder="رابط التطبيق">
+        </div>
 
-<button onclick="add()">➕ إضافة</button>
+        <div class="input-row">
+            <button class="btn-edit">تعديل</button>
+            <button class="btn-del" onclick="document.getElementById('appImg').value=''">حذف</button>
+            <input type="text" id="appImg" placeholder="رابط صورة التطبيق">
+        </div>
 
-<hr>
+        <button class="btn-main" onclick="saveData()">إضافة إلى المتجر</button>
+    </div>
 
-<div id="list"></div>
+    <script>
+        function saveData() {
+            let name = document.getElementById("appName").value;
+            let url = document.getElementById("appUrl").value;
+            let img = document.getElementById("appImg").value;
 
-<script>
-
-// تحميل البيانات
-function load(){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-  let box = document.getElementById("list");
-  box.innerHTML = "";
-
-  data.forEach((item,i)=>{
-    box.innerHTML += `
-      <div class="card">
-        <h3>${item.name}</h3>
-        <img src="${item.img}"><br><br>
-
-        <a href="${item.url}" target="_blank">فتح التطبيق</a><br><br>
-
-        <button onclick="edit(${i})">✏️ تعديل</button>
-        <button onclick="del(${i})" style="background:red">🗑️ حذف</button>
-      </div>
-    `;
-  });
-}
-
-// إضافة
-function add(){
-
-  let name = document.getElementById("name").value;
-  let img = document.getElementById("img").value;
-  let url = document.getElementById("url").value;
-
-  if(name.trim() === "" || img.trim() === "" || url.trim() === ""){
-    alert("❌ املأ كل الحقول");
-    return;
-  }
-
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  data.push({
-    name:name.trim(),
-    img:img.trim(),
-    url:url.trim()
-  });
-
-  localStorage.setItem("store", JSON.stringify(data));
-
-  document.getElementById("name").value = "";
-  document.getElementById("img").value = "";
-  document.getElementById("url").value = "";
-
-  load();
-}
-
-// حذف
-function del(i){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-  data.splice(i,1);
-  localStorage.setItem("store", JSON.stringify(data));
-  load();
-}
-
-// ✏️ تعديل (صورة + رابط التطبيق)
-function edit(i){
-  let data = JSON.parse(localStorage.getItem("store")) || [];
-
-  let newName = prompt("اسم التطبيق:", data[i].name);
-  if(newName === null) return;
-
-  let newImg = prompt("رابط الصورة:", data[i].img);
-  if(newImg === null) return;
-
-  let newUrl = prompt("رابط التطبيق:", data[i].url);
-  if(newUrl === null) return;
-
-  if(newName.trim() === "" || newImg.trim() === "" || newUrl.trim() === ""){
-    alert("❌ لا يمكن ترك الحقول فارغة");
-    return;
-  }
-
-  data[i] = {
-    name:newName.trim(),
-    img:newImg.trim(),
-    url:newUrl.trim()
-  };
-
-  localStorage.setItem("store", JSON.stringify(data));
-
-  load();
-}
-
-load();
-
-</script>
-
+            if(name && url && img) {
+                let store = JSON.parse(localStorage.getItem("store")) || [];
+                store.push({ name, url, img });
+                localStorage.setItem("store", JSON.stringify(store));
+                alert("تم الحفظ بنجاح! اذهب لصفحة المتجر لمشاهدته.");
+            } else {
+                alert("يرجى إكمال البيانات");
+            }
+        }
+    </script>
 </body>
 </html>
