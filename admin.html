@@ -12,12 +12,12 @@ body{
   text-align:center;
 }
 
-input{
+input, select{
   width:260px;
   padding:10px;
-  margin:8px;
-  border-radius:5px;
+  margin:6px;
   border:none;
+  border-radius:5px;
   outline:none;
 }
 
@@ -42,14 +42,22 @@ button{
 
 <h1>🔐 لوحة التحكم</h1>
 
-<!-- مهم: input واضح ومفعل -->
-<input id="name" type="text" placeholder="اسم التطبيق"><br>
+<!-- الاسم -->
+<input id="name" placeholder="اسم التطبيق"><br>
 
-<input id="label1" type="text" placeholder="اسم زر 1"><br>
-<input id="url1" type="text" placeholder="رابط 1"><br>
+<!-- 🔥 خيار التطبيقات والسوفتوير -->
+<select id="type">
+  <option value="apps">📱 التطبيقات</option>
+  <option value="sat">🛰️ السوفتوير</option>
+</select>
 
-<input id="label2" type="text" placeholder="اسم زر 2 (اختياري)"><br>
-<input id="url2" type="text" placeholder="رابط 2"><br>
+<br>
+
+<input id="label1" placeholder="اسم زر 1"><br>
+<input id="url1" placeholder="رابط 1"><br>
+
+<input id="label2" placeholder="اسم زر 2 (اختياري)"><br>
+<input id="url2" placeholder="رابط 2"><br>
 
 <br>
 
@@ -70,16 +78,18 @@ function load(){
     box.innerHTML += `
       <div class="card">
         <h3>${item.name}</h3>
+        <div>${item.type === "apps" ? "📱 تطبيق" : "🛰️ سوفتوير"}</div>
+
         <button onclick="del(${i})" style="background:red;color:#fff">حذف</button>
       </div>
     `;
   });
 }
 
-// إضافة
 function add(){
 
   let name = document.getElementById("name").value;
+  let type = document.getElementById("type").value;
 
   if(name.trim() === ""){
     alert("❌ اكتب اسم التطبيق");
@@ -106,12 +116,12 @@ function add(){
 
   data.push({
     name:name.trim(),
+    type:type,
     links:links
   });
 
   localStorage.setItem("store", JSON.stringify(data));
 
-  // تنظيف الحقول
   document.getElementById("name").value = "";
   document.getElementById("label1").value = "";
   document.getElementById("url1").value = "";
@@ -121,7 +131,6 @@ function add(){
   load();
 }
 
-// حذف
 function del(i){
   let data = JSON.parse(localStorage.getItem("store")) || [];
   data.splice(i,1);
