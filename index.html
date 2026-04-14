@@ -26,11 +26,16 @@ body{
   width:220px;
 }
 
+img{
+  width:100%;
+  border-radius:8px;
+}
+
 button{
   background:#00c3ff;
   border:none;
   padding:6px;
-  margin:3px;
+  margin-top:5px;
   border-radius:5px;
 }
 </style>
@@ -50,23 +55,14 @@ function load(){
   box.innerHTML = "";
 
   data.forEach(item=>{
-
-    let links = "";
-
-    if(item.links){
-      item.links.forEach(l=>{
-        links += `<a href="${l.url}" target="_blank">
-          <button>${l.label}</button>
-        </a>`;
-      });
-    }
-
     box.innerHTML += `
       <div class="card">
+        <img src="${item.img}">
         <h3>${item.name}</h3>
-        <div>${item.type === "apps" ? "📱 تطبيق" : "🛰️ سوفتوير"}</div>
-        <br>
-        ${links}
+
+        <a href="${item.url}" target="_blank">
+          <button>تحميل</button>
+        </a>
       </div>
     `;
   });
