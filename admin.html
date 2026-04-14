@@ -13,32 +13,31 @@
 <input id="url" placeholder="رابط التحميل"><br><br>
 
 <select id="type">
-  <option value="apps">تطبيقات</option>
-  <option value="sat">SatSoftware</option>
+  <option value="apps">📱 تطبيقات</option>
+  <option value="sat">🛰️ SatSoftware</option>
 </select>
 
 <br><br>
 
-<button onclick="addItem()">➕ إضافة</button>
+<button onclick="add()">➕ إضافة</button>
 
 <script>
 
-async function addItem(){
+function add(){
   let img = document.getElementById("img").value;
   let url = document.getElementById("url").value;
   let type = document.getElementById("type").value;
 
-  let res = await fetch("apps.json");
-  let data = await res.json();
+  let data = JSON.parse(localStorage.getItem("store")) || [];
 
-  data.push({type,img,url});
+  data.push({img,url,type});
 
-  await fetch("apps.json", {
-    method: "PUT",
-    body: JSON.stringify(data)
-  });
+  localStorage.setItem("store", JSON.stringify(data));
 
-  alert("تمت الإضافة (ملاحظة: GitHub يحتاج رفع يدوي للملف)");
+  alert("تمت الإضافة بنجاح");
+
+  document.getElementById("img").value = "";
+  document.getElementById("url").value = "";
 }
 
 </script>
