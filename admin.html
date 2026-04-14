@@ -2,45 +2,30 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Aws Store</title>
-
-<style>
-body{background:#111;color:#fff;font-family:Arial;text-align:center}
-.container{display:flex;flex-wrap:wrap;justify-content:center}
-.card{background:#1e1e1e;margin:10px;padding:10px;border-radius:10px;width:180px}
-.card img{width:100%;border-radius:8px}
-button{background:#00c3ff;border:none;padding:8px;border-radius:5px}
-</style>
+<title>Admin - Aws Store</title>
 </head>
 
-<body>
+<body style="background:#111;color:#fff;text-align:center;font-family:Arial">
 
-<h1>🛒 Aws Store</h1>
+<h1>🔐 لوحة التحكم</h1>
 
-<h2>📱 التطبيقات</h2>
-<div id="apps" class="container"></div>
+<input id="img" placeholder="رابط الصورة"><br><br>
+<input id="url" placeholder="رابط التطبيق"><br><br>
 
-<h2>🛰️ SatSoftware</h2>
-<div id="sat" class="container"></div>
+<button onclick="add('apps')">📱 إضافة للتطبيقات</button>
+<button onclick="add('sat')">🛰️ إضافة SatSoftware</button>
 
 <script>
-function load(type){
+function add(type){
+  let img = document.getElementById("img").value;
+  let url = document.getElementById("url").value;
+
   let data = JSON.parse(localStorage.getItem(type)) || [];
-  let box = document.getElementById(type);
-  box.innerHTML = "";
+  data.push({img,url});
+  localStorage.setItem(type, JSON.stringify(data));
 
-  data.forEach(item=>{
-    box.innerHTML += `
-      <div class="card">
-        <img src="${item.img}">
-        <a href="${item.url}" target="_blank"><button>تحميل</button></a>
-      </div>
-    `;
-  });
+  alert("تمت الإضافة");
 }
-
-load("apps");
-load("sat");
 </script>
 
 </body>
