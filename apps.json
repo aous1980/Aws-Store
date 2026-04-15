@@ -1,12 +1,14 @@
 [
   {
-    "type": "apps",
-    "img": "https://via.placeholder.com/150",
-    "url": "https://example.com/app1.apk"
+    "name": "التطبيق الأول",
+    "url": "رابط التحميل المباشر هنا",
+    "img": "رابط أيقونة التطبيق هنا",
+    "cat": "apps"
   },
   {
-    "type": "sat",
-    "img": "https://via.placeholder.com/150",
-    "url": "https://example.com/sat1.bin"
+    "name": "تحديث جهاز السات",
+    "url": "رابط الملف هنا",
+    "img": "رابط صورة الجهاز هنا",
+    "cat": "sat"
   }
 ]
