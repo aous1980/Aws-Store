@@ -1,84 +1,14 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store - المتجر الذكي</title>
-    <style>
-        :root { --primary: #007bff; --bg: #121212; --card: #1e1e1e; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 0; text-align: center; }
-        
-        /* شريط الأقسام */
-        header { background: #000; padding: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--primary); }
-        .filter-bar { display: flex; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        .filter-btn { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; transition: 0.3s; font-weight: bold; }
-        .filter-btn.active { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+const JSON_URL = "https://raw.githubusercontent.com/aous1980/Aws-Store/main/apps.json";
 
-        /* شبكة العرض */
-        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 20px; max-width: 1200px; margin: auto; }
-        .card { background: var(--card); border-radius: 15px; padding: 15px; border: 1px solid #333; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .card img { width: 90px; height: 90px; border-radius: 20px; object-fit: cover; margin-bottom: 10px; background: #252525; }
-        .card h3 { font-size: 15px; margin: 5px 0 15px; height: 35px; overflow: hidden; }
-        .btn-down { background: var(--primary); color: #fff; text-decoration: none; padding: 10px; display: block; border-radius: 8px; font-weight: bold; font-size: 13px; }
-
-        @media (max-width: 480px) {
-            .container { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
-            .card { padding: 10px; }
-            .card img { width: 80px; height: 80px; }
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <div style="font-size: 24px; font-weight: bold;">AWS <span style="color:var(--primary)">STORE</span></div>
-    <div class="filter-bar">
-        <button class="filter-btn active" onclick="loadData('all', this)">الكل</button>
-        <button class="filter-btn" onclick="loadData('apps', this)">تطبيقات</button>
-        <button class="filter-btn" onclick="loadData('sat', this)">Sat Softwar</button>
-    </div>
-</header>
-
-<div id="grid" class="container">جاري التحميل...</div>
-
-<script>
-    // هام جداً: استبدل الرابط أدناه برابط ملف apps.json الخاص بك من GitHub
-    const JSON_URL = "https://raw.githubusercontent.com/aous1980/Aws-Store/main/apps.json";
-
-    async function loadData(category = 'all', btn = null) {
-        if(btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        try {
-            const res = await fetch(JSON_URL + "?t=" + Date.now());
-            const data = await res.json();
-            const grid = document.getElementById('grid');
-            grid.innerHTML = "";
-
-            const filtered = category === 'all' ? data : data.filter(i => i.cat === category);
-
-            if(filtered.length === 0) {
-                grid.innerHTML = "<p style='color:gray'>لا توجد ملفات حالياً</p>";
-                return;
-            }
-
-            filtered.forEach(item => {
-                grid.innerHTML += `
-                    <div class="card">
-                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/100'">
-                        <h3>${item.name}</h3>
-                        <a href="${item.url}" class="btn-down" target="_blank">Download</a>
-                    </div>`;
-            });
-        } catch (err) {
-            document.getElementById('grid').innerHTML = "<p>فشل في جلب البيانات من السيرفر</p>";
-        }
+async function loadData() {
+    try {
+        // إضافة Date.now() تمنع المتصفح من جلب نسخة قديمة
+        const res = await fetch(JSON_URL + "?t=" + Date.now()); 
+        if (!res.ok) throw new Error("السيرفر لا يستجيب");
+        const data = await res.json();
+        // ... باقي الكود
+    } catch (err) {
+        console.error(err); // سيظهر لك سبب الفشل الحقيقي في الـ Console
+        document.getElementById('grid').innerHTML = "فشل في جلب البيانات: " + err.message;
     }
-
-    window.onload = () => loadData('all');
-</script>
-</body>
-</html>
+}
