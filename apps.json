@@ -1,12 +1,8 @@
 [
-  {
-    "type": "apps",
-    "img": "https://via.placeholder.com/150",
-    "url": "https://example.com/app1.apk"
-  },
-  {
-    "type": "sat",
-    "img": "https://via.placeholder.com/150",
-    "url": "https://example.com/sat1.bin"
-  }
+    {
+        "name": "Cinema Box Android TV",
+        "url": "https://github.com/iraqapps/tvapps/raw/refs/heads/main/apps/Cinema%20Box%20Android%20TV_4.2.20_apks.apk",
+        "img": "https://raw.githubusercontent.com/iraqapps/tvapps/refs/heads/main/img/Cinema%20Box%20Android%20TV_icon.png",
+        "cat": "apps"
+    }
 ]
