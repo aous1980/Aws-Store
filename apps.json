@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "name": "Cinemana Plus",
+    "url": "https://github.com/iraqapps/tvapps/raw/refs/heads/main/apps/cinemanaplustv.apk",
+    "img": "https://raw.githubusercontent.com/iraqapps/tvapps/refs/heads/main/img/cinemanaplus.png",
+    "cat": "apps"
+  }
+]
