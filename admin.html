@@ -3,141 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة Aws Store</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <title>إدارة المتجر</title>
     <style>
-        :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; }
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
+        .box { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto 20px; }
         
-        .admin-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
-        @media (max-width: 900px) { .admin-container { grid-template-columns: 1fr; } }
-
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h2 { margin-top: 0; color: var(--dark); font-size: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--primary); }
-
-        .btn-save { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
-        .app-item { display: flex; align-items: center; background: #fff; padding: 10px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; }
-        .app-item img { width: 45px; height: 45px; border-radius: 8px; margin-left: 12px; }
-        .item-details { flex-grow: 1; }
-        .item-actions button { background: none; border: none; cursor: pointer; padding: 5px; font-size: 16px; }
-
-        .hidden { display: none; }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        
+        .btn-add { background: #1a1a1a; color: #fff; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        .item { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e4e6eb; }
+        .item img { width: 45px; height: 45px; border-radius: 10px; margin-left: 12px; }
+        .item-info { flex: 1; }
+        
+        /* أزرار متباعدة للموبايل */
+        .actions { display: flex; gap: 15px; }
+        .actions span { cursor: pointer; font-size: 18px; padding: 5px; }
     </style>
 </head>
 <body>
 
-<div class="admin-container">
-    <div class="card">
-        <h2 id="formTitle">إضافة تطبيق جديد</h2>
-        <div class="input-group">
-            <label>اسم التطبيق</label>
-            <input type="text" id="appName" placeholder="اكتب الاسم هنا">
-        </div>
-        <div class="input-group">
-            <label>القسم</label>
-            <select id="appCat">
-                <option value="apps">تطبيقات (Apps)</option>
-                <option value="sat">Sat Softwar</option>
-            </select>
-        </div>
-        <div class="input-group">
-            <label>رابط التحميل</label>
-            <input type="url" id="appUrl" placeholder="https://...">
-        </div>
-        <div class="input-group">
-            <label>رابط الصورة</label>
-            <input type="url" id="appImg" placeholder="https://...">
-        </div>
-        <button class="btn-save" onclick="save()">💾 حفظ البيانات</button>
-        <button id="cancelBtn" onclick="resetForm()" class="hidden" style="width:100%; background:none; color:gray; border:none; margin-top:10px; cursor:pointer;">إلغاء</button>
-    </div>
+<div class="box">
+    <h2 id="title">إضافة تطبيق جديد</h2>
+    <input type="text" id="n" placeholder="اسم التطبيق">
+    <select id="c">
+        <option value="apps">تطبيقات</option>
+        <option value="sat">Sat Softwar</option>
+    </select>
+    <input type="url" id="u" placeholder="رابط التحميل">
+    <input type="url" id="i" placeholder="رابط الأيقونة">
+    <button class="btn-add" onclick="save()">حفظ البيانات</button>
+</div>
 
-    <div class="card">
-        <h2>📦 العناصر الحالية</h2>
-        <div id="adminList"></div>
-    </div>
+<div style="max-width:600px; margin: 0 auto;">
+    <h3 style="padding:0 10px;">العناصر الحالية:</h3>
+    <div id="list"></div>
 </div>
 
 <script>
-    const DB_KEY = "aws_store_db";
-    let editIdx = -1;
+    const DB = "aws_store_db";
+    let editId = -1;
 
     function save() {
-        const name = document.getElementById('appName').value;
-        const cat = document.getElementById('appCat').value;
-        const url = document.getElementById('appUrl').value;
-        const img = document.getElementById('appImg').value;
+        const name=document.getElementById('n').value, cat=document.getElementById('c').value, 
+              url=document.getElementById('u').value, img=document.getElementById('i').value;
 
-        if(!name || !url || !img) return alert("املأ الخانات!");
+        if(!name || !url || !img) return alert("اكمل البيانات");
 
-        let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-        if(editIdx === -1) data.push({name, cat, url, img});
-        else data[editIdx] = {name, cat, url, img};
+        let data = JSON.parse(localStorage.getItem(DB)) || [];
+        if(editId === -1) data.push({name, cat, url, img});
+        else data[editId] = {name, cat, url, img};
 
-        localStorage.setItem(DB_KEY, JSON.stringify(data));
-        resetForm();
-        render();
+        localStorage.setItem(DB, JSON.stringify(data));
+        location.reload();
     }
 
     function render() {
-        const data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-        const list = document.getElementById('adminList');
-        list.innerHTML = data.length === 0 ? "القائمة فارغة" : "";
-
-        data.forEach((item, i) => {
+        const data = JSON.parse(localStorage.getItem(DB)) || [];
+        const list = document.getElementById('list');
+        data.forEach((item, index) => {
             list.innerHTML += `
-                <div class="app-item">
-                    <img src="${item.img}" onerror="this.src='https://via.placeholder.com/50'">
-                    <div class="item-details">
-                        <strong>${item.name}</strong><br>
-                        <small style="color:gray">${item.cat}</small>
-                    </div>
-                    <div class="item-actions">
-                        <button onclick="move(${i},-1)">🔼</button>
-                        <button onclick="move(${i},1)">🔽</button>
-                        <button onclick="edit(${i})" style="color:blue">📝</button>
-                        <button onclick="del(${i})" style="color:red">🗑️</button>
+                <div class="item">
+                    <img src="${item.img}">
+                    <div class="item-info"><strong>${item.name}</strong></div>
+                    <div class="actions">
+                        <span onclick="edit(${index})">📝</span>
+                        <span onclick="del(${index})" style="color:red">🗑️</span>
                     </div>
                 </div>`;
         });
     }
 
-    function del(i) { if(confirm("حذف؟")) { let data = JSON.parse(localStorage.getItem(DB_KEY)); data.splice(i,1); localStorage.setItem(DB_KEY, JSON.stringify(data)); render(); } }
-    
-    function edit(i) {
-        let data = JSON.parse(localStorage.getItem(DB_KEY));
-        document.getElementById('appName').value = data[i].name;
-        document.getElementById('appCat').value = data[i].cat;
-        document.getElementById('appUrl').value = data[i].url;
-        document.getElementById('appImg').value = data[i].img;
-        editIdx = i;
-        document.getElementById('formTitle').innerText = "تعديل التطبيق";
-        document.getElementById('cancelBtn').classList.remove('hidden');
+    window.edit = (index) => {
+        let data = JSON.parse(localStorage.getItem(DB));
+        const item = data[index];
+        document.getElementById('n').value = item.name;
+        document.getElementById('c').value = item.cat;
+        document.getElementById('u').value = item.url;
+        document.getElementById('i').value = item.img;
+        editId = index;
+        document.getElementById('title').innerText = "تعديل بيانات التطبيق";
+        window.scrollTo(0,0);
     }
 
-    function move(i, dir) {
-        let data = JSON.parse(localStorage.getItem(DB_KEY));
-        if(i+dir >= 0 && i+dir < data.length) {
-            [data[i], data[i+dir]] = [data[i+dir], data[i]];
-            localStorage.setItem(DB_KEY, JSON.stringify(data));
-            render();
-        }
-    }
+    window.del = (index) => { if(confirm("حذف؟")) { 
+        let data = JSON.parse(localStorage.getItem(DB));
+        data.splice(index, 1);
+        localStorage.setItem(DB, JSON.stringify(data));
+        location.reload();
+    }}
 
-    function resetForm() {
-        editIdx = -1;
-        document.querySelectorAll('input').forEach(inp => inp.value = "");
-        document.getElementById('formTitle').innerText = "إضافة تطبيق جديد";
-        document.getElementById('cancelBtn').classList.add('hidden');
-    }
-
-    window.onload = render;
+    render();
 </script>
 </body>
 </html>
