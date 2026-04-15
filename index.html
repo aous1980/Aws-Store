@@ -2,58 +2,145 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | المتجر العالمي</title>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aws Store | المتجر المتجاوب</title>
     <style>
-        body { font-family: sans-serif; background: #f3f4f6; margin: 0; padding-bottom: 50px; }
-        header { background: #111; color: #fff; padding: 30px; text-align: center; }
-        .container { max-width: 1200px; margin: auto; padding: 15px; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        @media (min-width: 768px) { .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
-        .card { background: #fff; border-radius: 20px; padding: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .card img { width: 75px; height: 75px; border-radius: 18px; object-fit: cover; }
-        .btn-dl { background: #2563eb; color: #fff; text-decoration: none; padding: 10px; border-radius: 12px; display: block; margin-top: 10px; font-weight: bold; }
+        /* إعدادات تضمن ظهور العناصر على الشاشات الصغيرة */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            padding: 0;
+            display: block; /* لضمان عدم الاختفاء */
+        }
+
+        header { 
+            background: #1a1a1a; 
+            color: white; 
+            padding: 25px 10px; 
+            text-align: center; 
+            width: 100%;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 1200px; 
+            margin: auto; 
+            padding: 15px; 
+        }
+
+        .sec-title { 
+            font-size: 20px; 
+            color: #333; 
+            margin: 20px 5px; 
+            border-right: 4px solid #2563eb; 
+            padding-right: 10px;
+        }
+
+        /* شبكة مرنة جداً للموبايل */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); /* يعرض عنصرين بجانب بعض في الموبايل */
+            gap: 12px; 
+        }
+
+        /* في الحاسبة يعرض 4 أو أكثر */
+        @media (min-width: 768px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+        }
+
+        .card { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 15px; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+        }
+
+        .card img { 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 15px; 
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .card h3 { 
+            font-size: 14px; 
+            margin: 10px 0; 
+            color: #000;
+            height: 35px; /* لتوحيد الارتفاع */
+            overflow: hidden;
+        }
+
+        .btn-dl { 
+            background: #2563eb; 
+            color: white; 
+            text-decoration: none; 
+            padding: 10px 5px; 
+            border-radius: 10px; 
+            display: block; 
+            font-size: 13px; 
+            font-weight: bold;
+        }
+
+        /* إذا كان المتجر فارغاً */
+        #empty { text-align: center; padding: 50px; color: #888; display: none; }
     </style>
 </head>
 <body>
 
-<header><h1>AWS STORE</h1></header>
+<header>
+    <h1 style="margin:0; font-size: 24px;">AWS STORE</h1>
+</header>
 
 <div class="container">
-    <div id="appsGrid" class="grid"></div>
+    <div id="satSection" style="display:none">
+        <div class="sec-title">Sat Softwar</div>
+        <div id="satGrid" class="grid"></div>
+    </div>
+
+    <div id="appsSection" style="display:none">
+        <div class="sec-title">التطبيقات</div>
+        <div id="appsGrid" class="grid"></div>
+    </div>
+
+    <div id="empty">لا توجد تطبيقات، أضفها من لوحة التحكم أولاً.</div>
 </div>
 
 <script>
-    // استبدل هذه القيم ببيانات مشروعك من Firebase (نفس التي في اللوحة)
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-        projectId: "YOUR_PROJECT",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_ID",
-        appId: "YOUR_APP_ID"
-    };
+    // التأكد من أن الكود يعمل حتى لو تأخر تحميل الصفحة
+    function loadData() {
+        const DB = "aws_store_db";
+        const data = JSON.parse(localStorage.getItem(DB)) || [];
+        
+        if (data.length === 0) {
+            document.getElementById('empty').style.display = 'block';
+            return;
+        }
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // سحب البيانات حياً من السحاب
-    db.ref('apps').on('value', (snap) => {
-        const grid = document.getElementById('appsGrid');
-        grid.innerHTML = "";
-        snap.forEach((child) => {
-            const item = child.val();
-            grid.innerHTML += `
+        data.forEach(item => {
+            const cardHTML = `
                 <div class="card">
-                    <img src="${item.img}">
+                    <img src="${item.img}" onerror="this.src='https://via.placeholder.com/70?text=App'">
                     <h3>${item.name}</h3>
                     <a href="${item.url}" class="btn-dl" target="_blank">تحميل</a>
                 </div>`;
+            
+            if(item.cat === 'sat') {
+                document.getElementById('satSection').style.display = 'block';
+                document.getElementById('satGrid').innerHTML += cardHTML;
+            } else {
+                document.getElementById('appsSection').style.display = 'block';
+                document.getElementById('appsGrid').innerHTML += cardHTML;
+            }
         });
-    });
+    }
+
+    window.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
 </html>
