@@ -2,80 +2,56 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store - متجر التطبيقات</title>
+    <title>Aws Store - المتجر</title>
     <style>
-        :root { --main-color: #007bff; --bg-dark: #121212; --card-bg: #1e1e1e; }
-        body { background: var(--bg-dark); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        
-        /* شريط العناوين والفلترة */
-        header { background: #000; padding: 20px; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--main-color); }
-        .nav-btns { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
-        .nav-btns button { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; transition: 0.3s; font-weight: bold; }
-        .nav-btns button.active { background: var(--main-color); }
-
-        /* شبكة التطبيقات */
-        .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding: 25px; max-width: 1200px; margin: auto; }
-        .app-card { background: var(--card-bg); border-radius: 15px; padding: 15px; text-align: center; border: 1px solid #333; transition: 0.3s; }
-        .app-card:hover { transform: translateY(-5px); border-color: var(--main-color); }
-        .app-card img { width: 100px; height: 100px; border-radius: 20px; object-fit: cover; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .app-card h3 { font-size: 16px; margin: 0 0 15px; height: 40px; overflow: hidden; }
-        .download-btn { background: var(--main-color); color: #fff; text-decoration: none; padding: 10px; display: block; border-radius: 10px; font-weight: bold; font-size: 14px; }
-
-        @media (max-width: 480px) {
-            .app-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
-            .app-card { padding: 10px; }
-            .app-card img { width: 80px; height: 80px; }
-        }
+        body { background: #111; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .section-title { background: #fff; color: #000; padding: 10px 40px; display: inline-block; margin: 30px 0; font-weight: bold; border-radius: 5px; }
+        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 10px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 15px; width: 220px; padding: 15px; }
+        .card img { width: 100%; height: 130px; border-radius: 10px; object-fit: cover; background: #222; }
+        .card h3 { font-size: 19px; margin: 15px 0 5px; }
+        .device { font-size: 12px; color: #777; margin-bottom: 15px; }
+        .btn-down { background: #fff; color: #000; text-decoration: none; padding: 10px 0; width: 100%; display: block; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<header>
-    <h2 style="margin:0;">Aws Store</h2>
-    <div class="nav-btns">
-        <button class="active" onclick="fetchApps('all', this)">الكل</button>
-        <button onclick="fetchApps('apps', this)">تطبيقات</button>
-        <button onclick="fetchApps('sat', this)">Sat Softwar</button>
-    </div>
-</header>
+    <div class="section-title">التطبيقات</div>
+    <div id="apps_box" class="container"></div>
 
-<div class="app-grid" id="appGrid">
-    <p>جاري تحميل التطبيقات...</p>
-</div>
+    <div class="section-title">Sat Softwar</div>
+    <div id="sat_box" class="container"></div>
 
-<script>
-    const DATA_URL = "https://raw.githubusercontent.com/aous1980/Aws-Store/main/apps.json";
+    <script>
+        const DB_NAME = "aws_store_v1";
 
-    async function fetchApps(category = 'all', btn = null) {
-        if(btn) {
-            document.querySelectorAll('.nav-btns button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
+        function loadStoreData() {
+            const data = JSON.parse(localStorage.getItem(DB_NAME)) || [];
+            const appsContainer = document.getElementById("apps_box");
+            const satContainer = document.getElementById("sat_box");
 
-        try {
-            const res = await fetch(DATA_URL + '?t=' + Date.now());
-            const apps = await res.json();
-            const grid = document.getElementById('appGrid');
-            grid.innerHTML = "";
+            appsContainer.innerHTML = "";
+            satContainer.innerHTML = "";
 
-            const filtered = category === 'all' ? apps : apps.filter(a => a.cat === category);
-
-            filtered.forEach(app => {
-                grid.innerHTML += `
-                    <div class="app-card">
-                        <img src="${app.img}" onerror="this.src='https://via.placeholder.com/100?text=App'">
-                        <h3>${app.name}</h3>
-                        <a href="${app.url}" class="download-btn" target="_blank">تحميل مباشر</a>
+            data.forEach(item => {
+                const cardHTML = `
+                    <div class="card">
+                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/150'">
+                        <h3>${item.name}</h3>
+                        <div class="device">اسم الجهاز</div>
+                        <a href="${item.url}" class="btn-down" target="_blank">downloade</a>
                     </div>
                 `;
-            });
-        } catch (err) {
-            document.getElementById('appGrid').innerHTML = "<p>خطأ في تحميل البيانات</p>";
-        }
-    }
 
-    window.onload = () => fetchApps('all');
-</script>
+                if(item.cat === "apps") {
+                    appsContainer.innerHTML += cardHTML;
+                } else {
+                    satContainer.innerHTML += cardHTML;
+                }
+            });
+        }
+        
+        window.onload = loadStoreData;
+    </script>
 </body>
 </html>
