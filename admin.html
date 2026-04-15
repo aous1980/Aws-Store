@@ -3,170 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 إدارة متجر Aws Store</title>
+    <title>Aws Store | الإدارة والمتجر الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --dark: #1e293b; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        
-        /* تصميم الكروت */
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { color: var(--dark); border-right: 4px solid var(--primary); padding-right: 10px; margin-top: 0; }
-
-        /* الفورم */
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .input-group { display: flex; flex-direction: column; }
-        label { margin-bottom: 5px; font-weight: 600; font-size: 14px; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
-        
-        .btn { cursor: pointer; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; transition: 0.3s; }
-        .btn-add { background: var(--primary); color: white; width: 100%; margin-top: 15px; }
-        .btn-add:hover { background: #1d4ed8; }
-
-        /* القائمة */
-        .app-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .app-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
-        .app-info { display: flex; align-items: center; gap: 15px; }
-        .app-info img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
-        
-        .controls { display: flex; gap: 5px; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; }
-        .edit { background: #ffca28; }
-        .del { background: #ef4444; color: white; }
-
-        /* Responsive Mobile */
-        @media (max-width: 600px) {
-            .app-item { flex-direction: column; text-align: center; }
-            .controls { margin-top: 10px; }
+        :root {
+            --primary-color: #2563eb;
+            --accent-color: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        /* الهيدر المتجاوب */
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* --- تصميم لوحة التحكم (Admin) --- */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr; /* في الحاسبة: الفورم يسار والقائمة يمين */
+            gap: 30px;
+        }
+
+        @media (max-width: 992px) {
+            .admin-grid { grid-template-columns: 1fr; } /* في الموبايل: تحت بعض */
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e2e8f0;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 20px 0;
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-field:focus { border-color: var(--primary-color); }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .app-manage-item {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #edf2f7;
+        }
+
+        .app-manage-item img { width: 50px; height: 50px; border-radius: 12px; margin-left: 15px; }
+
+        /* --- تصميم المتجر (Store) --- */
+        .store-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 40px 0 20px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .store-title::before {
+            content: '';
+            width: 6px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .apps-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+        }
+
+        .store-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            transition: 0.3s;
+            border: 1px solid #f1f5f9;
+        }
+
+        .store-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .store-card img {
+            width: 90px;
+            height: 90px;
+            border-radius: 22%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .store-card h3 { font-size: 16px; margin: 0 0 5px; font-weight: 700; }
+        .store-card p { font-size: 13px; color: #64748b; margin-bottom: 15px; }
+
+        .download-link {
+            background: #f1f5f9;
+            color: var(--primary-color);
+            padding: 8px 0;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 13px;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .store-card:hover .download-link {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card">
-        <h2 id="formTitle">إضافة تطبيق جديد</h2>
-        <div class="form-grid">
-            <div class="input-group">
+<header>
+    <h1 style="margin:0; font-size: 28px;">AWS STORE</h1>
+    <div class="nav-container">
+        <button class="nav-btn active" onclick="showPage('store', this)">🏠 المتجر</button>
+        <button class="nav-btn" onclick="showPage('admin', this)">⚙️ الإدارة</button>
+    </div>
+</header>
+
+<div class="main-container">
+
+    <div id="storePage">
+        <div id="satSection" class="hidden">
+            <div class="store-title">Sat Softwar</div>
+            <div id="satGrid" class="apps-grid"></div>
+        </div>
+
+        <div id="appsSection" class="hidden">
+            <div class="store-title">التطبيقات العامة</div>
+            <div id="appsGrid" class="apps-grid"></div>
+        </div>
+
+        <div id="noData" style="text-align:center; padding:100px 0;">
+            <p style="font-size: 18px; color: #94a3b8;">المتجر لا يحتوي على بيانات حالياً.</p>
+        </div>
+    </div>
+
+    <div id="adminPage" class="hidden">
+        <div class="admin-grid">
+            <div class="card">
+                <h2 id="formTitle">إضافة تطبيق جديد</h2>
                 <label>اسم التطبيق</label>
-                <input type="text" id="appName" placeholder="مثلاً: WhatsApp Pro">
-            </div>
-            <div class="input-group">
+                <input type="text" id="appName" class="input-field" placeholder="مثلاً: WhatsApp">
+                
                 <label>القسم</label>
-                <select id="appCat">
+                <select id="appCat" class="input-field">
                     <option value="apps">تطبيقات</option>
                     <option value="sat">Sat Softwar</option>
                 </select>
-            </div>
-            <div class="input-group" style="grid-column: span 2;">
+
                 <label>رابط التحميل</label>
-                <input type="url" id="appUrl" placeholder="https://...">
+                <input type="url" id="appUrl" class="input-field" placeholder="https://...">
+
+                <label>رابط الصورة (الأيقونة)</label>
+                <input type="url" id="appImg" class="input-field" placeholder="https://...">
+
+                <button class="submit-btn" id="saveBtn" onclick="handleSave()">💾 حفظ في المتجر</button>
+                <button id="cancelBtn" onclick="resetForm()" class="hidden" style="width:100%; border:none; background:none; color:gray; cursor:pointer; margin-top:10px;">إلغاء التعديل</button>
             </div>
-            <div class="input-group" style="grid-column: span 2;">
-                <label>رابط الأيقونة</label>
-                <input type="url" id="appImg" placeholder="https://...">
+
+            <div class="card">
+                <h2>📦 التحكم بالعناصر</h2>
+                <div id="adminList"></div>
             </div>
         </div>
-        <button class="btn btn-add" onclick="saveData()" id="saveBtn">حفظ التطبيق</button>
-        <button class="btn" id="cancelBtn" style="display:none; background:#ccc; width:100%; margin-top:5px;" onclick="resetForm()">إلغاء التعديل</button>
     </div>
 
-    <div class="card">
-        <h2>📦 التطبيقات المضافة</h2>
-        <div id="appList" class="app-list"></div>
-    </div>
 </div>
 
 <script>
-    const STORAGE_KEY = "aws_store_data";
-    let editIndex = -1;
+    const STORAGE_KEY = "aws_store_db";
+    let editIdx = -1;
 
-    function saveData() {
+    function showPage(page, btn) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        if(page === 'store') {
+            document.getElementById('storePage').classList.remove('hidden');
+            document.getElementById('adminPage').classList.add('hidden');
+            renderStore();
+        } else {
+            document.getElementById('storePage').classList.add('hidden');
+            document.getElementById('adminPage').classList.remove('hidden');
+            renderAdmin();
+        }
+    }
+
+    function handleSave() {
         const name = document.getElementById('appName').value;
         const cat = document.getElementById('appCat').value;
         const url = document.getElementById('appUrl').value;
         const img = document.getElementById('appImg').value;
 
-        if(!name || !url || !img) return alert("يرجى ملء كافة الحقول");
+        if(!name || !url || !img) return alert("أكمل البيانات أولاً!");
 
         let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        const appObj = { name, cat, url, img };
+        const obj = { name, cat, url, img };
 
-        if(editIndex === -1) {
-            data.push(appObj);
-        } else {
-            data[editIndex] = appObj;
-        }
+        if(editIdx === -1) data.push(obj);
+        else data[editIdx] = obj;
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         resetForm();
-        render();
+        renderAdmin();
+        alert("تم التحديث بنجاح!");
     }
 
-    function render() {
-        const list = document.getElementById('appList');
-        let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        list.innerHTML = data.length === 0 ? "<p>لا توجد تطبيقات حالياً</p>" : "";
+    function renderStore() {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const satGrid = document.getElementById('satGrid');
+        const appsGrid = document.getElementById('appsGrid');
+        
+        satGrid.innerHTML = ""; appsGrid.innerHTML = "";
+        
+        if(data.length === 0) {
+            document.getElementById('noData').classList.remove('hidden');
+            return;
+        }
 
-        data.forEach((item, index) => {
+        document.getElementById('noData').classList.add('hidden');
+        let hasSat = false, hasApps = false;
+
+        data.forEach(item => {
+            const card = `
+                <a href="${item.url}" target="_blank" class="store-card">
+                    <img src="${item.img}" onerror="this.src='https://via.placeholder.com/100?text=App'">
+                    <h3>${item.name}</h3>
+                    <p>${item.cat === 'sat' ? 'Sat Software' : 'تطبيق'}</p>
+                    <div class="download-link">تحميل</div>
+                </a>
+            `;
+            if(item.cat === 'sat') { hasSat = true; satGrid.innerHTML += card; }
+            else { hasApps = true; appsGrid.innerHTML += card; }
+        });
+
+        document.getElementById('satSection').className = hasSat ? "" : "hidden";
+        document.getElementById('appsSection').className = hasApps ? "" : "hidden";
+    }
+
+    function renderAdmin() {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const list = document.getElementById('adminList');
+        list.innerHTML = "";
+
+        data.forEach((item, i) => {
             list.innerHTML += `
-                <div class="app-item">
-                    <div class="app-info">
-                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/50'">
-                        <div>
-                            <strong>${item.name}</strong><br>
-                            <small>${item.cat}</small>
-                        </div>
+                <div class="app-manage-item">
+                    <img src="${item.img}" onerror="this.src='https://via.placeholder.com/50'">
+                    <div style="flex-grow:1">
+                        <strong>${item.name}</strong><br>
+                        <small style="color:gray">${item.cat}</small>
                     </div>
-                    <div class="controls">
-                        <button class="btn btn-sm" onclick="move(${index}, -1)">🔼</button>
-                        <button class="btn btn-sm" onclick="move(${index}, 1)">🔽</button>
-                        <button class="btn btn-sm edit" onclick="startEdit(${index})">تعديل</button>
-                        <button class="btn btn-sm del" onclick="deleteItem(${index})">حذف</button>
+                    <div>
+                        <button onclick="move(${i}, -1)" style="border:none; cursor:pointer; background:none">🔼</button>
+                        <button onclick="move(${i}, 1)" style="border:none; cursor:pointer; background:none">🔽</button>
+                        <button onclick="startEdit(${i})" style="color:orange; border:none; cursor:pointer; background:none; margin:0 5px;">تعديل</button>
+                        <button onclick="deleteItem(${i})" style="color:red; border:none; cursor:pointer; background:none;">حذف</button>
                     </div>
                 </div>
             `;
         });
     }
 
-    function deleteItem(index) {
-        if(confirm("هل أنت متأكد؟")) {
-            let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            data.splice(index, 1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            render();
-        }
-    }
-
-    function startEdit(index) {
+    function startEdit(i) {
         let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        const item = data[index];
+        const item = data[i];
         document.getElementById('appName').value = item.name;
         document.getElementById('appCat').value = item.cat;
         document.getElementById('appUrl').value = item.url;
         document.getElementById('appImg').value = item.img;
-        editIndex = index;
-        document.getElementById('saveBtn').innerText = "تحديث البيانات";
-        document.getElementById('cancelBtn').style.display = "block";
+        editIdx = i;
+        document.getElementById('saveBtn').innerText = "💾 تحديث البيانات";
+        document.getElementById('cancelBtn').classList.remove('hidden');
+        window.scrollTo(0, 0);
     }
 
-    function move(index, step) {
+    function move(i, step) {
         let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if(index + step >= 0 && index + step < data.length) {
-            [data[index], data[index+step]] = [data[index+step], data[index]];
+        if(i+step >= 0 && i+step < data.length) {
+            [data[i], data[i+step]] = [data[i+step], data[i]];
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            render();
+            renderAdmin();
+        }
+    }
+
+    function deleteItem(i) {
+        if(confirm("حذف؟")) {
+            let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            data.splice(i, 1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            renderAdmin();
         }
     }
 
     function resetForm() {
-        document.querySelectorAll('input').forEach(i => i.value = "");
-        editIndex = -1;
-        document.getElementById('saveBtn').innerText = "حفظ التطبيق";
-        document.getElementById('cancelBtn').style.display = "none";
+        editIdx = -1;
+        document.querySelectorAll('.input-field').forEach(inp => inp.value = "");
+        document.getElementById('saveBtn').innerText = "💾 حفظ في المتجر";
+        document.getElementById('cancelBtn').classList.add('hidden');
     }
 
-    window.onload = render;
+    window.onload = renderStore;
 </script>
 </body>
 </html>
