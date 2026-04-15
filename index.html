@@ -5,66 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aws Store - المتجر الذكي</title>
     <style>
-        body { background: #111; color: #fff; font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 10px; }
-        .nav-filter { background: #000; padding: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid #007bff; display: flex; justify-content: center; gap: 10px; }
-        .filter-btn { background: #222; color: #fff; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; }
-        .filter-btn.active { background: #007bff; border-color: #007bff; }
-        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 20px; }
-        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px; text-align: center; }
-        .card img { width: 90px; height: 90px; border-radius: 15px; object-fit: cover; background: #222; }
-        .card h3 { font-size: 15px; margin: 10px 0; height: 35px; overflow: hidden; }
-        .btn-down { background: #fff; color: #000; text-decoration: none; padding: 8px; width: 100%; display: block; border-radius: 6px; font-weight: bold; font-size: 13px; }
-        @media (max-width: 480px) { .container { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+        :root { --primary: #007bff; --bg: #121212; --card: #1e1e1e; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 0; text-align: center; }
+        
+        /* شريط الأقسام */
+        header { background: #000; padding: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--primary); }
+        .filter-bar { display: flex; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .filter-btn { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .filter-btn.active { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+
+        /* شبكة العرض */
+        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 20px; max-width: 1200px; margin: auto; }
+        .card { background: var(--card); border-radius: 15px; padding: 15px; border: 1px solid #333; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .card img { width: 90px; height: 90px; border-radius: 20px; object-fit: cover; margin-bottom: 10px; background: #252525; }
+        .card h3 { font-size: 15px; margin: 5px 0 15px; height: 35px; overflow: hidden; }
+        .btn-down { background: var(--primary); color: #fff; text-decoration: none; padding: 10px; display: block; border-radius: 8px; font-weight: bold; font-size: 13px; }
+
+        @media (max-width: 480px) {
+            .container { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
+            .card { padding: 10px; }
+            .card img { width: 80px; height: 80px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="nav-filter">
-        <button class="filter-btn active" onclick="loadStore('all', this)">الكل</button>
-        <button class="filter-btn" onclick="loadStore('apps', this)">تطبيقات</button>
-        <button class="filter-btn" onclick="loadStore('sat', this)">Sat Softwar</button>
+<header>
+    <div style="font-size: 24px; font-weight: bold;">AWS <span style="color:var(--primary)">STORE</span></div>
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="loadData('all', this)">الكل</button>
+        <button class="filter-btn" onclick="loadData('apps', this)">تطبيقات</button>
+        <button class="filter-btn" onclick="loadData('sat', this)">Sat Softwar</button>
     </div>
+</header>
 
-    <div id="app_grid" class="container">جاري التحميل...</div>
+<div id="grid" class="container">جاري التحميل...</div>
 
-    <script>
-        // ضع رابط ملف apps.json الخاص بك هنا (من GitHub)
-        const JSON_URL = "https://raw.githubusercontent.com/aous1980/Aws-Store/main/apps.json";
+<script>
+    // هام جداً: استبدل الرابط أدناه برابط ملف apps.json الخاص بك من GitHub
+    const JSON_URL = "https://raw.githubusercontent.com/aous1980/Aws-Store/main/apps.json";
 
-        async function loadStore(category = 'all', btn = null) {
-            if(btn) {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-
-            try {
-                // إضافة timestamp لمنع تخزين النسخة القديمة في المتصفح
-                const response = await fetch(JSON_URL + "?t=" + Date.now());
-                const data = await response.json();
-                const grid = document.getElementById("app_grid");
-                grid.innerHTML = "";
-
-                const filtered = category === 'all' ? data : data.filter(item => item.cat === category);
-
-                if (filtered.length === 0) {
-                    grid.innerHTML = "<p>لا توجد بيانات</p>";
-                    return;
-                }
-
-                filtered.forEach(item => {
-                    grid.innerHTML += `
-                        <div class="card">
-                            <img src="${item.img}" onerror="this.src='https://via.placeholder.com/90'">
-                            <h3>${item.name}</h3>
-                            <a href="${item.url}" class="btn-down" target="_blank">Download</a>
-                        </div>`;
-                });
-            } catch (e) {
-                document.getElementById("app_grid").innerHTML = "خطأ في الاتصال بالسيرفر";
-            }
+    async function loadData(category = 'all', btn = null) {
+        if(btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
 
-        window.onload = () => loadStore('all');
-    </script>
+        try {
+            const res = await fetch(JSON_URL + "?t=" + Date.now());
+            const data = await res.json();
+            const grid = document.getElementById('grid');
+            grid.innerHTML = "";
+
+            const filtered = category === 'all' ? data : data.filter(i => i.cat === category);
+
+            if(filtered.length === 0) {
+                grid.innerHTML = "<p style='color:gray'>لا توجد ملفات حالياً</p>";
+                return;
+            }
+
+            filtered.forEach(item => {
+                grid.innerHTML += `
+                    <div class="card">
+                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/100'">
+                        <h3>${item.name}</h3>
+                        <a href="${item.url}" class="btn-down" target="_blank">Download</a>
+                    </div>`;
+            });
+        } catch (err) {
+            document.getElementById('grid').innerHTML = "<p>فشل في جلب البيانات من السيرفر</p>";
+        }
+    }
+
+    window.onload = () => loadData('all');
+</script>
 </body>
 </html>
