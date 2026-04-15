@@ -3,30 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المتجر</title>
+    <title>إدارة المتجر السحابية</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
         .box { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto 20px; }
-        
-        h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
-        input, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        
-        .btn-add { background: #1a1a1a; color: #fff; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        
-        .item { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e4e6eb; }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .btn-add { background: #2563eb; color: #fff; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .item { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #ddd; }
         .item img { width: 45px; height: 45px; border-radius: 10px; margin-left: 12px; }
-        .item-info { flex: 1; }
-        
-        /* أزرار متباعدة للموبايل */
-        .actions { display: flex; gap: 15px; }
-        .actions span { cursor: pointer; font-size: 18px; padding: 5px; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2 id="title">إضافة تطبيق جديد</h2>
+    <h2>🚀 إضافة تطبيق للسحاب</h2>
     <input type="text" id="n" placeholder="اسم التطبيق">
     <select id="c">
         <option value="apps">تطبيقات</option>
@@ -34,68 +26,55 @@
     </select>
     <input type="url" id="u" placeholder="رابط التحميل">
     <input type="url" id="i" placeholder="رابط الأيقونة">
-    <button class="btn-add" onclick="save()">حفظ البيانات</button>
+    <button class="btn-add" onclick="saveToCloud()">نشر في المتجر الآن</button>
 </div>
 
-<div style="max-width:600px; margin: 0 auto;">
-    <h3 style="padding:0 10px;">العناصر الحالية:</h3>
-    <div id="list"></div>
-</div>
+<div id="list" style="max-width:600px; margin: auto;"></div>
 
 <script>
-    const DB = "aws_store_db";
-    let editId = -1;
+    // استبدل هذه القيم ببيانات مشروعك من Firebase
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+        projectId: "YOUR_PROJECT",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-    function save() {
-        const name=document.getElementById('n').value, cat=document.getElementById('c').value, 
-              url=document.getElementById('u').value, img=document.getElementById('i').value;
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        if(!name || !url || !img) return alert("اكمل البيانات");
+    function saveToCloud() {
+        const name = document.getElementById('n').value;
+        const cat = document.getElementById('c').value;
+        const url = document.getElementById('u').value;
+        const img = document.getElementById('i').value;
 
-        let data = JSON.parse(localStorage.getItem(DB)) || [];
-        if(editId === -1) data.push({name, cat, url, img});
-        else data[editId] = {name, cat, url, img};
+        if(!name || !url) return alert("أكمل البيانات");
 
-        localStorage.setItem(DB, JSON.stringify(data));
-        location.reload();
+        const newAppRef = db.ref('apps').push();
+        newAppRef.set({ name, cat, url, img })
+        .then(() => { alert("تم النشر بنجاح!"); location.reload(); });
     }
 
-    function render() {
-        const data = JSON.parse(localStorage.getItem(DB)) || [];
+    // عرض العناصر مع زر حذف
+    db.ref('apps').on('value', (snap) => {
         const list = document.getElementById('list');
-        data.forEach((item, index) => {
+        list.innerHTML = "";
+        snap.forEach((child) => {
+            const item = child.val();
             list.innerHTML += `
                 <div class="item">
                     <img src="${item.img}">
-                    <div class="item-info"><strong>${item.name}</strong></div>
-                    <div class="actions">
-                        <span onclick="edit(${index})">📝</span>
-                        <span onclick="del(${index})" style="color:red">🗑️</span>
-                    </div>
+                    <div style="flex:1"><strong>${item.name}</strong></div>
+                    <button onclick="deleteApp('${child.key}')" style="color:red; background:none; border:none; cursor:pointer;">حذف</button>
                 </div>`;
         });
-    }
+    });
 
-    window.edit = (index) => {
-        let data = JSON.parse(localStorage.getItem(DB));
-        const item = data[index];
-        document.getElementById('n').value = item.name;
-        document.getElementById('c').value = item.cat;
-        document.getElementById('u').value = item.url;
-        document.getElementById('i').value = item.img;
-        editId = index;
-        document.getElementById('title').innerText = "تعديل بيانات التطبيق";
-        window.scrollTo(0,0);
-    }
-
-    window.del = (index) => { if(confirm("حذف؟")) { 
-        let data = JSON.parse(localStorage.getItem(DB));
-        data.splice(index, 1);
-        localStorage.setItem(DB, JSON.stringify(data));
-        location.reload();
-    }}
-
-    render();
+    window.deleteApp = (id) => { if(confirm("حذف؟")) db.ref('apps/' + id).remove(); }
 </script>
 </body>
 </html>
