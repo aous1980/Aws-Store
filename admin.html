@@ -2,74 +2,193 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم - Aws Store</title>
+    <title>🔐 لوحة التحكم المتقدمة - Aws Store</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; direction: rtl; }
-        .box { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #000; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .add-btn { width: 100%; padding: 15px; background: #000; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; }
-        .item { background: #fff; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 5px; display: flex; justify-content: space-between; }
-        .json-box { background: #222; color: #27ae60; padding: 15px; border-radius: 5px; margin-top: 20px; white-space: pre-wrap; font-family: monospace; font-size: 12px; text-align: left; max-height: 200px; overflow-y: auto; }
-        .copy-btn { background: #27ae60; color: #fff; border: none; padding: 10px; width: 100%; margin-top: 5px; cursor: pointer; border-radius: 5px; }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .admin-panel { width: 100%; max-width: 500px; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #000; text-align: center; }
+        h1 { font-size: 26px; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+
+        .field-container { margin-bottom: 20px; text-align: right; }
+        .label-text { display: block; font-size: 18px; margin-bottom: 8px; font-weight: bold; }
+        
+        .input-row { display: flex; border: 2px solid #000; border-radius: 8px; overflow: hidden; }
+        .input-row input { flex: 1; border: none; padding: 12px; outline: none; text-align: center; font-size: 16px; }
+        
+        .category-section { margin: 25px 0; font-weight: bold; text-align: right; }
+        select { padding: 10px; font-size: 16px; width: 100%; border: 2px solid #000; border-radius: 8px; margin-top: 5px; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .add-btn { background: #000; color: #fff; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; flex: 2; font-weight: bold; }
+        .cancel-btn { background: #888; color: #fff; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; flex: 1; display: none; }
+
+        .manage-list { width: 100%; margin-top: 40px; text-align: right; }
+        .app-item { background: #fff; border: 1px solid #000; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .app-data { font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .app-controls { display: flex; justify-content: space-between; align-items: center; }
+        .move-btns button { background: #eee; border: 1px solid #000; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .action-btns button { border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .edit-btn { background: #ffc107; color: #000; }
+        .del-btn { background: #ff4757; color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>➕ إضافة تطبيق جديد</h2>
-    <input type="text" id="name" placeholder="اسم التطبيق">
-    <input type="text" id="url" placeholder="رابط التحميل المباشر">
-    <input type="text" id="img" placeholder="رابط صورة اللوجو">
-    <select id="cat">
-        <option value="apps">قسم التطبيقات (Apps)</option>
-        <option value="sat">قسم Sat Softwar</option>
-    </select>
-    <button class="add-btn" onclick="addApp()">إضافة للقائمة</button>
+    <div class="admin-panel">
+        <h1 id="panelTitle">إضافة تطبيق جديد</h1>
 
-    <div id="list"></div>
+        <div class="field-container">
+            <span class="label-text">اسم التطبيق</span>
+            <div class="input-row"><input type="text" id="appName" placeholder="اكتب الاسم"></div>
+        </div>
 
-    <h3>الكود النهائي لملف apps.json:</h3>
-    <div class="json-box" id="jsonOutput">[]</div>
-    <button class="copy-btn" onclick="copyText()">نسخ الكود بالكامل</button>
-</div>
+        <div class="field-container">
+            <span class="label-text">رابط التحميل</span>
+            <div class="input-row"><input type="text" id="appUrl" placeholder="https://..."></div>
+        </div>
 
-<script>
-    let apps = [];
+        <div class="field-container">
+            <span class="label-text">رابط الصورة</span>
+            <div class="input-row"><input type="text" id="appImg" placeholder="https://..."></div>
+        </div>
 
-    function addApp() {
-        const name = document.getElementById('name').value;
-        const url = document.getElementById('url').value;
-        const img = document.getElementById('img').value;
-        const cat = document.getElementById('cat').value;
+        <div class="category-section">
+            <label>اختر القسم:</label>
+            <select id="category">
+                <option value="apps">التطبيقات (Apps)</option>
+                <option value="sat">Sat Softwar</option>
+            </select>
+        </div>
 
-        if(name && url && img) {
-            apps.push({name, url, img, cat});
-            updateList();
-            document.getElementById('name').value = '';
-            document.getElementById('url').value = '';
-            document.getElementById('img').value = '';
-        } else { alert("املأ الخانات!"); }
-    }
+        <div class="btn-group">
+            <button class="add-btn" id="btnSave">➕ حفظ التطبيق</button>
+            <button class="cancel-btn" id="btnCancel" onclick="resetForm()">إلغاء</button>
+        </div>
 
-    function updateList() {
-        const list = document.getElementById('list');
-        list.innerHTML = "<h4>القائمة المضافة:</h4>";
-        apps.forEach((item, index) => {
-            list.innerHTML += `<div class="item">
-                <span>${item.name} (${item.cat})</span>
-                <button onclick="remove(${index})" style="color:red">حذف</button>
-            </div>`;
+        <div class="manage-list">
+            <h3>📦 ترتيب وإدارة التطبيقات:</h3>
+            <div id="statusList"></div>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = "aws_store_v1";
+        let editIndex = -1; // متغير لمعرفة هل نحن في وضع التعديل أم الإضافة
+
+        const btnSave = document.getElementById('btnSave');
+        const btnCancel = document.getElementById('btnCancel');
+        const panelTitle = document.getElementById('panelTitle');
+
+        // وظيفة الحفظ (إضافة أو تعديل)
+        btnSave.addEventListener('click', function() {
+            const name = document.getElementById('appName').value.trim();
+            const url = document.getElementById('appUrl').value.trim();
+            const img = document.getElementById('appImg').value.trim();
+            const cat = document.getElementById('category').value;
+
+            if (name && url && img) {
+                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+
+                if (editIndex === -1) {
+                    // إضافة جديد
+                    data.push({ name, url, img, cat });
+                    alert("✅ تم إضافة التطبيق بنجاح!");
+                } else {
+                    // تعديل موجود
+                    data[editIndex] = { name, url, img, cat };
+                    alert("✅ تم تحديث بيانات التطبيق!");
+                }
+
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                resetForm();
+                renderList();
+            } else {
+                alert("⚠️ يرجى ملء كافة الخانات!");
+            }
         });
-        document.getElementById('jsonOutput').innerText = JSON.stringify(apps, null, 4);
-    }
 
-    function remove(i) { apps.splice(i, 1); updateList(); }
+        // عرض القائمة مع أزرار التحكم
+        function renderList() {
+            const listDiv = document.getElementById('statusList');
+            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-    function copyText() {
-        const text = document.getElementById('jsonOutput').innerText;
-        navigator.clipboard.writeText(text);
-        alert("تم النسخ! اذهب لـ GitHub والصقه في ملف apps.json");
-    }
-</script>
+            listDiv.innerHTML = data.length === 0 ? "<p style='color:gray; text-align:center;'>القائمة فارغة.</p>" : "";
+
+            data.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'app-item';
+                div.innerHTML = `
+                    <div class="app-data">
+                        ${index + 1}. ${item.name} <small>(${item.cat})</small>
+                    </div>
+                    <div class="app-controls">
+                        <div class="move-btns">
+                            <button onclick="moveItem(${index}, -1)">🔼</button>
+                            <button onclick="moveItem(${index}, 1)">🔽</button>
+                        </div>
+                        <div class="action-btns">
+                            <button class="edit-btn" onclick="startEdit(${index})">تعديل</button>
+                            <button class="del-btn" onclick="deleteItem(${index})">حذف</button>
+                        </div>
+                    </div>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+
+        // وظيفة التعديل: ملء الخانات بالبيانات القديمة
+        window.startEdit = function(index) {
+            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            const item = data[index];
+
+            document.getElementById('appName').value = item.name;
+            document.getElementById('appUrl').value = item.url;
+            document.getElementById('appImg').value = item.img;
+            document.getElementById('category').value = item.cat;
+
+            editIndex = index;
+            panelTitle.innerText = "📝 تعديل تطبيق: " + item.name;
+            btnSave.innerText = "💾 حفظ التغييرات";
+            btnCancel.style.display = "block";
+            window.scrollTo(0, 0); // الصعود لأعلى الصفحة لرؤية الخانات
+        };
+
+        // وظيفة إعادة الترتيب
+        window.moveItem = function(index, direction) {
+            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            let newIndex = index + direction;
+
+            if (newIndex >= 0 && newIndex < data.length) {
+                // تبديل الأماكن
+                let temp = data[index];
+                data[index] = data[newIndex];
+                data[newIndex] = temp;
+                
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                renderList();
+            }
+        };
+
+        // إعادة ضبط النموذج
+        window.resetForm = function() {
+            document.getElementById('appName').value = "";
+            document.getElementById('appUrl').value = "";
+            document.getElementById('appImg').value = "";
+            editIndex = -1;
+            panelTitle.innerText = "إضافة تطبيق جديد";
+            btnSave.innerText = "➕ حفظ التطبيق";
+            btnCancel.style.display = "none";
+        };
+
+        window.deleteItem = function(index) {
+            if (confirm("هل أنت متأكد من الحذف نهائياً؟")) {
+                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+                data.splice(index, 1);
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                renderList();
+            }
+        };
+
+        window.onload = renderList;
+    </script>
 </body>
 </html>
