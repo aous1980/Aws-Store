@@ -1,7 +1,125 @@
-const JSON_URL = "[
-  {
-    "name": "Cinemana Plus",
-    "url": "https://github.com/iraqapps/tvapps/raw/refs/heads/main/apps/cinemanaplustv.apk",
-    "img": "https://raw.githubusercontent.com/iraqapps/tvapps/refs/heads/main/img/cinemanaplus.png",
-    "cat": "apps"
-  },";
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aws Store | متجر التطبيقات</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding-bottom: 50px; }
+        header { background: #000; color: white; padding: 20px; text-align: center; margin-bottom: 25px; }
+        
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+        
+        .section-title { font-size: 22px; font-weight: bold; margin: 20px 0; border-right: 5px solid #2563eb; padding-right: 10px; }
+
+        /* شبكة التطبيقات */
+        .store-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 20px; 
+        }
+
+        .app-card { 
+            background: white; 
+            border-radius: 18px; 
+            padding: 15px; 
+            text-align: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .app-card:hover { transform: translateY(-5px); }
+
+        .app-card img { 
+            width: 90px; 
+            height: 90px; 
+            border-radius: 20%; 
+            object-fit: cover; 
+            margin-bottom: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .app-card h3 { font-size: 15px; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-card span { font-size: 12px; color: #666; }
+
+        .download-btn { 
+            display: inline-block; 
+            margin-top: 10px; 
+            background: #2563eb; 
+            color: white; 
+            padding: 6px 15px; 
+            border-radius: 20px; 
+            font-size: 13px; 
+            font-weight: bold; 
+        }
+
+        /* تحسينات الموبايل */
+        @media (max-width: 480px) {
+            .store-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+            .app-card img { width: 70px; height: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>AWS STORE 🚀</h1>
+    <p>أفضل التطبيقات والبرامج الحصرية</p>
+</header>
+
+<div class="container">
+    <div id="satSection" style="display:none;">
+        <div class="section-title">Sat Softwar</div>
+        <div id="satList" class="store-grid"></div>
+    </div>
+
+    <div id="appsSection" style="display:none;">
+        <div class="section-title">التطبيقات العامة</div>
+        <div id="appsList" class="store-grid"></div>
+    </div>
+    
+    <div id="emptyMsg" style="text-align:center; margin-top:50px; color:#888; display:none;">
+        جاري تحديث المتجر... لا توجد تطبيقات حالياً.
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = "aws_store_data";
+
+    function loadStore() {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const satList = document.getElementById('satList');
+        const appsList = document.getElementById('appsList');
+        
+        if(data.length === 0) {
+            document.getElementById('emptyMsg').style.display = "block";
+            return;
+        }
+
+        data.forEach(app => {
+            const card = `
+                <a href="${app.url}" class="app-card" target="_blank">
+                    <img src="${app.img}" onerror="this.src='https://via.placeholder.com/100'">
+                    <h3>${app.name}</h3>
+                    <span>${app.cat === 'sat' ? 'Software' : 'App'}</span><br>
+                    <div class="download-btn">تحميل</div>
+                </a>
+            `;
+
+            if(app.cat === 'sat') {
+                document.getElementById('satSection').style.display = "block";
+                satList.innerHTML += card;
+            } else {
+                document.getElementById('appsSection').style.display = "block";
+                appsList.innerHTML += card;
+            }
+        });
+    }
+
+    window.onload = loadStore;
+</script>
+</body>
+</html>
