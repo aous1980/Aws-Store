@@ -3,120 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store - التحديث السحابي التلقائي</title>
+    <title>🔐 إدارة متجر Aws Store</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; text-align: center; }
-        .config-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #000; margin-bottom: 20px; max-width: 500px; margin-inline: auto; }
-        .admin-panel { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 15px; border: 2px solid #000; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        .save-btn { width: 100%; padding: 15px; background: #27ae60; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        .status { margin-top: 15px; padding: 10px; border-radius: 5px; font-weight: bold; display: none; }
+        :root { --primary: #2563eb; --dark: #1e293b; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* تصميم الكروت */
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: var(--dark); border-right: 4px solid var(--primary); padding-right: 10px; margin-top: 0; }
+
+        /* الفورم */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+        
+        .btn { cursor: pointer; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: var(--primary); color: white; width: 100%; margin-top: 15px; }
+        .btn-add:hover { background: #1d4ed8; }
+
+        /* القائمة */
+        .app-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .app-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
+        .app-info { display: flex; align-items: center; gap: 15px; }
+        .app-info img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
+        
+        .controls { display: flex; gap: 5px; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .edit { background: #ffca28; }
+        .del { background: #ef4444; color: white; }
+
+        /* Responsive Mobile */
+        @media (max-width: 600px) {
+            .app-item { flex-direction: column; text-align: center; }
+            .controls { margin-top: 10px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="config-box">
-    <h3>⚙️ إعدادات الربط مع GitHub</h3>
-    <input type="password" id="ghToken" placeholder="أدخل GitHub Token الخاص بك">
-    <small>يتم حفظ التوكن في متصفحك فقط لأغراض الأمان.</small>
-</div>
+<div class="container">
+    <div class="card">
+        <h2 id="formTitle">إضافة تطبيق جديد</h2>
+        <div class="form-grid">
+            <div class="input-group">
+                <label>اسم التطبيق</label>
+                <input type="text" id="appName" placeholder="مثلاً: WhatsApp Pro">
+            </div>
+            <div class="input-group">
+                <label>القسم</label>
+                <select id="appCat">
+                    <option value="apps">تطبيقات</option>
+                    <option value="sat">Sat Softwar</option>
+                </select>
+            </div>
+            <div class="input-group" style="grid-column: span 2;">
+                <label>رابط التحميل</label>
+                <input type="url" id="appUrl" placeholder="https://...">
+            </div>
+            <div class="input-group" style="grid-column: span 2;">
+                <label>رابط الأيقونة</label>
+                <input type="url" id="appImg" placeholder="https://...">
+            </div>
+        </div>
+        <button class="btn btn-add" onclick="saveData()" id="saveBtn">حفظ التطبيق</button>
+        <button class="btn" id="cancelBtn" style="display:none; background:#ccc; width:100%; margin-top:5px;" onclick="resetForm()">إلغاء التعديل</button>
+    </div>
 
-<div class="admin-panel">
-    <h2>➕ إضافة وتحديث تلقائي</h2>
-    <input type="text" id="appName" placeholder="اسم التطبيق">
-    <input type="text" id="appUrl" placeholder="رابط التحميل">
-    <input type="text" id="appImg" placeholder="رابط الصورة">
-    <select id="appCat">
-        <option value="apps">تطبيقات (Apps)</option>
-        <option value="sat">Sat Softwar</option>
-    </select>
-    <button class="save-btn" onclick="processUpdate()">🚀 حفظ وتحديث جيت هاب فوراً</button>
-    <div id="statusMsg" class="status"></div>
+    <div class="card">
+        <h2>📦 التطبيقات المضافة</h2>
+        <div id="appList" class="app-list"></div>
+    </div>
 </div>
 
 <script>
-    // إعدادات المستودع الخاصة بك
-    const OWNER = "aous1980";
-    const REPO = "Aws-Store";
-    const FILE_PATH = "apps.json";
+    const STORAGE_KEY = "aws_store_data";
+    let editIndex = -1;
 
-    // تحميل التوكن المحفوظ إن وجد
-    document.getElementById('ghToken').value = localStorage.getItem('gh_token') || '';
-
-    async function processUpdate() {
-        const token = document.getElementById('ghToken').value;
+    function saveData() {
         const name = document.getElementById('appName').value;
+        const cat = document.getElementById('appCat').value;
         const url = document.getElementById('appUrl').value;
         const img = document.getElementById('appImg').value;
-        const cat = document.getElementById('appCat').value;
-        const status = document.getElementById('statusMsg');
 
-        if (!token || !name || !url) {
-            alert("يرجى ملء البيانات والتوكن!");
-            return;
+        if(!name || !url || !img) return alert("يرجى ملء كافة الحقول");
+
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const appObj = { name, cat, url, img };
+
+        if(editIndex === -1) {
+            data.push(appObj);
+        } else {
+            data[editIndex] = appObj;
         }
 
-        // حفظ التوكن محلياً للاستخدام القادم
-        localStorage.setItem('gh_token', token);
-        
-        showStatus("⏳ جاري الاتصال بـ GitHub...", "#3498db");
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        resetForm();
+        render();
+    }
 
-        try {
-            // 1. جلب محتوى الملف الحالي و الـ SHA (ضروري للتحديث في جيت هاب)
-            const getUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
-            const response = await fetch(getUrl, {
-                headers: { "Authorization": `token ${token}` }
-            });
+    function render() {
+        const list = document.getElementById('appList');
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        list.innerHTML = data.length === 0 ? "<p>لا توجد تطبيقات حالياً</p>" : "";
 
-            if (!response.ok) throw new Error("فشل جلب البيانات من جيت هاب");
+        data.forEach((item, index) => {
+            list.innerHTML += `
+                <div class="app-item">
+                    <div class="app-info">
+                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/50'">
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            <small>${item.cat}</small>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-sm" onclick="move(${index}, -1)">🔼</button>
+                        <button class="btn btn-sm" onclick="move(${index}, 1)">🔽</button>
+                        <button class="btn btn-sm edit" onclick="startEdit(${index})">تعديل</button>
+                        <button class="btn btn-sm del" onclick="deleteItem(${index})">حذف</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
 
-            const fileData = await response.json();
-            const currentContent = JSON.parse(atob(fileData.content)); // تحويل من Base64
-
-            // 2. إضافة التطبيق الجديد للقائمة
-            currentContent.push({ name, url, img, cat });
-
-            // 3. رفع الملف المحدث إلى GitHub
-            const updatedBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2))));
-            
-            const putResponse = await fetch(getUrl, {
-                method: "PUT",
-                headers: {
-                    "Authorization": `token ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message: `إضافة تطبيق جديد: ${name}`,
-                    content: updatedBase64,
-                    sha: fileData.sha // مهم جداً لإتمام التحديث
-                })
-            });
-
-            if (putResponse.ok) {
-                showStatus("✅ تم التحديث بنجاح! المتجر سيتحدث الآن في كل الأجهزة.", "#27ae60");
-                clearInputs();
-            } else {
-                throw new Error("فشل عملية الرفع");
-            }
-
-        } catch (error) {
-            showStatus("❌ خطأ: " + error.message, "#e74c3c");
+    function deleteItem(index) {
+        if(confirm("هل أنت متأكد؟")) {
+            let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            data.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            render();
         }
     }
 
-    function showStatus(msg, color) {
-        const s = document.getElementById('statusMsg');
-        s.style.display = "block";
-        s.style.backgroundColor = color;
-        s.style.color = "#fff";
-        s.innerText = msg;
+    function startEdit(index) {
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const item = data[index];
+        document.getElementById('appName').value = item.name;
+        document.getElementById('appCat').value = item.cat;
+        document.getElementById('appUrl').value = item.url;
+        document.getElementById('appImg').value = item.img;
+        editIndex = index;
+        document.getElementById('saveBtn').innerText = "تحديث البيانات";
+        document.getElementById('cancelBtn').style.display = "block";
     }
 
-    function clearInputs() {
-        document.getElementById('appName').value = "";
-        document.getElementById('appUrl').value = "";
-        document.getElementById('appImg').value = "";
+    function move(index, step) {
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if(index + step >= 0 && index + step < data.length) {
+            [data[index], data[index+step]] = [data[index+step], data[index]];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            render();
+        }
     }
+
+    function resetForm() {
+        document.querySelectorAll('input').forEach(i => i.value = "");
+        editIndex = -1;
+        document.getElementById('saveBtn').innerText = "حفظ التطبيق";
+        document.getElementById('cancelBtn').style.display = "none";
+    }
+
+    window.onload = render;
 </script>
 </body>
 </html>
