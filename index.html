@@ -1,14 +1,54 @@
 const JSON_URL = "https://raw.githubusercontent.com/aous1980/Aws-Store/main/apps.json";
 
-async function loadData() {
+async function loadData(category = 'all', btn = null) {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = "🔄 جاري الاتصال بالسيرفر...";
+
+    if(btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
     try {
-        // إضافة Date.now() تمنع المتصفح من جلب نسخة قديمة
-        const res = await fetch(JSON_URL + "?t=" + Date.now()); 
-        if (!res.ok) throw new Error("السيرفر لا يستجيب");
+        // نستخدم محاولات جلب البيانات مع تخطي الكاش بشكل صارم
+        const res = await fetch(JSON_URL, {
+            cache: "no-store", // منع المتصفح من تخزين النسخة القديمة
+            headers: { 'Cache-Control': 'no-cache' }
+        });
+
+        if (!res.ok) {
+            // إذا كان الخطأ 404 يعني الرابط خطأ أو الملف محذوف
+            if(res.status === 404) throw new Error("الملف غير موجود (404). تأكد من اسم الملف في جيت هاب.");
+            throw new Error(`خطأ في السيرفر: ${res.status}`);
+        }
+
         const data = await res.json();
-        // ... باقي الكود
+        grid.innerHTML = ""; // مسح رسالة التحميل
+
+        const filtered = category === 'all' ? data : data.filter(i => i.cat === category);
+
+        if(!filtered || filtered.length === 0) {
+            grid.innerHTML = "<p style='color:gray'>القائمة فارغة حالياً.</p>";
+            return;
+        }
+
+        filtered.forEach(item => {
+            grid.innerHTML += `
+                <div class="card">
+                    <img src="${item.img}" onerror="this.src='https://via.placeholder.com/100'">
+                    <h3>${item.name}</h3>
+                    <a href="${item.url}" class="btn-down" target="_blank">Download</a>
+                </div>`;
+        });
+
     } catch (err) {
-        console.error(err); // سيظهر لك سبب الفشل الحقيقي في الـ Console
-        document.getElementById('grid').innerHTML = "فشل في جلب البيانات: " + err.message;
+        console.error("Detailed Error:", err);
+        // عرض الخطأ للمستخدم بشكل واضح
+        grid.innerHTML = `
+            <div style="color:#ff4757; padding:20px;">
+                ⚠️ فشل في جلب البيانات <br>
+                <small>${err.message}</small> <br>
+                <button onclick="location.reload()" style="margin-top:10px; padding:5px 15px;">إعادة محاولة</button>
+            </div>`;
     }
 }
