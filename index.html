@@ -2,83 +2,117 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | المتجر</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aws Store | تحميل التطبيقات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
+        :root { --p: #2563eb; --bg: #f3f4f6; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--bg); margin: 0; -webkit-tap-highlight-color: transparent; }
         
-        header { background: #0f172a; color: white; padding: 40px 20px; text-align: center; clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%); }
-        header h1 { margin: 0; font-size: 32px; letter-spacing: 2px; }
+        /* هيدر متجاوب */
+        header { background: #000; color: #fff; padding: 30px 15px; text-align: center; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
 
-        .container { max-width: 1100px; margin: -30px auto 0; padding: 0 15px; }
+        /* عناوين الأقسام */
+        .sec-title { font-size: 1.4rem; font-weight: 700; margin: 25px 0 15px; color: #1f2937; display: flex; align-items: center; gap: 10px; }
+        .sec-title::after { content: ''; flex: 1; height: 1px; background: #ddd; }
 
-        .section-title { font-size: 22px; font-weight: 700; margin: 40px 0 20px; border-right: 5px solid var(--primary); padding-right: 12px; display: flex; align-items: center; }
+        /* شبكة عرض ذكية */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 15px; 
+        }
 
-        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+        /* كرت التطبيق - محسن للموبايل والحاسبة */
+        .card { 
+            background: #fff; 
+            border-radius: 20px; 
+            padding: 15px; 
+            text-align: center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #eee;
+        }
 
-        @media (max-width: 600px) { .apps-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; } }
+        .card:active { transform: scale(0.95); } /* تأثير ضغط للموبايل */
 
-        .app-card { background: white; border-radius: 22px; padding: 15px; text-align: center; text-decoration: none; color: inherit; transition: 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; display: flex; flex-direction: column; align-items: center; }
-        .app-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .card img { 
+            width: 80px; height: 80px; 
+            border-radius: 18px; 
+            margin: 0 auto 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
-        .app-card img { width: 85px; height: 85px; border-radius: 20%; object-fit: cover; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #eee; }
-        .app-card h3 { font-size: 15px; margin: 5px 0; font-weight: 700; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .app-card span { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+        .card h3 { font-size: 15px; margin: 5px 0; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* زر التحميل - مصمم لسهولة النقر */
+        .btn-dl { 
+            background: var(--p); 
+            color: #fff; 
+            text-decoration: none; 
+            padding: 10px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            font-size: 14px;
+            margin-top: 10px;
+            display: block;
+        }
 
-        .dl-btn { background: #f1f5f9; color: var(--primary); width: 100%; padding: 8px 0; border-radius: 50px; font-size: 12px; font-weight: 700; transition: 0.3s; }
-        .app-card:hover .dl-btn { background: var(--primary); color: white; }
-
-        .empty { text-align: center; padding: 100px 0; color: #94a3b8; }
-        .hidden { display: none; }
+        /* تعديلات للموبايل الصغير جداً */
+        @media (max-width: 400px) {
+            .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .card { padding: 10px; }
+            .card img { width: 65px; height: 65px; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>AWS STORE</h1>
-    <p>تطبيقاتك المفضلة في مكان واحد</p>
+    <h1 style="margin:0">AWS STORE</h1>
+    <p style="opacity:0.8; font-size:14px">متجر البرامج المباشر</p>
 </header>
 
 <div class="container">
-    <div id="satSection" class="hidden">
-        <div class="section-title">Sat Softwar</div>
-        <div id="satGrid" class="apps-grid"></div>
+    <div id="satSection" style="display:none">
+        <div class="sec-title">Sat Softwar</div>
+        <div id="satGrid" class="grid"></div>
     </div>
 
-    <div id="appsSection" class="hidden">
-        <div class="section-title">التطبيقات العامة</div>
-        <div id="appsGrid" class="apps-grid"></div>
+    <div id="appsSection" style="display:none">
+        <div class="sec-title">تطبيقات الهواتف</div>
+        <div id="appsGrid" class="grid"></div>
     </div>
-
-    <div id="emptyMsg" class="empty hidden">لا توجد تطبيقات متاحة حالياً.</div>
 </div>
 
 <script>
-    const DB_KEY = "aws_store_db";
-    function render() {
-        const data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-        if (data.length === 0) { document.getElementById('emptyMsg').classList.remove('hidden'); return; }
-
+    const DB = "aws_store_db";
+    window.onload = () => {
+        const data = JSON.parse(localStorage.getItem(DB)) || [];
         data.forEach(item => {
-            const card = `
-                <a href="${item.url}" target="_blank" class="app-card">
-                    <img src="${item.img}" onerror="this.src='https://via.placeholder.com/100?text=App'">
-                    <h3>${item.name}</h3>
-                    <span>${item.cat === 'sat' ? 'Software' : 'Application'}</span>
-                    <div class="dl-btn">تحميل</div>
-                </a>`;
-            if (item.cat === 'sat') {
-                document.getElementById('satSection').classList.remove('hidden');
-                document.getElementById('satGrid').innerHTML += card;
+            const html = `
+                <div class="card">
+                    <div>
+                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/80?text=App'">
+                        <h3>${item.name}</h3>
+                    </div>
+                    <a href="${item.url}" class="btn-dl" target="_blank">تحميل الآن</a>
+                </div>`;
+            if(item.cat === 'sat') {
+                document.getElementById('satSection').style.display = 'block';
+                document.getElementById('satGrid').innerHTML += html;
             } else {
-                document.getElementById('appsSection').classList.remove('hidden');
-                document.getElementById('appsGrid').innerHTML += card;
+                document.getElementById('appsSection').style.display = 'block';
+                document.getElementById('appsGrid').innerHTML += html;
             }
         });
     }
-    window.onload = render;
 </script>
 </body>
 </html>
