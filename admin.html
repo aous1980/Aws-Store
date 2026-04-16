@@ -2,35 +2,201 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم الشاملة - Aws Store</title>
+    <title>إدارة متجر Aws Store | التحكم الكامل</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0b0f12; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .panel { width: 100%; max-width: 700px; background: #161b20; padding: 20px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; }
+        .admin-panel { width: 100%; max-width: 650px; background: #161b20; padding: 25px; border-radius: 15px; border: 1px solid #2d353b; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .status-bar { font-size: 13px; text-align: center; margin-bottom: 20px; padding: 5px; border-radius: 5px; background: #1c2329; }
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; }
-        .save-btn { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; border: none; }
-        .list-item { background: #1c2329; padding: 10px 15px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
-        .btn-group { display: flex; gap: 5px; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; cursor: pointer; border: none; border-radius: 4px; color: #fff; }
-        .edit-btn { background: #00a2ff; } .del-btn { background: #ff4757; }
-        h3 { border-right: 4px solid #00ff88; padding-right: 10px; margin-top: 25px; }
+        .save-btn { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+        .edit-mode { background: #ffcc00 !important; color: #000 !important; }
+        
+        /* تنسيق القوائم */
+        .list-container { width: 100%; max-width: 650px; margin-top: 30px; }
+        .item-card { background: #1c2329; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        .controls { display: flex; gap: 8px; }
+        .btn-sm { width: auto; padding: 6px 15px; cursor: pointer; border: none; border-radius: 5px; color: #fff; font-weight: bold; font-size: 12px; }
+        .del-btn { background: #ff4757; } .edit-btn { background: #00a2ff; }
+        
+        h3 { border-right: 4px solid #00ff88; padding-right: 10px; margin-top: 30px; color: #00ff88; }
+        .cat-manager { border: 1px dashed #333; padding: 15px; border-radius: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="panel">
-        <h2 id="appFormTitle">إضافة تطبيق</h2>
+    <div class="admin-panel">
+        <h2 id="appFormTitle" style="text-align:center; color:#00ff88;">🚀 إدارة التطبيقات</h2>
+        <div id="connStatus" class="status-bar">جاري فحص الاتصال...</div>
+        
         <input type="text" id="appName" placeholder="اسم التطبيق">
-        <input type="text" id="appUrl" placeholder="رابط التحميل">
-        <input type="text" id="appImg" placeholder="رابط الصورة">
-        <input type="text" id="appVer" placeholder="الإصدار">
+        <input type="text" id="appUrl" placeholder="رابط التحميل المباشر">
+        <input type="text" id="appImg" placeholder="رابط أيقونة الصورة">
+        <input type="text" id="appVer" placeholder="الإصدار (مثل v1.0)">
+        
+        <label style="font-size:13px; color:#888;">اختر القسم:</label>
         <select id="categorySelect"></select>
-        <button id="appSubmitBtn" class="save-btn" onclick="saveApp()">🚀 حفظ التطبيق</button>
-        <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء</button>
+
+        <button id="appSubmitBtn" class="save-btn" onclick="saveApp()">حفظ ونشر التطبيق</button>
+        <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء التعديل</button>
+
+        <div class="cat-manager">
+            <h4 style="margin:0 0 10px 0;">📂 إدارة الأقسام</h4>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="catInput" placeholder="اسم قسم جديد أو تعديل">
+                <button id="catSubmitBtn" onclick="saveCategory()" style="width:100px; background:#333; margin:8px 0;">حفظ</button>
+            </div>
+            <div id="catListDisplay" style="max-height: 150px; overflow-y: auto; margin-top:10px;"></div>
+        </div>
     </div>
 
-    <div class="panel">
-        <h2 id="catFormTitle">إدارة الأقسام</h2>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="catInput
+    <div class="list-container">
+        <h3>📦 التطبيقات المرفوعة (اسحب للترتيب)</h3>
+        <div id="appsListDisplay"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let editAppId = null;
+        let editCatId = null;
+
+        // إشعار الاتصال بالسحابة
+        db.ref(".info/connected").on("value", s => {
+            const status = document.getElementById('connStatus');
+            if(s.val()) {
+                status.innerHTML = "<span style='color:#00ff88'>● متصل بالسحابة (قاعدة البيانات جاهزة)</span>";
+            } else {
+                status.innerHTML = "<span style='color:#ff4757'>○ غير متصل (تحقق من الإنترنت أو القواعد)</span>";
+            }
+        });
+
+        // --- 1. التحكم بالأقسام ---
+        function saveCategory() {
+            const name = document.getElementById('catInput').value.trim();
+            if(!name) return;
+            if(editCatId) {
+                db.ref('categories/' + editCatId).update({name}).then(() => {
+                    alert("تم تحديث القسم");
+                    resetCatForm();
+                });
+            } else {
+                db.ref('categories').push({name}).then(() => resetCatForm());
+            }
+        }
+
+        db.ref('categories').on('value', s => {
+            const select = document.getElementById('categorySelect');
+            const display = document.getElementById('catListDisplay');
+            select.innerHTML = ""; display.innerHTML = "";
+            s.forEach(c => {
+                const cat = c.val();
+                select.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                display.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #222; font-size:13px;">
+                        <span>${cat.name}</span>
+                        <div>
+                            <span style="color:#00a2ff; cursor:pointer; margin-left:10px;" onclick="startEditCat('${c.key}','${cat.name}')">تعديل</span>
+                            <span style="color:#ff4757; cursor:pointer;" onclick="deleteCat('${c.key}')">حذف</span>
+                        </div>
+                    </div>`;
+            });
+        });
+
+        function startEditCat(id, name) {
+            editCatId = id;
+            document.getElementById('catInput').value = name;
+            document.getElementById('catSubmitBtn').style.background = "#ffcc00";
+        }
+
+        function resetCatForm() {
+            editCatId = null;
+            document.getElementById('catInput').value = "";
+            document.getElementById('catSubmitBtn').style.background = "#333";
+        }
+
+        function deleteCat(id) {
+            if(confirm("هل تريد حذف هذا القسم؟ (لن تُحذف التطبيقات المرتبطة به ولكنها قد تختفي من المتجر)")) {
+                db.ref('categories/' + id).remove();
+            }
+        }
+
+        // --- 2. التحكم بالتطبيقات ---
+        function saveApp() {
+            const data = {
+                name: document.getElementById('appName').value.trim(),
+                url: document.getElementById('appUrl').value.trim(),
+                img: document.getElementById('appImg').value.trim(),
+                ver: document.getElementById('appVer').value.trim() || 'v1.0',
+                cat: document.getElementById('categorySelect').value,
+                order: Date.now()
+            };
+
+            if(!data.name || !data.cat) return alert("يرجى التأكد من كتابة الاسم واختيار القسم!");
+
+            const ref = editAppId ? db.ref('apps/' + editAppId) : db.ref('apps').push();
+            ref.set(data).then(() => {
+                alert("تمت العملية بنجاح!");
+                resetAppForm();
+            }).catch(e => alert("خطأ: " + e.message));
+        }
+
+        db.ref('apps').orderByChild('order').on('value', s => {
+            const display = document.getElementById('appsListDisplay');
+            display.innerHTML = "";
+            s.forEach(c => {
+                const item = c.val();
+                display.innerHTML += `
+                    <div class="item-card" data-id="${c.key}">
+                        <div>
+                            <strong>${item.name}</strong> <br>
+                            <small style="color:#888;">${item.cat} | ${item.ver}</small>
+                        </div>
+                        <div class="controls">
+                            <button class="btn-sm edit-btn" onclick="startEditApp('${c.key}',${JSON.stringify(item)})">تعديل</button>
+                            <button class="btn-sm del-btn" onclick="deleteApp('${c.key}')">حذف</button>
+                        </div>
+                    </div>`;
+            });
+            new Sortable(display, { animation: 150, onEnd: saveOrder });
+        });
+
+        function saveOrder() {
+            const items = document.getElementById('appsListDisplay').children;
+            Array.from(items).forEach((el, index) => {
+                db.ref('apps/' + el.getAttribute('data-id')).update({order: index});
+            });
+        }
+
+        function startEditApp(id, item) {
+            editAppId = id;
+            document.getElementById('appName').value = item.name;
+            document.getElementById('appUrl').value = item.url;
+            document.getElementById('appImg').value = item.img;
+            document.getElementById('appVer').value = item.ver;
+            document.getElementById('categorySelect').value = item.cat;
+            
+            document.getElementById('appFormTitle').innerText = "📝 تعديل تطبيق";
+            document.getElementById('appSubmitBtn').innerText = "تحديث البيانات";
+            document.getElementById('appSubmitBtn').classList.add('edit-mode');
+            document.getElementById('appCancelBtn').style.display = "block";
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function resetAppForm() {
+            editAppId = null;
+            document.querySelectorAll('.admin-panel > input').forEach(i => i.value = "");
+            document.getElementById('appFormTitle').innerText = "🚀 إدارة التطبيقات";
+            document.getElementById('appSubmitBtn').innerText = "حفظ ونشر التطبيق";
+            document.getElementById('appSubmitBtn').classList.remove('edit-mode');
+            document.getElementById('appCancelBtn').style.display = "none";
+        }
+
+        function deleteApp(id) { if(confirm("حذف التطبيق نهائياً؟")) db.ref('apps/' + id).remove(); }
+    </script>
+</body>
+</html>
