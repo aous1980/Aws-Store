@@ -3,46 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | المتجر الكامل</title>
+    <title>Aws Store | المتجر المتكامل</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; }
         body { background: var(--main-bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 30px; }
         
-        /* الهيدر والبحث */
-        .top-bar { position: sticky; top: 0; background: var(--main-bg); z-index: 1000; padding: 15px; border-bottom: 1px solid #1c2329; }
-        .search-box input { width: 100%; max-width: 600px; display: block; margin: auto; padding: 12px; border-radius: 10px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; }
+        /* الهيدر الثابت */
+        .top-bar { position: sticky; top: 0; background: var(--main-bg); z-index: 1000; padding: 15px 10px; border-bottom: 1px solid #1c2329; }
+        .search-box input { width: 100%; max-width: 600px; display: block; margin: auto; padding: 12px; border-radius: 10px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; }
         
-        .container { max-width: 1100px; margin: auto; padding: 15px; }
-        .section-title { color: var(--accent); font-size: 20px; font-weight: bold; margin: 25px 0 15px; border-right: 4px solid var(--accent); padding-right: 10px; }
+        /* أزرار الأقسام العلوية */
+        .categories-nav { display: flex; gap: 10px; overflow-x: auto; padding: 15px 5px; max-width: 800px; margin: auto; scrollbar-width: none; }
+        .categories-nav::-webkit-scrollbar { display: none; }
+        .cat-btn { background: #1c2329; color: #fff; padding: 8px 18px; border-radius: 20px; border: 1px solid #2d353b; cursor: pointer; white-space: nowrap; transition: 0.3s; font-size: 13px; }
+        .cat-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+
+        .container { max-width: 1100px; margin: auto; padding: 10px; }
+        .section-title { color: var(--accent); font-size: 18px; font-weight: bold; margin: 20px 0 10px; padding-right: 10px; border-right: 3px solid var(--accent); }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         
         /* بطاقة التطبيق */
         .app-card { background: var(--card-bg); border-radius: 15px; padding: 15px; border: 1px solid #232a31; position: relative; }
-        .app-ver { position: absolute; left: 15px; top: 15px; color: var(--accent); font-weight: bold; font-size: 12px; }
-        .card-body { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; }
-        .app-icon { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #252525; }
-        .app-name { font-size: 16px; font-weight: bold; margin: 0; }
-        .app-cat { font-size: 12px; color: #888; margin-top: 4px; }
+        .app-ver { position: absolute; left: 15px; top: 15px; color: var(--accent); font-weight: bold; font-size: 11px; }
+        .card-body { display: flex; gap: 12px; align-items: center; margin-bottom: 15px; margin-top: 5px; }
+        .app-icon { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; background: #252525; }
+        .app-name { font-size: 15px; font-weight: bold; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-cat-label { font-size: 11px; color: #888; margin-top: 3px; }
         
         .btn-group { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn { flex: 1; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold; font-size: 13px; transition: 0.2s; }
         .btn-dl { background: var(--accent); color: #000; }
         .btn-sub { background: #232a31; color: #fff; }
-        .btn:active { transform: scale(0.95); }
+        
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن تطبيق..." oninput="fetchData()">
+            <input type="text" id="searchInput" placeholder="ابحث عن تطبيق..." oninput="renderAll()">
         </div>
+        <div class="categories-nav" id="catNav">
+            <button class="cat-btn active" onclick="filterByCat('الكل', this)">الكل</button>
+            </div>
     </div>
 
-    <div class="container" id="storeContent">
+    <div class="container" id="storeContainer">
         </div>
 
     <script>
@@ -50,59 +60,86 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function fetchData() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+        let allApps = [];
+        let allCats = [];
+        let currentFilter = "الكل";
+
+        // جلب البيانات مرة واحدة وتحديثها تلقائياً
+        db.ref().on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+
+            allApps = data.apps ? Object.values(data.apps).sort((a,b) => (a.order || 0) - (b.order || 0)) : [];
+            allCats = data.categories ? Object.values(data.categories) : [];
             
-            // جلب الأقسام والتطبيقات معاً
-            db.ref().on('value', snap => {
-                const data = snap.val();
-                if (!data) return;
+            updateCatNav();
+            renderAll();
+        });
 
-                const apps = data.apps ? Object.values(data.apps) : [];
-                const categories = data.categories ? Object.values(data.categories) : [];
-                const container = document.getElementById('storeContent');
-                container.innerHTML = ""; // تنظيف المتجر قبل الرسم الجديد
-
-                // ترتيب التطبيقات حسب الـ order (الأحدث أولاً أو حسب ترتيبك في اللوحة)
-                apps.sort((a, b) => (a.order || 0) - (b.order || 0));
-
-                categories.forEach(cat => {
-                    // فلترة التطبيقات التي تنتمي لهذا القسم وتطابق البحث
-                    const filteredApps = apps.filter(app => 
-                        app.cat === cat.name && 
-                        app.name.toLowerCase().includes(query)
-                    );
-
-                    if (filteredApps.length > 0) {
-                        let sectionHTML = `<div class="section"><div class="section-title">${cat.name}</div><div class="grid">`;
-                        
-                        filteredApps.forEach(app => {
-                            sectionHTML += `
-                                <div class="app-card">
-                                    <span class="app-ver">${app.ver || 'v1.0'}</span>
-                                    <div class="card-body">
-                                        <img src="${app.img}" class="app-icon" onerror="this.src='https://via.placeholder.com/60'">
-                                        <div>
-                                            <p class="app-name">${app.name}</p>
-                                            <p class="app-cat">${app.cat}</p>
-                                        </div>
-                                    </div>
-                                    <div class="btn-group">
-                                        <a href="${app.url}" class="btn btn-dl">📥 تحميل</a>
-                                        <a href="#" class="btn btn-sub">المشغل</a>
-                                    </div>
-                                </div>`;
-                        });
-
-                        sectionHTML += `</div></div>`;
-                        container.innerHTML += sectionHTML; // إضافة القسم بالكامل للمتجر
-                    }
-                });
+        function updateCatNav() {
+            const nav = document.getElementById('catNav');
+            const currentActive = currentFilter;
+            nav.innerHTML = `<button class="cat-btn ${currentActive === 'الكل' ? 'active' : ''}" onclick="filterByCat('الكل', this)">الكل</button>`;
+            
+            allCats.forEach(cat => {
+                nav.innerHTML += `<button class="cat-btn ${currentActive === cat.name ? 'active' : ''}" onclick="filterByCat('${cat.name}', this)">${cat.name}</button>`;
             });
         }
 
-        // التشغيل الأول
-        fetchData();
+        function filterByCat(catName, btn) {
+            currentFilter = catName;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderAll();
+        }
+
+        function renderAll() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const container = document.getElementById('storeContainer');
+            container.innerHTML = "";
+
+            // تحديد الأقسام التي سنعرضها (إما الكل أو القسم المختار)
+            const targetCats = currentFilter === "الكل" ? allCats : allCats.filter(c => c.name === currentFilter);
+
+            targetCats.forEach(cat => {
+                const filteredApps = allApps.filter(app => 
+                    app.cat === cat.name && 
+                    app.name.toLowerCase().includes(query)
+                );
+
+                if (filteredApps.length > 0) {
+                    let sectionHTML = `
+                        <div class="section">
+                            <div class="section-title">${cat.name}</div>
+                            <div class="grid">`;
+                    
+                    filteredApps.forEach(app => {
+                        sectionHTML += `
+                            <div class="app-card">
+                                <span class="app-ver">${app.ver || 'v1.0'}</span>
+                                <div class="card-body">
+                                    <img src="${app.img}" class="app-icon" onerror="this.src='https://via.placeholder.com/60'">
+                                    <div>
+                                        <p class="app-name">${app.name}</p>
+                                        <p class="app-cat-label">${app.cat}</p>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="${app.url}" class="btn btn-dl">📥 تحميل</a>
+                                    <a href="#" class="btn btn-sub">المشغل</a>
+                                </div>
+                            </div>`;
+                    });
+
+                    sectionHTML += `</div></div>`;
+                    container.innerHTML += sectionHTML;
+                }
+            });
+
+            if(container.innerHTML === "") {
+                container.innerHTML = "<p style='text-align:center; color:#888; margin-top:50px;'>لا توجد نتائج مطابقة لبحثك</p>";
+            }
+        }
     </script>
 </body>
 </html>
