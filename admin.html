@@ -2,45 +2,60 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة متجر Aws Store</title>
+    <title>إدارة متجر Aws Store - التعديل الكامل</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .admin-panel { width: 100%; max-width: 600px; background: #1e1e1e; padding: 20px; border-radius: 15px; border: 1px solid #333; }
-        input, select, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #252525; color: #fff; }
-        .save-btn { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
-        .app-item { background: #252525; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; justify-content: space-between; cursor: grab; }
-        .del-btn { background: #ff4757; width: auto; padding: 5px 10px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #252525; color: #fff; outline: none; }
+        .save-btn { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; border: none; }
+        .edit-mode { background: #ffcc00 !important; color: #000 !important; }
+        .app-item { background: #252525; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: grab; border: 1px solid #333; }
+        .controls { display: flex; gap: 5px; }
+        .btn-sm { width: auto; padding: 5px 15px; font-size: 12px; cursor: pointer; border: none; }
+        .del-btn { background: #ff4757; }
+        .edit-btn { background: #00a2ff; }
+        .cancel-btn { background: #555; display: none; }
     </style>
 </head>
 <body>
 
     <div class="admin-panel">
-        <h2 id="title">إضافة تطبيق</h2>
+        <h2 id="formTitle">إضافة تطبيق جديد</h2>
         <input type="text" id="appName" placeholder="اسم التطبيق">
         <input type="text" id="appUrl" placeholder="رابط التحميل">
         <input type="text" id="appImg" placeholder="رابط الأيقونة">
-        <input type="text" id="appVer" placeholder="الإصدار (مثلاً v1.0)">
+        <input type="text" id="appVer" placeholder="الإصدار (v1.0)">
+        
+        <label>اختر القسم:</label>
         <select id="categorySelect"></select>
+        
         <div style="display:flex; gap:5px;">
-            <input type="text" id="newCat" placeholder="قسم جديد">
-            <button onclick="addCat()" style="width:100px;">➕</button>
+            <input type="text" id="newCat" placeholder="إضافة قسم جديد">
+            <button onclick="addCat()" style="width:100px; background: #333;">➕</button>
         </div>
-        <button class="save-btn" onclick="saveApp()">🚀 حفظ التطبيق</button>
+        
+        <button id="submitBtn" class="save-btn" onclick="saveData()">🚀 حفظ ونشر</button>
+        <button id="cancelBtn" class="cancel-btn" onclick="resetForm()">إلغاء التعديل</button>
     </div>
 
-    <div id="appList" style="width:100%; max-width:600px; margin-top:20px;"></div>
+    <div id="appList" style="width:100%; max-width:600px; margin-top:30px;">
+        <h3>إدارة وتعديل التطبيقات (اسحب للترتيب):</h3>
+        <div id="itemsContainer"></div>
+    </div>
 
     <script>
         const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        let editId = null;
 
+        // إدارة الأقسام
         function addCat() {
-            const val = document.getElementById('newCat').value;
-            if(val) db.ref('categories').push({name: val});
+            const val = document.getElementById('newCat').value.trim();
+            if(val) db.ref('categories').push({name: val}).then(() => document.getElementById('newCat').value = "");
         }
 
         db.ref('categories').on('value', s => {
@@ -49,7 +64,8 @@
             s.forEach(c => sel.innerHTML += `<option value="${c.val().name}">${c.val().name}</option>`);
         });
 
-        function saveApp() {
+        // حفظ أو تحديث البيانات
+        function saveData() {
             const data = {
                 name: document.getElementById('appName').value,
                 url: document.getElementById('appUrl').value,
@@ -58,29 +74,13 @@
                 cat: document.getElementById('categorySelect').value,
                 order: Date.now()
             };
-            db.ref('apps').push(data);
-        }
 
-        db.ref('apps').orderByChild('order').on('value', s => {
-            const list = document.getElementById('appList');
-            list.innerHTML = "<h3>الترتيب (اسحب للترتيب):</h3>";
-            s.forEach(c => {
-                const item = c.val();
-                list.innerHTML += `<div class="app-item" data-id="${c.key}">
-                    <span>☰ ${item.name} (${item.cat})</span>
-                    <button class="del-btn" onclick="db.ref('apps/${c.key}').remove()">حذف</button>
-                </div>`;
-            });
-            new Sortable(list, {
-                animation: 150,
-                onEnd: function() {
-                    Array.from(list.children).forEach((el, index) => {
-                        const id = el.getAttribute('data-id');
-                        if(id) db.ref('apps/' + id).update({order: index});
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+            if(editId) {
+                db.ref('apps/' + editId).update(data).then(() => {
+                    alert("تم التعديل!");
+                    resetForm();
+                });
+            } else {
+                db.ref('apps').push(data).then(() => {
+                    alert("تمت الإضافة!");
+                    resetForm();
