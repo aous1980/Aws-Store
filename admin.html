@@ -2,45 +2,58 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم المتقدمة | Aws Store</title>
+    <title>لوحة التحكم المطورة | Aws Store</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--main-bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .panel { width: 100%; max-width: 700px; background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; }
-        .status-bar { font-size: 12px; text-align: center; margin-bottom: 15px; color: var(--accent); }
-        input, select, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; }
-        .btn-add { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; margin-top: 10px; }
-        .item-row { background: #1c2329; padding: 10px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #232a31; }
-        .sub-item { margin-right: 30px; border-right: 2px solid var(--accent); padding-right: 10px; background: #12181d; }
-        .controls span { cursor: pointer; margin-right: 10px; font-size: 12px; }
+        .panel { width: 100%; max-width: 650px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .status-bar { font-size: 13px; text-align: center; margin-bottom: 20px; padding: 8px; border-radius: 8px; background: #1c2329; border: 1px solid #232a31; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; font-size: 14px; }
+        .save-btn { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+        .edit-mode { background: #ffcc00 !important; color: #000 !important; }
+        
+        /* تنسيق الجداول والقوائم */
+        .list-header { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 10px; margin: 20px 0 10px; align-self: flex-start; width: 100%; max-width: 650px; }
+        .item-card { background: #1c2329; padding: 12px 15px; margin: 8px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        .controls { display: flex; gap: 8px; }
+        .btn-sm { width: auto; padding: 6px 12px; cursor: pointer; border: none; border-radius: 5px; color: #fff; font-weight: bold; font-size: 12px; }
+        .del-btn { background: #ff4757; } .edit-btn { background: #00a2ff; }
+        
+        .cat-box { border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div class="panel">
-        <div id="connStatus" class="status-bar">جاري فحص الاتصال...</div>
+        <h2 id="mainTitle" style="text-align:center; margin-top:0;">🛠️ إدارة متجر Aws Store</h2>
+        <div id="connStatus" class="status-bar">جاري فحص الاتصال بالسحابة...</div>
         
-        <h3>🛠️ إدارة الأقسام والفروع</h3>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="catInput" placeholder="اسم القسم أو الفرع">
-            <select id="parentSelect" style="width:180px;">
-                <option value="none">قسم رئيسي</option>
-            </select>
-            <button onclick="saveCategory()" id="catBtn" style="width:80px; background:var(--accent); color:#000;">حفظ</button>
-        </div>
-        
-        <div id="catsListDisplay" style="margin-top:15px; max-height:200px; overflow-y:auto;"></div>
-    </div>
-
-    <div class="panel">
-        <h3>🚀 إضافة تطبيق</h3>
         <input type="text" id="appName" placeholder="اسم التطبيق">
         <input type="text" id="appUrl" placeholder="رابط التحميل">
         <input type="text" id="appImg" placeholder="رابط الأيقونة">
-        <select id="appCatSelect"></select>
-        <button class="btn-add" onclick="saveApp()">حفظ ونشر التطبيق</button>
+        <input type="text" id="appVer" placeholder="الإصدار">
+        
+        <label style="font-size:12px; color:#888;">اختر القسم:</label>
+        <select id="categorySelect"></select>
+
+        <button id="appSubmitBtn" class="save-btn" onclick="saveApp()">🚀 حفظ التطبيق</button>
+        <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء التعديل</button>
+
+        <div class="cat-box">
+            <h4 style="margin:0 0 10px 0; color:var(--accent);">📂 إدارة الأقسام</h4>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="catInput" placeholder="اسم قسم جديد">
+                <button id="catSubmitBtn" onclick="saveCategory()" style="width:100px; background:#333; margin:8px 0;">حفظ</button>
+            </div>
+            <div id="catListDisplay" style="max-height: 120px; overflow-y: auto; margin-top:10px; border-top: 1px solid #222;"></div>
+        </div>
+    </div>
+
+    <div style="width:100%; max-width:650px;">
+        <h3 class="list-header">📦 التطبيقات الحالية</h3>
+        <div id="appsListDisplay"></div>
     </div>
 
     <script>
@@ -48,88 +61,115 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let editAppId = null;
         let editCatId = null;
 
-        // الاتصال
+        // إشعار الاتصال
         db.ref(".info/connected").on("value", s => {
-            document.getElementById('connStatus').innerText = s.val() ? "● متصل بالسحابة" : "○ غير متصل";
+            const status = document.getElementById('connStatus');
+            status.innerHTML = s.val() ? "<span style='color:#00ff88'>● متصل بالسحابة</span>" : "<span style='color:#ff4757'>○ غير متصل</span>";
         });
 
-        // إدارة الأقسام (رئيسي وفرعي)
+        // --- 1. وظائف الأقسام ---
         function saveCategory() {
             const name = document.getElementById('catInput').value.trim();
-            const parent = document.getElementById('parentSelect').value;
             if(!name) return;
-
-            const ref = editCatId ? db.ref('categories/' + editCatId) : db.ref('categories').push();
-            ref.set({ name: name, parent: parent }).then(() => {
-                document.getElementById('catInput').value = "";
-                editCatId = null;
-                document.getElementById('catBtn').innerText = "حفظ";
-            });
+            if(editCatId) {
+                db.ref('categories/' + editCatId).update({name}).then(() => resetCatForm());
+            } else {
+                db.ref('categories').push({name}).then(() => resetCatForm());
+            }
         }
 
         db.ref('categories').on('value', s => {
-            const parentSelect = document.getElementById('parentSelect');
-            const appCatSelect = document.getElementById('appCatSelect');
-            const list = document.getElementById('catsListDisplay');
-            
-            parentSelect.innerHTML = '<option value="none">قسم رئيسي</option>';
-            appCatSelect.innerHTML = '';
-            list.innerHTML = '';
-
-            const data = s.val() || {};
-            
-            // عرض الأقسام الرئيسية أولاً
-            Object.keys(data).forEach(id => {
-                const cat = data[id];
-                if(cat.parent === "none") {
-                    parentSelect.innerHTML += `<option value="${id}">${cat.name}</option>`;
-                    appCatSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
-                    list.innerHTML += `
-                        <div class="item-row">
-                            <b>${cat.name}</b>
-                            <div class="controls">
-                                <span style="color:#00a2ff" onclick="startEditCat('${id}','${cat.name}','none')">تعديل</span>
-                                <span style="color:#ff4757" onclick="db.ref('categories/${id}').remove()">حذف</span>
-                            </div>
-                        </div>`;
-                    
-                    // عرض الفروع التابعة لهذا القسم
-                    Object.keys(data).forEach(subId => {
-                        const subCat = data[subId];
-                        if(subCat.parent === id) {
-                            appCatSelect.innerHTML += `<option value="${subCat.name}">-- ${subCat.name}</option>`;
-                            list.innerHTML += `
-                                <div class="item-row sub-item">
-                                    <span>${subCat.name}</span>
-                                    <div class="controls">
-                                        <span style="color:#00a2ff" onclick="startEditCat('${subId}','${subCat.name}','${id}')">تعديل</span>
-                                        <span style="color:#ff4757" onclick="db.ref('categories/${subId}').remove()">حذف</span>
-                                    </div>
-                                </div>`;
-                        }
-                    });
-                }
+            const select = document.getElementById('categorySelect');
+            const display = document.getElementById('catListDisplay');
+            select.innerHTML = ""; display.innerHTML = "";
+            s.forEach(c => {
+                const cat = c.val();
+                select.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                display.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #222; font-size:13px;">
+                        <span>${cat.name}</span>
+                        <div>
+                            <span style="color:#00a2ff; cursor:pointer; margin-left:10px;" onclick="startEditCat('${c.key}','${cat.name}')">تعديل</span>
+                            <span style="color:#ff4757; cursor:pointer;" onclick="deleteCat('${c.key}')">حذف</span>
+                        </div>
+                    </div>`;
             });
         });
 
-        function startEditCat(id, name, parent) {
+        function startEditCat(id, name) {
             editCatId = id;
             document.getElementById('catInput').value = name;
-            document.getElementById('parentSelect').value = parent;
-            document.getElementById('catBtn').innerText = "تعديل";
+            document.getElementById('catSubmitBtn').innerText = "تعديل";
+            document.getElementById('catSubmitBtn').style.background = "#ffcc00";
         }
 
+        function resetCatForm() {
+            editCatId = null;
+            document.getElementById('catInput').value = "";
+            document.getElementById('catSubmitBtn').innerText = "حفظ";
+            document.getElementById('catSubmitBtn').style.background = "#333";
+        }
+
+        function deleteCat(id) {
+            if(confirm("هل تريد حذف هذا القسم؟")) db.ref('categories/' + id).remove();
+        }
+
+        // --- 2. وظائف التطبيقات ---
         function saveApp() {
             const data = {
                 name: document.getElementById('appName').value,
                 url: document.getElementById('appUrl').value,
                 img: document.getElementById('appImg').value,
-                cat: document.getElementById('appCatSelect').value,
+                ver: document.getElementById('appVer').value || 'v1.0',
+                cat: document.getElementById('categorySelect').value,
                 order: Date.now()
             };
-            db.ref('apps').push(data).then(() => alert("تم الحفظ!"));
+            if(!data.name || !data.cat) return alert("أكمل البيانات");
+
+            const ref = editAppId ? db.ref('apps/' + editAppId) : db.ref('apps').push();
+            ref.set(data).then(() => { alert("تم الحفظ!"); resetAppForm(); });
+        }
+
+        db.ref('apps').orderByChild('order').on('value', s => {
+            const display = document.getElementById('appsListDisplay');
+            display.innerHTML = "";
+            s.forEach(c => {
+                const item = c.val();
+                display.innerHTML += `
+                    <div class="item-card">
+                        <div><strong>${item.name}</strong> <small>(${item.cat})</small></div>
+                        <div class="controls">
+                            <button class="btn-sm edit-btn" onclick="startEditApp('${c.key}',${JSON.stringify(item)})">تعديل</button>
+                            <button class="btn-sm del-btn" onclick="db.ref('apps/${c.key}').remove()">حذف</button>
+                        </div>
+                    </div>`;
+            });
+        });
+
+        function startEditApp(id, item) {
+            editAppId = id;
+            document.getElementById('appName').value = item.name;
+            document.getElementById('appUrl').value = item.url;
+            document.getElementById('appImg').value = item.img;
+            document.getElementById('appVer').value = item.ver;
+            document.getElementById('categorySelect').value = item.cat;
+            document.getElementById('mainTitle').innerText = "📝 تعديل تطبيق";
+            document.getElementById('appSubmitBtn').innerText = "تحديث الآن";
+            document.getElementById('appSubmitBtn').classList.add('edit-mode');
+            document.getElementById('appCancelBtn').style.display = "block";
+            window.scrollTo(0,0);
+        }
+
+        function resetAppForm() {
+            editAppId = null;
+            document.querySelectorAll('.panel > input').forEach(i => i.value = "");
+            document.getElementById('mainTitle').innerText = "🛠️ إدارة متجر Aws Store";
+            document.getElementById('appSubmitBtn').innerText = "🚀 حفظ التطبيق";
+            document.getElementById('appSubmitBtn').classList.remove('edit-mode');
+            document.getElementById('appCancelBtn').style.display = "none";
         }
     </script>
 </body>
