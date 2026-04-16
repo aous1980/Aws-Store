@@ -2,123 +2,35 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة متجر Aws Store - النسخة النهائية</title>
+    <title>لوحة التحكم الشاملة - Aws Store</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0b0f12; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .admin-panel { width: 100%; max-width: 600px; background: #161b20; padding: 25px; border-radius: 15px; border: 1px solid #00ff88; }
-        .status { font-size: 12px; margin-bottom: 10px; color: #888; text-align: center; }
+        .panel { width: 100%; max-width: 700px; background: #161b20; padding: 20px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; }
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; }
         .save-btn { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; border: none; }
-        .app-item { background: #1c2329; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
-        .btn-sm { width: auto; padding: 5px 12px; cursor: pointer; border: none; border-radius: 5px; color: #fff; }
+        .list-item { background: #1c2329; padding: 10px 15px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        .btn-group { display: flex; gap: 5px; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; cursor: pointer; border: none; border-radius: 4px; color: #fff; }
         .edit-btn { background: #00a2ff; } .del-btn { background: #ff4757; }
+        h3 { border-right: 4px solid #00ff88; padding-right: 10px; margin-top: 25px; }
     </style>
 </head>
 <body>
 
-    <div class="admin-panel">
-        <h2>إدارة المتجر</h2>
-        <div id="connStatus" class="status">جاري التحقق من الاتصال...</div>
-        
+    <div class="panel">
+        <h2 id="appFormTitle">إضافة تطبيق</h2>
         <input type="text" id="appName" placeholder="اسم التطبيق">
         <input type="text" id="appUrl" placeholder="رابط التحميل">
         <input type="text" id="appImg" placeholder="رابط الصورة">
         <input type="text" id="appVer" placeholder="الإصدار">
-        
         <select id="categorySelect"></select>
-        
+        <button id="appSubmitBtn" class="save-btn" onclick="saveApp()">🚀 حفظ التطبيق</button>
+        <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء</button>
+    </div>
+
+    <div class="panel">
+        <h2 id="catFormTitle">إدارة الأقسام</h2>
         <div style="display:flex; gap:5px;">
-            <input type="text" id="newCat" placeholder="قسم جديد">
-            <button onclick="addCat()" style="width:100px; background:#333;">إضافة</button>
-        </div>
-        
-        <button id="mainBtn" class="save-btn" onclick="saveData()">🚀 حفظ ونشر</button>
-    </div>
-
-    <div style="width:100%; max-width:600px; margin-top:20px;">
-        <h3>التطبيقات المرفوعة:</h3>
-        <div id="itemsList"></div>
-    </div>
-
-    <script>
-        const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let editId = null;
-
-        // التحقق من الاتصال
-        db.ref(".info/connected").on("value", s => {
-            const status = document.getElementById('connStatus');
-            status.innerHTML = s.val() ? "<span style='color:#00ff88'>● متصل بالسحابة</span>" : "<span style='color:#ff4757'>○ غير متصل</span>";
-        });
-
-        // إدارة الأقسام
-        function addCat() {
-            const name = document.getElementById('newCat').value.trim();
-            if(name) db.ref('categories').push({name}).then(() => document.getElementById('newCat').value = "");
-        }
-
-        db.ref('categories').on('value', s => {
-            const sel = document.getElementById('categorySelect');
-            sel.innerHTML = s.exists() ? "" : "<option>أضف قسماً أولاً</option>";
-            s.forEach(c => sel.innerHTML += `<option value="${c.val().name}">${c.val().name}</option>`);
-        });
-
-        // حفظ البيانات مع معالجة الأخطاء
-        function saveData() {
-            const data = {
-                name: document.getElementById('appName').value,
-                url: document.getElementById('appUrl').value,
-                img: document.getElementById('appImg').value,
-                ver: document.getElementById('appVer').value || 'v1.0',
-                cat: document.getElementById('categorySelect').value,
-                order: Date.now()
-            };
-
-            if(!data.name || !data.cat) return alert("أكمل البيانات!");
-
-            const ref = editId ? db.ref('apps/' + editId) : db.ref('apps').push();
-            ref.set(data)
-                .then(() => { alert("تم الحفظ!"); resetForm(); })
-                .catch(err => alert("فشل الحفظ! تأكد من القواعد (Rules) في Firebase.\nالخطأ: " + err.message));
-        }
-
-        // عرض القائمة
-        db.ref('apps').orderByChild('order').on('value', s => {
-            const list = document.getElementById('itemsList');
-            list.innerHTML = "";
-            s.forEach(c => {
-                const item = c.val();
-                list.innerHTML += `
-                    <div class="app-item">
-                        <div><b>${item.name}</b><br><small>${item.cat}</small></div>
-                        <div>
-                            <button class="btn-sm edit-btn" onclick="startEdit('${c.key}',${JSON.stringify(item)})">تعديل</button>
-                            <button class="btn-sm del-btn" onclick="db.ref('apps/${c.key}').remove()">حذف</button>
-                        </div>
-                    </div>`;
-            });
-        });
-
-        function startEdit(id, item) {
-            editId = id;
-            document.getElementById('appName').value = item.name;
-            document.getElementById('appUrl').value = item.url;
-            document.getElementById('appImg').value = item.img;
-            document.getElementById('appVer').value = item.ver;
-            document.getElementById('categorySelect').value = item.cat;
-            document.getElementById('mainBtn').innerText = "💾 تحديث الآن";
-            window.scrollTo(0,0);
-        }
-
-        function resetForm() {
-            editId = null;
-            document.querySelectorAll('input').forEach(i => i.value = "");
-            document.getElementById('mainBtn').innerText = "🚀 حفظ ونشر";
-        }
-    </script>
-</body>
-</html>
+            <input type="text" id="catInput
