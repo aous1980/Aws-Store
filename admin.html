@@ -2,35 +2,39 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>🔐 لوحة التحكم سحابية - Aws Store</title>
+    <title>🔐 لوحة التحكم المتقدمة - Aws Store</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .admin-panel { width: 100%; max-width: 500px; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #000; text-align: center; }
         h1 { font-size: 26px; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+
         .field-container { margin-bottom: 20px; text-align: right; }
         .label-text { display: block; font-size: 18px; margin-bottom: 8px; font-weight: bold; }
+        
         .input-row { display: flex; border: 2px solid #000; border-radius: 8px; overflow: hidden; }
         .input-row input { flex: 1; border: none; padding: 12px; outline: none; text-align: center; font-size: 16px; }
+        
         .category-section { margin: 25px 0; font-weight: bold; text-align: right; }
         select { padding: 10px; font-size: 16px; width: 100%; border: 2px solid #000; border-radius: 8px; margin-top: 5px; }
+
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         .add-btn { background: #000; color: #fff; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; flex: 2; font-weight: bold; }
-        .add-btn:disabled { background: #888; }
+        .cancel-btn { background: #888; color: #fff; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 18px; flex: 1; display: none; }
+
         .manage-list { width: 100%; margin-top: 40px; text-align: right; }
-        .app-item { background: #fff; border: 1px solid #000; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .app-data { font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; display: flex; align-items: center; gap: 10px; }
-        .app-data img { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
+        .app-item { background: #fff; border: 1px solid #000; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .app-data { font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .app-controls { display: flex; justify-content: space-between; align-items: center; }
-        .move-btns button { background: #eee; border: 1px solid #000; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+        .move-btns button { background: #eee; border: 1px solid #000; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .action-btns button { border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
-        .edit-btn { background: #ffc107; }
+        .edit-btn { background: #ffc107; color: #000; }
         .del-btn { background: #ff4757; color: #fff; }
     </style>
 </head>
 <body>
 
     <div class="admin-panel">
-        <h1 id="panelTitle">إضافة تطبيق (Cloud)</h1>
+        <h1 id="panelTitle">إضافة تطبيق جديد</h1>
 
         <div class="field-container">
             <span class="label-text">اسم التطبيق</span>
@@ -56,84 +60,65 @@
         </div>
 
         <div class="btn-group">
-            <button class="add-btn" id="btnSave">➕ حفظ في السحابة</button>
+            <button class="add-btn" id="btnSave">➕ حفظ التطبيق</button>
+            <button class="cancel-btn" id="btnCancel" onclick="resetForm()">إلغاء</button>
         </div>
 
         <div class="manage-list">
-            <h3>📦 التطبيقات الحالية:</h3>
-            <div id="statusList">جاري جلب البيانات...</div>
+            <h3>📦 ترتيب وإدارة التطبيقات:</h3>
+            <div id="statusList"></div>
         </div>
     </div>
 
     <script>
-        // --- إعدادات GITHUB ---
-        const GITHUB_TOKEN = 'ضع_التوكن_هنا'; 
-        const REPO_OWNER = 'اسم_حسابك';
-        const REPO_NAME = 'اسم_المستودع';
-        const FILE_PATH = 'data.json';
-        const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+        const DB_KEY = "aws_store_v1";
+        let editIndex = -1; // متغير لمعرفة هل نحن في وضع التعديل أم الإضافة
 
-        let editIndex = -1;
-        let currentSha = "";
-        let allData = [];
+        const btnSave = document.getElementById('btnSave');
+        const btnCancel = document.getElementById('btnCancel');
+        const panelTitle = document.getElementById('panelTitle');
 
-        // معالجة النصوص العربية للتشفير (Base64 UTF-8)
-        function utoa(str) { return btoa(unescape(encodeURIComponent(str))); }
-        function atou(str) { return decodeURIComponent(escape(atob(str))); }
+        // وظيفة الحفظ (إضافة أو تعديل)
+        btnSave.addEventListener('click', function() {
+            const name = document.getElementById('appName').value.trim();
+            const url = document.getElementById('appUrl').value.trim();
+            const img = document.getElementById('appImg').value.trim();
+            const cat = document.getElementById('category').value;
 
-        // جلب البيانات من السيرفر
-        async function loadData() {
-            try {
-                const res = await fetch(API_URL, {
-                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Cache-Control': 'no-cache' }
-                });
-                if (res.ok) {
-                    const fileData = await res.json();
-                    currentSha = fileData.sha;
-                    allData = JSON.parse(atou(fileData.content));
-                    renderList();
-                }
-            } catch (e) { document.getElementById('statusList').innerText = "خطأ في الاتصال!"; }
-        }
+            if (name && url && img) {
+                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-        // حفظ البيانات للسيرفر
-        async function saveToServer() {
-            const btn = document.getElementById('btnSave');
-            btn.disabled = true;
-            btn.innerText = "⏳ جاري الرفع...";
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: "Update Store Data",
-                        content: utoa(JSON.stringify(allData, null, 2)),
-                        sha: currentSha
-                    })
-                });
-
-                if (res.ok) {
-                    alert("✅ تم الحفظ بنجاح!");
-                    location.reload();
+                if (editIndex === -1) {
+                    // إضافة جديد
+                    data.push({ name, url, img, cat });
+                    alert("✅ تم إضافة التطبيق بنجاح!");
                 } else {
-                    alert("❌ فشل الحفظ! تأكد من التوكن أو SHA");
+                    // تعديل موجود
+                    data[editIndex] = { name, url, img, cat };
+                    alert("✅ تم تحديث بيانات التطبيق!");
                 }
-            } catch (e) { alert("خطأ تقني!"); }
-            btn.disabled = false;
-        }
 
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                resetForm();
+                renderList();
+            } else {
+                alert("⚠️ يرجى ملء كافة الخانات!");
+            }
+        });
+
+        // عرض القائمة مع أزرار التحكم
         function renderList() {
             const listDiv = document.getElementById('statusList');
-            listDiv.innerHTML = allData.length === 0 ? "القائمة فارغة" : "";
+            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-            allData.forEach((item, index) => {
+            listDiv.innerHTML = data.length === 0 ? "<p style='color:gray; text-align:center;'>القائمة فارغة.</p>" : "";
+
+            data.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'app-item';
                 div.innerHTML = `
                     <div class="app-data">
-                        <img src="${item.img}" onerror="this.src='https://via.placeholder.com/40'">
-                        <span>${item.name} (${item.cat})</span>
+                        ${index + 1}. ${item.name} <small>(${item.cat})</small>
                     </div>
                     <div class="app-controls">
                         <div class="move-btns">
@@ -141,8 +126,8 @@
                             <button onclick="moveItem(${index}, 1)">🔽</button>
                         </div>
                         <div class="action-btns">
-                            <button class="edit-btn" onclick="startEdit(${index})">📝</button>
-                            <button class="del-btn" onclick="deleteItem(${index})">🗑️</button>
+                            <button class="edit-btn" onclick="startEdit(${index})">تعديل</button>
+                            <button class="del-btn" onclick="deleteItem(${index})">حذف</button>
                         </div>
                     </div>
                 `;
@@ -150,33 +135,60 @@
             });
         }
 
-        document.getElementById('btnSave').onclick = async () => {
-            const name = document.getElementById('appName').value;
-            const url = document.getElementById('appUrl').value;
-            const img = document.getElementById('appImg').value;
-            const cat = document.getElementById('category').value;
+        // وظيفة التعديل: ملء الخانات بالبيانات القديمة
+        window.startEdit = function(index) {
+            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            const item = data[index];
 
-            if(!name || !url) return alert("اكمل البيانات");
-
-            if (editIndex === -1) {
-                allData.push({ name, url, img, cat });
-            } else {
-                allData[editIndex] = { name, url, img, cat };
-            }
-            await saveToServer();
-        };
-
-        window.startEdit = (i) => {
-            editIndex = i;
-            const item = allData[i];
             document.getElementById('appName').value = item.name;
             document.getElementById('appUrl').value = item.url;
             document.getElementById('appImg').value = item.img;
             document.getElementById('category').value = item.cat;
-            document.getElementById('panelTitle').innerText = "تعديل: " + item.name;
-            window.scrollTo(0,0);
+
+            editIndex = index;
+            panelTitle.innerText = "📝 تعديل تطبيق: " + item.name;
+            btnSave.innerText = "💾 حفظ التغييرات";
+            btnCancel.style.display = "block";
+            window.scrollTo(0, 0); // الصعود لأعلى الصفحة لرؤية الخانات
         };
 
-        window.deleteItem = async (i) => {
-            if(confirm("حذف نهائي؟")) {
-                allData.splice(i,
+        // وظيفة إعادة الترتيب
+        window.moveItem = function(index, direction) {
+            let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            let newIndex = index + direction;
+
+            if (newIndex >= 0 && newIndex < data.length) {
+                // تبديل الأماكن
+                let temp = data[index];
+                data[index] = data[newIndex];
+                data[newIndex] = temp;
+                
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                renderList();
+            }
+        };
+
+        // إعادة ضبط النموذج
+        window.resetForm = function() {
+            document.getElementById('appName').value = "";
+            document.getElementById('appUrl').value = "";
+            document.getElementById('appImg').value = "";
+            editIndex = -1;
+            panelTitle.innerText = "إضافة تطبيق جديد";
+            btnSave.innerText = "➕ حفظ التطبيق";
+            btnCancel.style.display = "none";
+        };
+
+        window.deleteItem = function(index) {
+            if (confirm("هل أنت متأكد من الحذف نهائياً؟")) {
+                let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+                data.splice(index, 1);
+                localStorage.setItem(DB_KEY, JSON.stringify(data));
+                renderList();
+            }
+        };
+
+        window.onload = renderList;
+    </script>
+</body>
+</html>
