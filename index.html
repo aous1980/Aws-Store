@@ -8,52 +8,125 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; }
-        body { background: var(--main-bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 30px; }
+        body { background: var(--main-bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* الهيدر الثابت */
-        .top-bar { position: sticky; top: 0; background: var(--main-bg); z-index: 1000; padding: 15px 10px; border-bottom: 1px solid #1c2329; }
-        .search-box input { width: 100%; max-width: 600px; display: block; margin: auto; padding: 12px; border-radius: 10px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; }
-        
-        /* أزرار الأقسام العلوية */
-        .categories-nav { display: flex; gap: 10px; overflow-x: auto; padding: 15px 5px; max-width: 800px; margin: auto; scrollbar-width: none; }
-        .categories-nav::-webkit-scrollbar { display: none; }
-        .cat-btn { background: #1c2329; color: #fff; padding: 8px 18px; border-radius: 20px; border: 1px solid #2d353b; cursor: pointer; white-space: nowrap; transition: 0.3s; font-size: 13px; }
-        .cat-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+        /* الهيدر مع الشعار الجديد */
+        .header-brand { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 30px 10px 20px; 
+            background: linear-gradient(to bottom, #161b20, #0b0f12);
+        }
+        .header-brand img { 
+            width: 120px; 
+            height: auto; 
+            border-radius: 15px; 
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            margin-bottom: 15px;
+        }
+        .header-brand h1 { 
+            font-size: 26px; 
+            margin: 0; 
+            color: var(--accent); 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
 
-        .container { max-width: 1100px; margin: auto; padding: 10px; }
-        .section-title { color: var(--accent); font-size: 18px; font-weight: bold; margin: 20px 0 10px; padding-right: 10px; border-right: 3px solid var(--accent); }
+        /* شريط البحث */
+        .top-bar { 
+            position: sticky; 
+            top: 0; 
+            background: rgba(11, 15, 18, 0.9); 
+            backdrop-filter: blur(15px); 
+            z-index: 1000; 
+            padding: 15px 10px; 
+            border-bottom: 1px solid #1c2329; 
+        }
+        .search-box { max-width: 600px; margin: auto; }
+        .search-box input { 
+            width: 100%; 
+            padding: 14px 20px; 
+            border-radius: 50px; 
+            border: 1px solid #2d353b; 
+            background: #1c2329; 
+            color: #fff; 
+            outline: none; 
+            box-sizing: border-box; 
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        /* الأقسام */
+        .categories-nav { display: flex; gap: 12px; overflow-x: auto; padding: 15px 5px; max-width: 800px; margin: auto; scrollbar-width: none; }
+        .categories-nav::-webkit-scrollbar { display: none; }
+        .cat-btn { 
+            background: #1c2329; 
+            color: #ccc; 
+            padding: 10px 22px; 
+            border-radius: 25px; 
+            border: 1px solid #2d353b; 
+            cursor: pointer; 
+            white-space: nowrap; 
+            transition: 0.3s; 
+            font-size: 14px; 
+        }
+        .cat-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; transform: scale(1.05); }
+
+        .container { max-width: 1100px; margin: auto; padding: 10px; flex: 1; width: 100%; box-sizing: border-box; }
+        .section-title { color: var(--accent); font-size: 18px; font-weight: bold; margin: 30px 0 15px; padding-right: 12px; border-right: 4px solid var(--accent); }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         
         /* بطاقة التطبيق */
-        .app-card { background: var(--card-bg); border-radius: 15px; padding: 15px; border: 1px solid #232a31; position: relative; }
-        .app-ver { position: absolute; left: 15px; top: 15px; color: var(--accent); font-weight: bold; font-size: 11px; }
-        .card-body { display: flex; gap: 12px; align-items: center; margin-bottom: 15px; margin-top: 5px; }
-        .app-icon { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; background: #252525; }
-        .app-name { font-size: 15px; font-weight: bold; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .app-cat-label { font-size: 11px; color: #888; margin-top: 3px; }
+        .app-card { background: var(--card-bg); border-radius: 20px; padding: 18px; border: 1px solid #232a31; position: relative; transition: 0.3s; }
+        .app-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .app-ver { position: absolute; left: 18px; top: 18px; color: var(--accent); font-weight: bold; font-size: 12px; background: rgba(0,255,136,0.1); padding: 2px 8px; border-radius: 5px; }
+        .card-body { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; margin-top: 10px; }
+        .app-icon { width: 65px; height: 65px; border-radius: 15px; object-fit: cover; background: #252525; border: 1px solid #2d353b; }
+        .app-name { font-size: 16px; font-weight: bold; margin: 0; color: #fff; }
+        .app-cat-label { font-size: 12px; color: #888; margin-top: 5px; }
         
-        .btn-group { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: bold; font-size: 13px; transition: 0.2s; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 12px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: bold; font-size: 14px; transition: 0.2s; }
         .btn-dl { background: var(--accent); color: #000; }
-        .btn-sub { background: #232a31; color: #fff; }
+        .btn-dl:hover { background: #00cc6e; }
+        .btn-sub { background: #232a31; color: #fff; border: 1px solid #2d353b; }
+        .btn-sub:hover { background: #2d353b; }
         
+        /* التذييل Footer */
+        footer { text-align: center; padding: 40px 10px; border-top: 1px solid #1c2329; margin-top: 50px; background: #080b0e; }
+        footer p { margin: 5px 0; font-size: 14px; color: #555; }
+        footer strong { color: var(--accent); }
+
         @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
+    <div class="header-brand">
+        <img src="https://r2.erweima.ai/i/w4l7pTf7T0S0oK5v2A_X6g.png" alt="Aws Store Logo">
+        <h1>Aws Store</h1>
+    </div>
+
     <div class="top-bar">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن تطبيق..." oninput="renderAll()">
+            <input type="text" id="searchInput" placeholder="ماذا تريد أن تحمّل اليوم؟" oninput="renderAll()">
         </div>
         <div class="categories-nav" id="catNav">
             <button class="cat-btn active" onclick="filterByCat('الكل', this)">الكل</button>
-            </div>
+        </div>
     </div>
 
-    <div class="container" id="storeContainer">
-        </div>
+    <div class="container" id="storeContainer"></div>
+
+    <footer>
+        <p>جميع الحقوق محفوظة &copy; 2026 <strong>Aws Store</strong></p>
+        <p style="opacity:0.8; letter-spacing: 1px;">Powered by <strong>AWS</strong></p>
+    </footer>
 
     <script>
         const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
@@ -64,14 +137,11 @@
         let allCats = [];
         let currentFilter = "الكل";
 
-        // جلب البيانات مرة واحدة وتحديثها تلقائياً
         db.ref().on('value', snap => {
             const data = snap.val();
             if (!data) return;
-
             allApps = data.apps ? Object.values(data.apps).sort((a,b) => (a.order || 0) - (b.order || 0)) : [];
             allCats = data.categories ? Object.values(data.categories) : [];
-            
             updateCatNav();
             renderAll();
         });
@@ -80,7 +150,6 @@
             const nav = document.getElementById('catNav');
             const currentActive = currentFilter;
             nav.innerHTML = `<button class="cat-btn ${currentActive === 'الكل' ? 'active' : ''}" onclick="filterByCat('الكل', this)">الكل</button>`;
-            
             allCats.forEach(cat => {
                 nav.innerHTML += `<button class="cat-btn ${currentActive === cat.name ? 'active' : ''}" onclick="filterByCat('${cat.name}', this)">${cat.name}</button>`;
             });
@@ -97,8 +166,6 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             const container = document.getElementById('storeContainer');
             container.innerHTML = "";
-
-            // تحديد الأقسام التي سنعرضها (إما الكل أو القسم المختار)
             const targetCats = currentFilter === "الكل" ? allCats : allCats.filter(c => c.name === currentFilter);
 
             targetCats.forEach(cat => {
@@ -118,7 +185,7 @@
                             <div class="app-card">
                                 <span class="app-ver">${app.ver || 'v1.0'}</span>
                                 <div class="card-body">
-                                    <img src="${app.img}" class="app-icon" onerror="this.src='https://via.placeholder.com/60'">
+                                    <img src="${app.img}" class="app-icon" onerror="this.src='https://via.placeholder.com/80/252525/ffffff?text=App'">
                                     <div>
                                         <p class="app-name">${app.name}</p>
                                         <p class="app-cat-label">${app.cat}</p>
@@ -130,7 +197,6 @@
                                 </div>
                             </div>`;
                     });
-
                     sectionHTML += `</div></div>`;
                     container.innerHTML += sectionHTML;
                 }
