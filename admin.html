@@ -6,36 +6,61 @@
     <title>لوحة التحكم المطورة | Aws Store</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
     <style>
-        :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--main-bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .panel { width: 100%; max-width: 650px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; --danger: #ff4757; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--main-bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        
+        /* شاشة تسجيل الدخول */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        
+        .panel { width: 100%; max-width: 600px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .status-bar { font-size: 13px; text-align: center; margin-bottom: 20px; padding: 8px; border-radius: 8px; background: #1c2329; border: 1px solid #232a31; }
+        
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; font-size: 14px; }
         .save-btn { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; transition: 0.3s; }
         .save-btn:hover { opacity: 0.8; }
+        .logout-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); width: auto; padding: 5px 15px; margin: 0; font-size: 12px; cursor: pointer; }
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
         .edit-mode { background: #ffcc00 !important; color: #000 !important; }
         
-        .list-header { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 10px; margin: 20px 0 10px; align-self: flex-start; width: 100%; max-width: 650px; }
+        .list-header { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 10px; margin: 20px 0 10px; align-self: flex-start; width: 100%; max-width: 600px; }
         .item-card { background: #1c2329; padding: 12px 15px; margin: 8px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
         .controls { display: flex; gap: 8px; }
         .btn-sm { width: auto; padding: 6px 12px; cursor: pointer; border: none; border-radius: 5px; color: #fff; font-weight: bold; font-size: 12px; }
-        .del-btn { background: #ff4757; } .edit-btn { background: #00a2ff; }
+        .del-btn { background: var(--danger); } .edit-btn { background: #00a2ff; }
         
         .cat-box { border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 15px; }
         #catListDisplay { max-height: 120px; overflow-y: auto; margin-top:10px; border-top: 1px solid #222; }
+        #loginError { color: var(--danger); font-size: 13px; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 
+    <div id="loginOverlay">
+        <div class="panel" style="max-width: 350px;">
+            <h3 style="text-align:center; margin-top:0;">🔐 دخول الإدارة</h3>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+            <input type="password" id="loginPass" placeholder="كلمة المرور">
+            <button class="save-btn" onclick="login()">دخول</button>
+            <p id="loginError"></p>
+        </div>
+    </div>
+
+    <div class="header-flex" style="max-width: 600px;">
+        <h2 id="mainTitle" style="margin:0;">🛠️ Aws Store</h2>
+        <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+    </div>
+
     <div class="panel">
-        <h2 id="mainTitle" style="text-align:center; margin-top:0;">🛠️ إدارة متجر Aws Store</h2>
-        <div id="connStatus" class="status-bar">جاري فحص الاتصال بالسحابة...</div>
+        <div id="connStatus" class="status-bar">جاري فحص الاتصال...</div>
         
         <input type="text" id="appName" placeholder="اسم التطبيق">
         <input type="text" id="appUrl" placeholder="رابط التحميل">
         <input type="text" id="appImg" placeholder="رابط الأيقونة">
-        <input type="text" id="appVer" placeholder="الإصدار">
+        <input type="text" id="appVer" placeholder="الإصدار (مثلاً v1.0)">
         
         <label style="font-size:12px; color:#888;">اختر القسم:</label>
         <select id="categorySelect"></select>
@@ -53,27 +78,55 @@
         </div>
     </div>
 
-    <div style="width:100%; max-width:650px;">
+    <div style="width:100%; max-width:600px;">
         <h3 class="list-header">📦 التطبيقات الحالية</h3>
         <div id="appsListDisplay"></div>
     </div>
 
     <script>
-        // تكوين Firebase
-        const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
+        // 1. إعداد Firebase (استبدل القيم ببيانات مشروعك إذا كانت مختلفة)
+        const firebaseConfig = { 
+            databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" 
+        };
+        
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const auth = firebase.auth();
 
         let editAppId = null;
         let editCatId = null;
 
-        // فحص حالة الاتصال
+        // --- نظام حماية الدخول ---
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            const errorMsg = document.getElementById('loginError');
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(err => { errorMsg.innerText = "فشل الدخول: " + err.message; });
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        auth.onAuthStateChanged(user => {
+            const overlay = document.getElementById('loginOverlay');
+            if(user) {
+                overlay.style.display = 'none';
+            } else {
+                overlay.style.display = 'flex';
+                document.getElementById('loginPass').value = "";
+            }
+        });
+
+        // فحص حالة الاتصال بقاعدة البيانات
         db.ref(".info/connected").on("value", s => {
             const status = document.getElementById('connStatus');
             status.innerHTML = s.val() ? "<span style='color:#00ff88'>● متصل بالسحابة</span>" : "<span style='color:#ff4757'>○ غير متصل</span>";
         });
 
-        // --- 1. وظائف الأقسام ---
+        // --- وظائف الأقسام ---
         function saveCategory() {
             const name = document.getElementById('catInput').value.trim();
             if(!name) return;
@@ -106,51 +159,46 @@
             editCatId = id;
             document.getElementById('catInput').value = name;
             document.getElementById('catSubmitBtn').innerText = "تعديل";
-            document.getElementById('catSubmitBtn').style.background = "#ffcc00";
-            document.getElementById('catSubmitBtn').style.color = "#000";
+            document.getElementById('catSubmitBtn').classList.add('edit-mode');
         }
 
         function resetCatForm() {
             editCatId = null;
             document.getElementById('catInput').value = "";
             document.getElementById('catSubmitBtn').innerText = "حفظ";
-            document.getElementById('catSubmitBtn').style.background = "#333";
-            document.getElementById('catSubmitBtn').style.color = "#fff";
+            document.getElementById('catSubmitBtn').classList.remove('edit-mode');
         }
 
         function deleteCat(id) {
             if(confirm("هل تريد حذف هذا القسم؟")) db.ref('categories/' + id).remove();
         }
 
-        // --- 2. وظائف التطبيقات ---
+        // --- وظائف التطبيقات ---
         function saveApp() {
             const data = {
                 name: document.getElementById('appName').value.trim(),
                 url: document.getElementById('appUrl').value.trim(),
                 img: document.getElementById('appImg').value.trim(),
                 ver: document.getElementById('appVer').value || 'v1.0',
-                cat: document.getElementById('categorySelect').value,
-                order: editAppId ? null : Date.now() // نحافظ على الترتيب الأصلي عند التعديل
+                cat: document.getElementById('categorySelect').value
             };
             
             if(!data.name || !data.cat) return alert("الرجاء إدخال اسم التطبيق والقسم");
 
             if(editAppId) {
-                // تحديث تطبيق موجود
                 db.ref('apps/' + editAppId).update(data).then(() => {
-                    alert("تم تحديث التطبيق بنجاح");
+                    alert("تم التحديث!");
                     resetAppForm();
                 });
             } else {
-                // إضافة تطبيق جديد
+                data.order = Date.now();
                 db.ref('apps').push(data).then(() => {
-                    alert("تم إضافة التطبيق بنجاح");
+                    alert("تمت الإضافة!");
                     resetAppForm();
                 });
             }
         }
 
-        // عرض القائمة مع استخدام ID الجلب بدلاً من تمرير الكائن كاملاً
         db.ref('apps').on('value', s => {
             const display = document.getElementById('appsListDisplay');
             display.innerHTML = "";
@@ -167,20 +215,16 @@
             });
         });
 
-        // دالة جلب البيانات للتعديل (لحل مشكلة زر التعديل)
         function fetchAppForEdit(id) {
             db.ref('apps/' + id).once('value').then(s => {
                 const item = s.val();
                 if(!item) return;
-
                 editAppId = id;
                 document.getElementById('appName').value = item.name;
                 document.getElementById('appUrl').value = item.url;
                 document.getElementById('appImg').value = item.img;
                 document.getElementById('appVer').value = item.ver;
                 document.getElementById('categorySelect').value = item.cat;
-
-                document.getElementById('mainTitle').innerText = "📝 تعديل تطبيق";
                 document.getElementById('appSubmitBtn').innerText = "تحديث الآن";
                 document.getElementById('appSubmitBtn').classList.add('edit-mode');
                 document.getElementById('appCancelBtn').style.display = "block";
@@ -189,9 +233,7 @@
         }
 
         function deleteApp(id) {
-            if(confirm("هل أنت متأكد من حذف هذا التطبيق نهائياً؟")) {
-                db.ref('apps/' + id).remove();
-            }
+            if(confirm("حذف التطبيق نهائياً؟")) db.ref('apps/' + id).remove();
         }
 
         function resetAppForm() {
@@ -200,7 +242,6 @@
             document.getElementById('appUrl').value = "";
             document.getElementById('appImg').value = "";
             document.getElementById('appVer').value = "";
-            document.getElementById('mainTitle').innerText = "🛠️ إدارة متجر Aws Store";
             document.getElementById('appSubmitBtn').innerText = "🚀 حفظ التطبيق";
             document.getElementById('appSubmitBtn').classList.remove('edit-mode');
             document.getElementById('appCancelBtn').style.display = "none";
