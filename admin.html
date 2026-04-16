@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم المطورة | Aws Store</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -11,10 +12,10 @@
         .panel { width: 100%; max-width: 650px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .status-bar { font-size: 13px; text-align: center; margin-bottom: 20px; padding: 8px; border-radius: 8px; background: #1c2329; border: 1px solid #232a31; }
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; font-size: 14px; }
-        .save-btn { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+        .save-btn { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; transition: 0.3s; }
+        .save-btn:hover { opacity: 0.8; }
         .edit-mode { background: #ffcc00 !important; color: #000 !important; }
         
-        /* تنسيق الجداول والقوائم */
         .list-header { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 10px; margin: 20px 0 10px; align-self: flex-start; width: 100%; max-width: 650px; }
         .item-card { background: #1c2329; padding: 12px 15px; margin: 8px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
         .controls { display: flex; gap: 8px; }
@@ -22,6 +23,7 @@
         .del-btn { background: #ff4757; } .edit-btn { background: #00a2ff; }
         
         .cat-box { border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 15px; }
+        #catListDisplay { max-height: 120px; overflow-y: auto; margin-top:10px; border-top: 1px solid #222; }
     </style>
 </head>
 <body>
@@ -47,7 +49,7 @@
                 <input type="text" id="catInput" placeholder="اسم قسم جديد">
                 <button id="catSubmitBtn" onclick="saveCategory()" style="width:100px; background:#333; margin:8px 0;">حفظ</button>
             </div>
-            <div id="catListDisplay" style="max-height: 120px; overflow-y: auto; margin-top:10px; border-top: 1px solid #222;"></div>
+            <div id="catListDisplay"></div>
         </div>
     </div>
 
@@ -57,6 +59,7 @@
     </div>
 
     <script>
+        // تكوين Firebase
         const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -64,7 +67,7 @@
         let editAppId = null;
         let editCatId = null;
 
-        // إشعار الاتصال
+        // فحص حالة الاتصال
         db.ref(".info/connected").on("value", s => {
             const status = document.getElementById('connStatus');
             status.innerHTML = s.val() ? "<span style='color:#00ff88'>● متصل بالسحابة</span>" : "<span style='color:#ff4757'>○ غير متصل</span>";
@@ -104,6 +107,7 @@
             document.getElementById('catInput').value = name;
             document.getElementById('catSubmitBtn').innerText = "تعديل";
             document.getElementById('catSubmitBtn').style.background = "#ffcc00";
+            document.getElementById('catSubmitBtn').style.color = "#000";
         }
 
         function resetCatForm() {
@@ -111,6 +115,7 @@
             document.getElementById('catInput').value = "";
             document.getElementById('catSubmitBtn').innerText = "حفظ";
             document.getElementById('catSubmitBtn').style.background = "#333";
+            document.getElementById('catSubmitBtn').style.color = "#fff";
         }
 
         function deleteCat(id) {
@@ -120,52 +125,81 @@
         // --- 2. وظائف التطبيقات ---
         function saveApp() {
             const data = {
-                name: document.getElementById('appName').value,
-                url: document.getElementById('appUrl').value,
-                img: document.getElementById('appImg').value,
+                name: document.getElementById('appName').value.trim(),
+                url: document.getElementById('appUrl').value.trim(),
+                img: document.getElementById('appImg').value.trim(),
                 ver: document.getElementById('appVer').value || 'v1.0',
                 cat: document.getElementById('categorySelect').value,
-                order: Date.now()
+                order: editAppId ? null : Date.now() // نحافظ على الترتيب الأصلي عند التعديل
             };
-            if(!data.name || !data.cat) return alert("أكمل البيانات");
+            
+            if(!data.name || !data.cat) return alert("الرجاء إدخال اسم التطبيق والقسم");
 
-            const ref = editAppId ? db.ref('apps/' + editAppId) : db.ref('apps').push();
-            ref.set(data).then(() => { alert("تم الحفظ!"); resetAppForm(); });
+            if(editAppId) {
+                // تحديث تطبيق موجود
+                db.ref('apps/' + editAppId).update(data).then(() => {
+                    alert("تم تحديث التطبيق بنجاح");
+                    resetAppForm();
+                });
+            } else {
+                // إضافة تطبيق جديد
+                db.ref('apps').push(data).then(() => {
+                    alert("تم إضافة التطبيق بنجاح");
+                    resetAppForm();
+                });
+            }
         }
 
-        db.ref('apps').orderByChild('order').on('value', s => {
+        // عرض القائمة مع استخدام ID الجلب بدلاً من تمرير الكائن كاملاً
+        db.ref('apps').on('value', s => {
             const display = document.getElementById('appsListDisplay');
             display.innerHTML = "";
             s.forEach(c => {
                 const item = c.val();
                 display.innerHTML += `
                     <div class="item-card">
-                        <div><strong>${item.name}</strong> <small>(${item.cat})</small></div>
+                        <div><strong>${item.name}</strong> <small style="color:#888;">(${item.cat})</small></div>
                         <div class="controls">
-                            <button class="btn-sm edit-btn" onclick="startEditApp('${c.key}',${JSON.stringify(item)})">تعديل</button>
-                            <button class="btn-sm del-btn" onclick="db.ref('apps/${c.key}').remove()">حذف</button>
+                            <button class="btn-sm edit-btn" onclick="fetchAppForEdit('${c.key}')">تعديل</button>
+                            <button class="btn-sm del-btn" onclick="deleteApp('${c.key}')">حذف</button>
                         </div>
                     </div>`;
             });
         });
 
-        function startEditApp(id, item) {
-            editAppId = id;
-            document.getElementById('appName').value = item.name;
-            document.getElementById('appUrl').value = item.url;
-            document.getElementById('appImg').value = item.img;
-            document.getElementById('appVer').value = item.ver;
-            document.getElementById('categorySelect').value = item.cat;
-            document.getElementById('mainTitle').innerText = "📝 تعديل تطبيق";
-            document.getElementById('appSubmitBtn').innerText = "تحديث الآن";
-            document.getElementById('appSubmitBtn').classList.add('edit-mode');
-            document.getElementById('appCancelBtn').style.display = "block";
-            window.scrollTo(0,0);
+        // دالة جلب البيانات للتعديل (لحل مشكلة زر التعديل)
+        function fetchAppForEdit(id) {
+            db.ref('apps/' + id).once('value').then(s => {
+                const item = s.val();
+                if(!item) return;
+
+                editAppId = id;
+                document.getElementById('appName').value = item.name;
+                document.getElementById('appUrl').value = item.url;
+                document.getElementById('appImg').value = item.img;
+                document.getElementById('appVer').value = item.ver;
+                document.getElementById('categorySelect').value = item.cat;
+
+                document.getElementById('mainTitle').innerText = "📝 تعديل تطبيق";
+                document.getElementById('appSubmitBtn').innerText = "تحديث الآن";
+                document.getElementById('appSubmitBtn').classList.add('edit-mode');
+                document.getElementById('appCancelBtn').style.display = "block";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        function deleteApp(id) {
+            if(confirm("هل أنت متأكد من حذف هذا التطبيق نهائياً؟")) {
+                db.ref('apps/' + id).remove();
+            }
         }
 
         function resetAppForm() {
             editAppId = null;
-            document.querySelectorAll('.panel > input').forEach(i => i.value = "");
+            document.getElementById('appName').value = "";
+            document.getElementById('appUrl').value = "";
+            document.getElementById('appImg').value = "";
+            document.getElementById('appVer').value = "";
             document.getElementById('mainTitle').innerText = "🛠️ إدارة متجر Aws Store";
             document.getElementById('appSubmitBtn').innerText = "🚀 حفظ التطبيق";
             document.getElementById('appSubmitBtn').classList.remove('edit-mode');
