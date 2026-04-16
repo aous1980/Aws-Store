@@ -1,14 +1,1 @@
-[
-  {
-    "name": "تطبيق Aws Player",
-    "url": "https://example.com/download/aws.apk",
-    "img": "https://via.placeholder.com/300x180.png?text=Aws+Player",
-    "cat": "apps"
-  },
-  {
-    "name": "تحديث Icone S4",
-    "url": "https://example.com/files/icone-update.bin",
-    "img": "https://via.placeholder.com/300x180.png?text=Sat+Software",
-    "cat": "sat"
-  }
-]
+[]
