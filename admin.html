@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم | Aws Store</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
     <style>
         :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; --danger: #ff4757; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--main-bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--main-bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         
-        /* واجهة تسجيل الدخول */
+        /* شاشة تسجيل الدخول */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         
         .panel { width: 100%; max-width: 600px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -21,13 +22,16 @@
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; font-size: 14px; }
         .save-btn { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; transition: 0.3s; }
         .save-btn:hover { opacity: 0.8; }
-        .logout-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); width: auto; padding: 5px 15px; cursor: pointer; font-size: 12px; }
+        
+        .logout-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); width: auto; padding: 5px 15px; cursor: pointer; font-size: 12px; border-radius: 8px; }
         
         .header-flex { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; margin-bottom: 20px; }
         .item-card { background: #1c2329; padding: 12px 15px; margin: 8px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        
         .btn-sm { width: auto; padding: 6px 12px; cursor: pointer; border: none; border-radius: 5px; color: #fff; font-size: 12px; }
         .del-btn { background: var(--danger); }
         .edit-btn { background: #00a2ff; }
+        
         .cat-box { border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 15px; }
     </style>
 </head>
@@ -35,11 +39,11 @@
 
     <div id="loginOverlay">
         <div class="panel" style="max-width: 350px;">
-            <h3 style="text-align:center;">🔐 دخول الإدارة</h3>
+            <h3 style="text-align:center; margin-top:0;">🔐 دخول الإدارة</h3>
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" value="aous.safaa.hd.1980@gmail.com">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
             <button class="save-btn" onclick="login()">دخول</button>
-            <p id="loginError" style="color:var(--danger); text-align:center; font-size:12px;"></p>
+            <p id="loginError" style="color:var(--danger); text-align:center; font-size:12px; margin-top:10px;"></p>
         </div>
     </div>
 
@@ -63,22 +67,22 @@
         <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء التعديل</button>
 
         <div class="cat-box">
-            <h4 style="margin:0 0 10px 0; color:var(--accent);">📂 الأقسام</h4>
+            <h4 style="margin:0 0 10px 0; color:var(--accent);">📂 إدارة الأقسام</h4>
             <div style="display:flex; gap:5px;">
-                <input type="text" id="catInput" placeholder="قسم جديد">
-                <button onclick="saveCategory()" style="width:80px; background:#333;">إضافة</button>
+                <input type="text" id="catInput" placeholder="اسم قسم جديد">
+                <button onclick="saveCategory()" style="width:80px; background:#333; cursor:pointer;">إضافة</button>
             </div>
             <div id="catListDisplay" style="max-height:100px; overflow-y:auto; margin-top:10px;"></div>
         </div>
     </div>
 
     <div style="width:100%; max-width:600px;">
-        <h3 style="color:var(--accent); border-right:4px solid var(--accent); padding-right:10px;">📦 التطبيقات الحالية</h3>
+        <h3 style="color:var(--accent); border-right:4px solid var(--accent); padding-right:10px;">📦 التطبيقات المضافة</h3>
         <div id="appsListDisplay"></div>
     </div>
 
     <script>
-        // --- إعدادات FIREBASE باستخدام بياناتك الحقيقية ---
+        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
             authDomain: "aws-store-aaf40.firebaseapp.com",
@@ -89,13 +93,14 @@
             appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
         };
 
+        // بدء تشغيل Firebase
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
 
         let editAppId = null;
 
-        // --- نظام تسجيل الدخول ---
+        // وظيفة تسجيل الدخول
         function login() {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
@@ -105,23 +110,30 @@
             });
         }
 
+        // وظيفة تسجيل الخروج
         function logout() { auth.signOut(); }
 
+        // مراقبة حالة الدخول
         auth.onAuthStateChanged(user => {
-            document.getElementById('loginOverlay').style.display = user ? 'none' : 'flex';
-            if(user) {
-                // تفعيل المستمعات عند الدخول فقط
-                listenToData();
+            const overlay = document.getElementById('loginOverlay');
+            if (user) {
+                overlay.style.display = 'none';
+                listenToData(); // بدء جلب البيانات فقط عند نجاح الدخول
+            } else {
+                overlay.style.display = 'flex';
+                document.getElementById('loginPass').value = "";
             }
         });
 
-        // --- إدارة البيانات ---
+        // جلب البيانات من السحابة
         function listenToData() {
+            // حالة الاتصال
             db.ref(".info/connected").on("value", s => {
-                document.getElementById('connStatus').innerHTML = s.val() ? "<span style='color:#00ff88'>● متصل بالسحابة</span>" : "<span style='color:#ff4757'>○ غير متصل</span>";
+                const status = document.getElementById('connStatus');
+                status.innerHTML = s.val() ? "<span style='color:#00ff88'>● متصل بالسحابة</span>" : "<span style='color:#ff4757'>○ غير متصل</span>";
             });
 
-            // تحديث الأقسام
+            // جلب الأقسام وتحديث القائمة المنسدلة
             db.ref('categories').on('value', s => {
                 const select = document.getElementById('categorySelect');
                 const display = document.getElementById('catListDisplay');
@@ -131,12 +143,12 @@
                     select.innerHTML += `<option value="${name}">${name}</option>`;
                     display.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:12px; padding:4px; border-bottom:1px solid #222;">
                         <span>${name}</span>
-                        <span style="color:red; cursor:pointer;" onclick="deleteCat('${c.key}')">حذف</span>
+                        <span style="color:var(--danger); cursor:pointer;" onclick="deleteCat('${c.key}')">حذف</span>
                     </div>`;
                 });
             });
 
-            // تحديث التطبيقات
+            // جلب وعرض التطبيقات
             db.ref('apps').on('value', s => {
                 const display = document.getElementById('appsListDisplay');
                 display.innerHTML = "";
@@ -154,28 +166,28 @@
             });
         }
 
-        // حفظ الأقسام
+        // وظائف إدارة الأقسام
         function saveCategory() {
             const name = document.getElementById('catInput').value.trim();
             if(name) db.ref('categories').push({name}).then(() => document.getElementById('catInput').value = "");
         }
-        function deleteCat(id) { if(confirm("حذف القسم؟")) db.ref('categories/'+id).remove(); }
+        function deleteCat(id) { if(confirm("حذف هذا القسم؟")) db.ref('categories/'+id).remove(); }
 
-        // حفظ التطبيقات
+        // وظائف إدارة التطبيقات
         function saveApp() {
             const data = {
-                name: document.getElementById('appName').value,
-                url: document.getElementById('appUrl').value,
-                img: document.getElementById('appImg').value,
+                name: document.getElementById('appName').value.trim(),
+                url: document.getElementById('appUrl').value.trim(),
+                img: document.getElementById('appImg').value.trim(),
                 ver: document.getElementById('appVer').value || 'v1.0',
                 cat: document.getElementById('categorySelect').value
             };
-            if(!data.name) return alert("أدخل اسم التطبيق");
+            if(!data.name || !data.cat) return alert("أكمل البيانات المطلوبة (الاسم والقسم)");
 
             if(editAppId) {
-                db.ref('apps/'+editAppId).update(data).then(() => { alert("تم التحديث"); resetAppForm(); });
+                db.ref('apps/'+editAppId).update(data).then(() => { alert("تم التحديث بنجاح"); resetAppForm(); });
             } else {
-                db.ref('apps').push(data).then(() => { alert("تم الحفظ"); resetAppForm(); });
+                db.ref('apps').push(data).then(() => { alert("تم حفظ التطبيق"); resetAppForm(); });
             }
         }
 
@@ -188,7 +200,23 @@
                 document.getElementById('appImg').value = item.img;
                 document.getElementById('appVer').value = item.ver;
                 document.getElementById('categorySelect').value = item.cat;
-                document.getElementById('appSubmitBtn').innerText = "تحديث الآن";
+                document.getElementById('appSubmitBtn').innerText = "✅ تحديث البيانات";
                 document.getElementById('appCancelBtn').style.display = "block";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
+
+        function deleteApp(id) { if(confirm("هل تريد حذف هذا التطبيق؟")) db.ref('apps/'+id).remove(); }
+
+        function resetAppForm() {
+            editAppId = null;
+            document.getElementById('appName').value = "";
+            document.getElementById('appUrl').value = "";
+            document.getElementById('appImg').value = "";
+            document.getElementById('appVer').value = "";
+            document.getElementById('appSubmitBtn').innerText = "🚀 حفظ التطبيق";
+            document.getElementById('appCancelBtn').style.display = "none";
+        }
+    </script>
+</body>
+</html>
