@@ -8,8 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { 
-            /* المتغيرات اللونية بناءً على الخلفية الجديدة */
-            --accent: #bc13fe; /* بنفسجي مشع */
+            --accent: #bc13fe; 
             --accent-glow: rgba(188, 19, 254, 0.5);
             --text: #ffffff; 
             --glass-bg: rgba(15, 15, 25, 0.7);
@@ -26,15 +25,15 @@
             flex-direction: column; 
         }
         
-        /* تأثير التغبيش العام للخلفية لسهولة القراءة */
         body::before {
             content: "";
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.3); /* تعتيم خفيف */
+            background: rgba(0, 0, 0, 0.3);
             z-index: -1;
         }
 
+        /* --- الهيدر --- */
         .header-brand { 
             display: flex; 
             flex-direction: column; 
@@ -45,7 +44,9 @@
             width: 150px; 
             filter: drop-shadow(0 0 15px var(--accent-glow));
             margin-bottom: 10px;
+            transition: transform 0.5s ease;
         }
+        .header-brand:hover img { transform: rotate(-5deg) scale(1.05); }
         .header-brand h1 { 
             font-size: 28px; 
             color: #fff; 
@@ -53,7 +54,7 @@
             margin: 0;
         }
 
-        /* شريط البحث الزجاجي */
+        /* --- شريط البحث والأقسام --- */
         .top-bar { 
             position: sticky; 
             top: 0; 
@@ -81,18 +82,47 @@
             box-shadow: 0 0 20px var(--accent-glow);
         }
 
-        /* البطاقات بتأثير زجاجي متوافق مع الخلفية */
+        .categories-nav {
+            display: flex; gap: 10px; overflow-x: auto; padding: 15px 5px; 
+            max-width: 800px; margin: auto; scrollbar-width: none;
+        }
+        .categories-nav::-webkit-scrollbar { display: none; }
+
+        .cat-btn { 
+            background: rgba(255, 255, 255, 0.05); color: #eee; 
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px 25px; 
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .cat-btn:hover { background: rgba(188, 19, 254, 0.2); border-color: var(--accent); }
+        .cat-btn.active { 
+            background: var(--accent); color: #fff; border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* --- بطاقات التطبيقات --- */
+        .container { max-width: 1200px; margin: auto; padding: 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        
+        .section-title { 
+            color: #fff; font-size: 22px; margin: 40px 0 20px; 
+            border-right: 5px solid var(--accent); padding-right: 15px; 
+        }
+
         .app-card { 
             background: var(--glass-bg); 
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-radius: 25px; 
             padding: 20px; 
             border: 1px solid rgba(255, 255, 255, 0.08); 
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
         }
         .app-card:hover { 
-            transform: translateY(-10px) scale(1.02); 
-            border-color: var(--accent);
+            transform: translateY(-10px); 
+            border-color: rgba(188, 19, 254, 0.5);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
@@ -100,37 +130,44 @@
             position: absolute; left: 20px; top: 20px; 
             color: #fff; background: var(--accent); 
             padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: bold;
+            z-index: 2;
         }
+
+        .card-body img {
+            width: 75px; height: 75px; border-radius: 20px; object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .app-card:hover .card-body img { transform: rotate(5deg) scale(1.1); }
+
+        /* --- الأزرار وتأثيراتها --- */
+        .btn-group { display: flex; gap: 10px; }
+        .btn {
+            flex: 1; padding: 12px; border-radius: 15px; text-decoration: none; 
+            text-align: center; font-weight: bold; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .btn:active { transform: scale(0.95); }
 
         .btn-dl { 
             background: linear-gradient(45deg, var(--accent), #4facfe); 
-            color: #fff; 
-            border: none;
+            color: #fff; border: none;
             box-shadow: 0 4px 15px rgba(188, 19, 254, 0.4);
         }
+        /* تأثير اللمعان المتحرك */
+        .btn-dl::after {
+            content: ''; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%;
+            background: rgba(255, 255, 255, 0.4); transform: rotate(30deg);
+            transition: 0.5s; opacity: 0;
+        }
+        .btn-dl:hover::after { left: 120%; opacity: 1; }
+
         .btn-sub { 
             background: rgba(255, 255, 255, 0.05); 
-            color: #fff; 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); 
         }
+        .btn-sub:hover { background: rgba(255, 255, 255, 0.15); }
 
-        .container { max-width: 1200px; margin: auto; padding: 20px; flex: 1; width: 100%; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .section-title { 
-            color: #fff; font-size: 22px; margin: 40px 0 20px; 
-            border-right: 5px solid var(--accent); padding-right: 15px; 
-        }
-
-        .cat-btn { 
-            background: rgba(255, 255, 255, 0.05); color: #eee; 
-            border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px 25px; 
-            border-radius: 50px; cursor: pointer; transition: 0.3s;
-        }
-        .cat-btn.active { 
-            background: var(--accent); color: #fff; border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-
+        /* --- الفوتر --- */
         footer { 
             text-align: center; padding: 50px; 
             background: rgba(0, 0, 0, 0.4); 
@@ -151,9 +188,9 @@
 
     <div class="top-bar">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن السحر..." oninput="renderAll()">
+            <input type="text" id="searchInput" placeholder="ابحث عن تطبيقك المفضل..." oninput="renderAll()">
         </div>
-        <div class="categories-nav" id="catNav" style="display: flex; gap: 10px; overflow-x: auto; padding: 15px 5px; max-width: 800px; margin: auto; scrollbar-width: none;">
+        <div class="categories-nav" id="catNav">
             <button class="cat-btn active" onclick="filterByCat('الكل', this)">الكل</button>
         </div>
     </div>
@@ -166,16 +203,23 @@
     </footer>
 
     <script>
+        // إعدادات Firebase
         const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let allApps = []; let allCats = []; let currentFilter = "الكل";
 
+        let allApps = []; 
+        let allCats = []; 
+        let currentFilter = "الكل";
+
+        // جلب البيانات من السحابة
         db.ref().on('value', snap => {
-            const data = snap.val(); if (!data) return;
-            allApps = data.apps ? Object.values(data.apps).sort((a,b) => (a.order || 0) - (b.order || 0)) : [];
+            const data = snap.val(); 
+            if (!data) return;
+            allApps = data.apps ? Object.values(data.apps) : [];
             allCats = data.categories ? Object.values(data.categories) : [];
-            updateCatNav(); renderAll();
+            updateCatNav(); 
+            renderAll();
         });
 
         function updateCatNav() {
@@ -190,36 +234,46 @@
         function filterByCat(catName, btn) {
             currentFilter = catName;
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active'); renderAll();
+            btn.classList.add('active'); 
+            renderAll();
         }
 
         function renderAll() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const container = document.getElementById('storeContainer');
             container.innerHTML = "";
+
             const targetCats = currentFilter === "الكل" ? allCats : allCats.filter(c => c.name === currentFilter);
+            
             targetCats.forEach(cat => {
                 const filteredApps = allApps.filter(app => app.cat === cat.name && app.name.toLowerCase().includes(query));
+                
                 if (filteredApps.length > 0) {
-                    let sectionHTML = `<div class="section"><div class="section-title">${cat.name}</div><div class="grid">`;
+                    let sectionHTML = `
+                        <div class="section">
+                            <div class="section-title">${cat.name}</div>
+                            <div class="grid">`;
+                    
                     filteredApps.forEach(app => {
                         sectionHTML += `
-                            <div class="app-card" style="position:relative;">
+                            <div class="app-card">
                                 <span class="app-ver">${app.ver || 'v1.0'}</span>
                                 <div class="card-body" style="display:flex; gap:15px; align-items:center; margin-bottom:20px; margin-top:10px;">
-                                    <img src="${app.img}" style="width:75px; height:75px; border-radius:20px; object-fit:cover;" onerror="this.src='https://via.placeholder.com/80/252525/ffffff?text=App'">
+                                    <img src="${app.img}" onerror="this.src='https://via.placeholder.com/80/252525/ffffff?text=App'">
                                     <div>
                                         <p style="font-size:18px; font-weight:bold; margin:0;">${app.name}</p>
                                         <p style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:5px;">${app.cat}</p>
                                     </div>
                                 </div>
-                                <div class="btn-group" style="display:flex; gap:10px;">
-                                    <a href="${app.url}" class="btn btn-dl" style="flex:1; padding:12px; border-radius:15px; text-decoration:none; text-align:center; font-weight:bold;">📥 تحميل</a>
-                                    <a href="#" class="btn btn-sub" style="flex:1; padding:12px; border-radius:15px; text-decoration:none; text-align:center; font-weight:bold;">المشغل</a>
+                                <div class="btn-group">
+                                    <a href="${app.url}" class="btn btn-dl">📥 تحميل</a>
+                                    <a href="#" class="btn btn-sub">المشغل</a>
                                 </div>
                             </div>`;
                     });
-                    sectionHTML += `</div></div>`; container.innerHTML += sectionHTML;
+                    
+                    sectionHTML += `</div></div>`; 
+                    container.innerHTML += sectionHTML;
                 }
             });
         }
