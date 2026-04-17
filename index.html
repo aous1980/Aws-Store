@@ -16,6 +16,7 @@
             --card-border: rgba(255, 255, 255, 0.08);
         }
 
+        /* تنسيق الوضع النهاري */
         body.light-mode {
             --text: #1a1a1a;
             --glass-bg: rgba(255, 255, 255, 0.8);
@@ -32,7 +33,7 @@
             min-height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            transition: 0.5s ease;
+            transition: background 0.5s ease, color 0.3s ease;
         }
         
         body::before {
@@ -40,94 +41,68 @@
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.3); z-index: -1;
         }
+        body.light-mode::before { background: rgba(255, 255, 255, 0.4); }
 
-        /* --- تأثيرات الماوس والتحكم --- */
+        /* الأزرار العلوية (المشاركة والوضع الليلي) */
         .top-controls {
             position: absolute; left: 20px; top: 30px; display: flex; gap: 10px; z-index: 2000;
         }
-
         .icon-btn {
             background: var(--glass-bg); border: 1px solid var(--card-border);
             width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: var(--text); font-size: 18px;
+            backdrop-filter: blur(10px); transition: 0.3s; color: var(--text); font-size: 18px;
         }
-
-        .icon-btn:hover {
-            transform: scale(1.15) rotate(15deg);
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
+        .icon-btn:hover { transform: scale(1.1); border-color: var(--accent); }
 
         .header-brand { display: flex; flex-direction: column; align-items: center; padding: 40px 10px 20px; }
-        .header-brand img { width: 130px; filter: drop-shadow(0 0 15px var(--accent-glow)); margin-bottom: 10px; transition: 0.5s; }
-        .header-brand:hover img { transform: scale(1.05); }
+        .header-brand img { width: 130px; filter: drop-shadow(0 0 15px var(--accent-glow)); margin-bottom: 10px; }
         .header-brand h1 { font-size: 28px; text-shadow: 0 0 10px var(--accent); margin: 0; }
 
         .top-bar { 
             position: sticky; top: 0; background: rgba(10, 10, 20, 0.6); backdrop-filter: blur(20px);
             z-index: 1000; padding: 15px 10px; border-bottom: 1px solid var(--card-border); 
         }
+        body.light-mode .top-bar { background: rgba(255, 255, 255, 0.6); }
 
         .search-container { max-width: 600px; margin: auto; text-align: center; }
         .search-box input { 
             width: 100%; padding: 14px 25px; border-radius: 50px; border: 1px solid rgba(188, 19, 254, 0.3); 
             background: rgba(0, 0, 0, 0.5); color: #fff; outline: none; text-align: center; transition: 0.3s;
         }
-        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+        body.light-mode .search-box input { background: #fff; color: #000; }
+        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
 
-        .downloader-info { margin-top: 10px; font-size: 14px; background: rgba(188, 19, 254, 0.15); display: inline-block; padding: 5px 20px; border-radius: 20px; border: 1px solid var(--accent); }
-        .downloader-info span { color: var(--accent); font-weight: bold; }
+        .downloader-info { margin-top: 10px; font-size: 14px; background: rgba(188, 19, 254, 0.15); display: inline-block; padding: 5px 20px; border-radius: 20px; border: 1px solid rgba(188, 19, 254, 0.2); }
+        .downloader-info span { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent-glow); }
 
         .categories-nav { display: flex; gap: 10px; overflow-x: auto; padding: 15px 5px; max-width: 800px; margin: auto; scrollbar-width: none; }
-        .cat-btn { 
-            background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid var(--card-border); 
-            padding: 8px 22px; border-radius: 50px; cursor: pointer; white-space: nowrap; transition: 0.3s; 
-        }
-        .cat-btn:hover:not(.active) { transform: translateY(-3px); background: rgba(188, 19, 254, 0.1); border-color: var(--accent); }
-        .cat-btn.active { background: var(--accent); color: #fff; box-shadow: 0 0 12px var(--accent-glow); }
+        .categories-nav::-webkit-scrollbar { display: none; }
+
+        .cat-btn { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid var(--card-border); padding: 8px 22px; border-radius: 50px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
 
         .container { max-width: 1200px; margin: auto; padding: 20px; flex: 1; width: 100%; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         
         .section-title { font-size: 20px; margin: 30px 0 15px; border-right: 4px solid var(--accent); padding-right: 12px; }
 
-        /* تأثيرات البطاقات */
         .app-card { 
             background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 22px; 
-            padding: 18px; border: 1px solid var(--card-border); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;
+            padding: 18px; border: 1px solid var(--card-border); transition: 0.4s; position: relative;
         }
-        .app-card:hover { 
-            transform: translateY(-10px); 
-            border-color: var(--accent); 
-            box-shadow: 0 15px 30px rgba(188, 19, 254, 0.2);
-        }
+        .app-card:hover { transform: translateY(-8px); border-color: var(--accent); }
 
         .app-ver { position: absolute; left: 15px; top: 15px; color: #fff; background: var(--accent); padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .card-body img { width: 70px; height: 70px; border-radius: 18px; object-fit: cover; }
 
-        .card-body img { width: 70px; height: 70px; border-radius: 18px; object-fit: cover; transition: 0.5s; }
-        .app-card:hover .card-body img { transform: rotate(5deg) scale(1.1); }
-
-        /* أزرار التحميل مع اللمعان */
         .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-dl { 
-            background: linear-gradient(45deg, var(--accent), #4facfe); color: #fff; flex: 1; padding: 10px; 
-            border-radius: 12px; text-decoration: none; text-align: center; font-weight: bold; 
-            position: relative; overflow: hidden; transition: 0.3s;
-        }
-        .btn-dl::after {
-            content: ''; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%;
-            background: rgba(255, 255, 255, 0.4); transform: rotate(30deg); transition: 0.5s; opacity: 0;
-        }
-        .btn-dl:hover::after { left: 120%; opacity: 1; }
-        .btn-dl:hover { transform: translateY(-2px); box-shadow: 0 5px 15px var(--accent-glow); }
-
-        .btn-sub { background: rgba(255, 255, 255, 0.1); color: var(--text); flex: 1; padding: 10px; border-radius: 12px; text-decoration: none; text-align: center; border: 1px solid var(--card-border); transition: 0.3s; }
-        .btn-sub:hover { background: rgba(255, 255, 255, 0.2); }
+        .btn-dl { background: linear-gradient(45deg, var(--accent), #4facfe); color: #fff; flex: 1; padding: 10px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: bold; font-size: 14px; transition: 0.3s; }
+        .btn-dl:active { transform: scale(0.95); }
+        .btn-sub { background: rgba(255, 255, 255, 0.1); color: var(--text); flex: 1; padding: 10px; border-radius: 12px; text-decoration: none; text-align: center; border: 1px solid var(--card-border); font-size: 14px; }
 
         footer { text-align: center; padding: 40px; background: rgba(0, 0, 0, 0.5); border-top: 1px solid var(--card-border); }
+        body.light-mode footer { background: rgba(255, 255, 255, 0.8); }
 
         @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .top-controls { top: 15px; left: 15px; } }
     </style>
@@ -135,8 +110,8 @@
 <body id="mainBody">
 
     <div class="top-controls">
-        <div class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تبديل الوضع">🌙</div>
-        <div class="icon-btn" onclick="shareStore()" title="مشاركة المتجر">🔗</div>
+        <div class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</div>
+        <div class="icon-btn" onclick="shareStore()">🔗</div>
     </div>
 
     <div class="header-brand">
@@ -151,6 +126,7 @@
             </div>
             <div class="downloader-info">كود الداونلودر: <span>4131623</span></div>
         </div>
+
         <div class="categories-nav" id="catNav">
             <button class="cat-btn active" onclick="filterByCat('الكل', this)">الكل</button>
         </div>
@@ -163,20 +139,93 @@
     </footer>
 
     <script>
-        // تكوين Firebase
+        // تكوين Firebase (مرتبط بقاعدة بياناتك)
         const firebaseConfig = { databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com/" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // تعريف المصفوفات لضمان عدم حدوث خطأ "شاشة بيضاء"
         let allApps = []; 
         let allCats = []; 
         let currentFilter = "الكل";
 
+        // تبديل الوضع (ليلي/نهاري)
         function toggleTheme() {
             const body = document.getElementById('mainBody');
+            const btn = document.getElementById('themeBtn');
             body.classList.toggle('light-mode');
-            document.getElementById('themeBtn').innerText = body.classList.contains('light-mode') ? "☀️" : "🌙";
+            btn.innerText = body.classList.contains('light-mode') ? "☀️" : "🌙";
         }
 
-        function shareStore()
+        // وظيفة المشاركة
+        function shareStore() {
+            if (navigator.share) {
+                navigator.share({ title: 'Aws Store', url: window.location.href });
+            } else {
+                alert("رابط المتجر: " + window.location.href);
+            }
+        }
+
+        // جلب البيانات الحية من Firebase
+        db.ref().on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+            
+            // التأكد من جلب البيانات وتحويلها لمصفوفات
+            allApps = data.apps ? Object.values(data.apps) : [];
+            allCats = data.categories ? Object.values(data.categories) : [];
+            
+            updateCatNav();
+            renderAll();
+        });
+
+        function updateCatNav() {
+            const nav = document.getElementById('catNav');
+            nav.innerHTML = `<button class="cat-btn ${currentFilter === 'الكل' ? 'active' : ''}" onclick="filterByCat('الكل', this)">الكل</button>`;
+            allCats.forEach(cat => {
+                nav.innerHTML += `<button class="cat-btn ${currentFilter === cat.name ? 'active' : ''}" onclick="filterByCat('${cat.name}', this)">${cat.name}</button>`;
+            });
+        }
+
+        function filterByCat(catName, btn) {
+            currentFilter = catName;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderAll();
+        }
+
+        function renderAll() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const container = document.getElementById('storeContainer');
+            container.innerHTML = "";
+            
+            const targetCats = currentFilter === "الكل" ? allCats : allCats.filter(c => c.name === currentFilter);
+            
+            targetCats.forEach(cat => {
+                const filteredApps = allApps.filter(app => app.cat === cat.name && app.name.toLowerCase().includes(query));
+                if (filteredApps.length > 0) {
+                    let sectionHTML = `<div class="section"><div class="section-title">${cat.name}</div><div class="grid">`;
+                    filteredApps.forEach(app => {
+                        sectionHTML += `
+                            <div class="app-card">
+                                <span class="app-ver">${app.ver || 'v1.0'}</span>
+                                <div class="card-body" style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+                                    <img src="${app.img}" onerror="this.src='https://via.placeholder.com/80'">
+                                    <div>
+                                        <p style="font-size:16px; font-weight:bold; margin:0;">${app.name}</p>
+                                        <p style="font-size:12px; opacity:0.6; margin:0;">${app.cat}</p>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="${app.url}" class="btn-dl">📥 تحميل</a>
+                                    <a href="#" class="btn-sub">المشغل</a>
+                                </div>
+                            </div>`;
+                    });
+                    sectionHTML += `</div></div>`;
+                    container.innerHTML += sectionHTML;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
