@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aws Store | المتجر المتكامل</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <style>
         :root { 
             --accent: #bc13fe; 
@@ -24,7 +26,11 @@
         }
         
         body { 
-            background: var(--body-bg) url('https://cdn.pixground.com/storage/v1/render/image/public/wallpapers/7ce9c239-012c-4b86-a145-21e8edf7be29/p88gGVju6l.jpg?width=1280&quality=85&height=1080&resize=contain') no-repeat center center fixed;
+            background: var(--body-bg);
+            background-image: url('https://cdn.pixground.com/storage/v1/render/image/public/wallpapers/7ce9c239-012c-4b86-a145-21e8edf7be29/p88gGVju6l.jpg?width=1280&quality=85&height=1080&resize=contain');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
             background-size: cover;
             color: var(--text); 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -35,46 +41,176 @@
             transition: background 0.5s ease, color 0.3s ease;
         }
         
-        body::before {
-            content: "";
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.3); z-index: -1;
-        }
-        body.light-mode::before { background: rgba(255, 255, 255, 0.4); }
-
-        .top-controls {
-            position: absolute; left: 20px; top: 30px; display: flex; gap: 10px; z-index: 2000;
-        }
+        .top-controls { position: absolute; left: 20px; top: 30px; display: flex; gap: 10px; z-index: 2000; }
         .icon-btn {
             background: var(--glass-bg); border: 1px solid var(--card-border);
             width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px); transition: 0.3s; color: var(--text); font-size: 18px;
+            backdrop-filter: blur(10px); color: var(--text); font-size: 18px;
         }
-        .icon-btn:hover { transform: scale(1.1); border-color: var(--accent); }
 
         .header-brand { display: flex; flex-direction: column; align-items: center; padding: 40px 10px 20px; }
-        .header-brand img { width: 130px; filter: drop-shadow(0 0 15px var(--accent-glow)); margin-bottom: 10px; }
-        .header-brand h1 { font-size: 28px; text-shadow: 0 0 10px var(--accent); margin: 0; }
+        .header-brand img { width: 130px; filter: drop-shadow(0 0 15px var(--accent-glow)); }
+        .header-brand h1 { font-size: 28px; text-shadow: 0 0 10px var(--accent); margin: 10px 0 0; }
 
         .top-bar { 
-            position: sticky; top: 0; background: rgba(10, 10, 20, 0.6); backdrop-filter: blur(20px);
+            position: sticky; top: 0; background: rgba(10, 10, 20, 0.8); backdrop-filter: blur(20px);
             z-index: 1000; padding: 15px 10px; border-bottom: 1px solid var(--card-border); 
         }
-        body.light-mode .top-bar { background: rgba(255, 255, 255, 0.6); }
 
         .search-container { max-width: 600px; margin: auto; text-align: center; }
         .search-box input { 
-            width: 100%; padding: 14px 25px; border-radius: 50px; border: 1px solid rgba(188, 19, 254, 0.3); 
-            background: rgba(0, 0, 0, 0.5); color: #fff; outline: none; text-align: center; transition: 0.3s;
+            width: 100%; padding: 12px 20px; border-radius: 50px; border: 1px solid var(--accent); 
+            background: rgba(0, 0, 0, 0.5); color: #fff; outline: none; text-align: center;
         }
-        body.light-mode .search-box input { background: #fff; color: #000; }
-        .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
 
-        .downloader-info { margin-top: 10px; font-size: 14px; background: rgba(188, 19, 254, 0.15); display: inline-block; padding: 5px 20px; border-radius: 20px; border: 1px solid rgba(188, 19, 254, 0.2); }
-        .downloader-info span { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent-glow); }
+        .categories-nav { display: flex; gap: 10px; overflow-x: auto; padding: 15px 5px; max-width: 800px; margin: auto; }
+        .cat-btn { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid var(--card-border); padding: 8px 22px; border-radius: 50px; cursor: pointer; white-space: nowrap; }
+        .cat-btn.active { background: var(--accent); color: #fff; }
 
-        .categories-nav { display: flex; gap: 10px; overflow-x: auto; padding: 15px 5px; max-width: 800px; margin: auto; scrollbar-width: none; }
-        .categories-nav::-webkit-scrollbar { display: none; }
+        .container { max-width: 1200px; margin: auto; padding: 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .section-title { font-size: 20px; margin: 30px 0 15px; border-right: 4px solid var(--accent); padding-right: 12px; }
 
-        .cat-btn { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid var(--card-border); padding:
+        .app-card { background: var(--glass-bg); border-radius: 22px; padding: 18px; border: 1px solid var(--card-border); position: relative; }
+        .app-ver { position: absolute; left: 15px; top: 15px; color: #fff; background: var(--accent); padding: 2px 8px; border-radius: 6px; font-size: 10px; }
+        .card-body img { width: 70px; height: 70px; border-radius: 18px; object-fit: cover; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-dl { background: linear-gradient(45deg, var(--accent), #4facfe); color: #fff; flex: 1; padding: 10px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: bold; }
+        
+        #errorMessage { color: #ff4757; text-align: center; padding: 20px; display: none; }
+    </style>
+</head>
+<body id="mainBody">
+
+    <div class="top-controls">
+        <div class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</div>
+    </div>
+
+    <div class="header-brand">
+        <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
+        <h1>Aws Store</h1>
+    </div>
+
+    <div class="top-bar">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="ابحث عن تطبيق..." oninput="renderAll()" class="search-box">
+        </div>
+        <div class="categories-nav" id="catNav">
+            <button class="cat-btn active" onclick="filterByCat('الكل', this)">الكل</button>
+        </div>
+    </div>
+
+    <div id="errorMessage">⚠️ عذراً، تعذر الاتصال بقاعدة البيانات. تأكد من إعدادات Firebase.</div>
+    
+    <div class="container" id="storeContainer">
+        <p style="text-align:center;">جاري تحميل المتجر...</p>
+    </div>
+
+    <script>
+        // الإعدادات الكاملة (من واقع مشروعك)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
+            authDomain: "aws-store-aaf40.firebaseapp.com",
+            databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
+            projectId: "aws-store-aaf40",
+            appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
+        };
+
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        } catch (e) {
+            console.error(e);
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+
+        const db = firebase.database();
+        let allApps = []; 
+        let allCats = []; 
+        let currentFilter = "الكل";
+
+        // جلب البيانات
+        db.ref().on('value', snap => {
+            const data = snap.val();
+            if (!data) {
+                document.getElementById('storeContainer').innerHTML = "<p style='text-align:center;'>المتجر فارغ حالياً.</p>";
+                return;
+            }
+            
+            allApps = data.apps ? Object.values(data.apps) : [];
+            allCats = data.categories ? Object.values(data.categories) : [];
+            
+            updateCatNav();
+            renderAll();
+        }, error => {
+            console.error(error);
+            document.getElementById('errorMessage').style.display = 'block';
+        });
+
+        function updateCatNav() {
+            const nav = document.getElementById('catNav');
+            nav.innerHTML = `<button class="cat-btn ${currentFilter === 'الكل' ? 'active' : ''}" onclick="filterByCat('الكل', this)">الكل</button>`;
+            allCats.forEach(cat => {
+                nav.innerHTML += `<button class="cat-btn ${currentFilter === cat.name ? 'active' : ''}" onclick="filterByCat('${cat.name}', this)">${cat.name}</button>`;
+            });
+        }
+
+        function filterByCat(catName, btn) {
+            currentFilter = catName;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderAll();
+        }
+
+        function renderAll() {
+            const query = (document.getElementById('searchInput').value || "").toLowerCase();
+            const container = document.getElementById('storeContainer');
+            container.innerHTML = "";
+            
+            const targetCats = currentFilter === "الكل" ? allCats : allCats.filter(c => c.name === currentFilter);
+            
+            if (targetCats.length === 0) {
+                container.innerHTML = "<p style='text-align:center; opacity:0.5;'>لا توجد أقسام مضافة بعد.</p>";
+                return;
+            }
+
+            targetCats.forEach(cat => {
+                const filteredApps = allApps.filter(app => app.cat === cat.name && (app.name || "").toLowerCase().includes(query));
+                
+                let sectionHTML = `
+                    <div class="section">
+                        <div class="section-title">${cat.name}</div>
+                        <div class="grid">`;
+                
+                if (filteredApps.length > 0) {
+                    filteredApps.forEach(app => {
+                        sectionHTML += `
+                            <div class="app-card">
+                                <span class="app-ver">${app.ver || 'v1.0'}</span>
+                                <div class="card-body" style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+                                    <img src="${app.img}" onerror="this.src='https://via.placeholder.com/80'">
+                                    <div>
+                                        <p style="font-size:16px; font-weight:bold; margin:0;">${app.name}</p>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="${app.url}" target="_blank" class="btn-dl">📥 تحميل</a>
+                                </div>
+                            </div>`;
+                    });
+                } else {
+                    sectionHTML += `<p style="opacity:0.4; padding:10px; grid-column: 1/-1;">لا توجد تطبيقات هنا.</p>`;
+                }
+                
+                sectionHTML += `</div></div>`;
+                container.innerHTML += sectionHTML;
+            });
+        }
+
+        function toggleTheme() {
+            document.getElementById('mainBody').classList.toggle('light-mode');
+        }
+    </script>
+</body>
+</html>
