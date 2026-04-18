@@ -3,237 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | المتجر المتكامل</title>
-    
+    <title>لوحة تحكم Aws Store</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <style>
-        :root { 
-            --accent: #bc13fe; 
-            --accent-glow: rgba(188, 19, 254, 0.4);
-            --bg-dark: #0b0f12;
-            --card-bg: rgba(15, 15, 25, 0.8);
-            --text-main: #ffffff;
-            --text-dim: #a0a0a0;
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        body.light-mode {
-            --bg-dark: #f0f2f5;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #1a1a1a;
-            --text-dim: #555555;
-            --glass-border: rgba(0, 0, 0, 0.1);
-        }
-
-        body { 
-            background-color: var(--bg-dark);
-            background-image: url('https://cdn.pixground.com/storage/v1/render/image/public/wallpapers/7ce9c239-012c-4b86-a145-21e8edf7be29/p88gGVju6l.jpg?width=1280&quality=85&height=1080&resize=contain');
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-attachment: fixed;
-            background-size: cover;
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            transition: background 0.5s ease, color 0.3s ease;
-        }
-
-        .bg-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: -1; }
-        body.light-mode .bg-overlay { background: rgba(255, 255, 255, 0.3); }
-
-        .top-actions { position: fixed; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 2000; }
-        .action-btn {
-            background: var(--card-bg); border: 1px solid var(--glass-border);
-            width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px); color: var(--text-main); font-size: 18px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s;
-        }
-
-        .header { padding: 60px 20px 20px; text-align: center; }
-        .header img { width: 110px; border-radius: 25px; filter: drop-shadow(0 0 15px var(--accent-glow)); }
-
-        .sticky-nav {
-            position: sticky; top: 0; z-index: 1000;
-            background: rgba(11, 15, 18, 0.85); backdrop-filter: blur(20px);
-            padding: 15px 0; border-bottom: 1px solid var(--glass-border);
-        }
-        body.light-mode .sticky-nav { background: rgba(255, 255, 255, 0.85); }
-
-        .search-wrapper { max-width: 500px; margin: 0 auto 15px; padding: 0 20px; }
-        .search-input {
-            width: 100%; padding: 12px 25px; border-radius: 50px;
-            border: 1px solid var(--accent); background: rgba(0,0,0,0.4);
-            color: #fff; outline: none; text-align: center; box-sizing: border-box;
-        }
-        body.light-mode .search-input { background: #fff; color: #000; }
-
-        .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 5px 20px; scrollbar-width: none; }
-        .categories-scroll::-webkit-scrollbar { display: none; }
-
-        .cat-chip {
-            padding: 8px 22px; border-radius: 50px; background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border); white-space: nowrap; cursor: pointer;
-            color: var(--text-main); backdrop-filter: blur(5px);
-        }
-        .cat-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
-
-        .app-card {
-            background: var(--card-bg); border: 1px solid var(--glass-border);
-            border-radius: 24px; padding: 18px; text-align: center; transition: 0.3s;
-            backdrop-filter: blur(10px);
-        }
-        .app-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-        .app-icon { width: 75px; height: 75px; border-radius: 20px; object-fit: cover; margin-bottom: 10px; }
-
-        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .download-btn {
-            background: linear-gradient(45deg, var(--accent), #6a11cb);
-            color: white; text-decoration: none; padding: 10px; border-radius: 12px;
-            font-weight: bold; flex: 1; font-size: 14px; text-align: center;
-        }
-        .info-btn {
-            width: 40px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);
-            border-radius: 12px; cursor: pointer; color: var(--text-main);
-        }
-
-        /* النافذة المنبثقة */
-        .modal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            z-index: 3000; align-items: center; justify-content: center; padding: 20px;
-        }
-        .modal-content {
-            background: var(--bg-dark); border: 1px solid var(--accent);
-            padding: 25px; border-radius: 25px; max-width: 400px; width: 100%;
-            text-align: right; backdrop-filter: blur(20px);
-        }
-        .code-box {
-            background: rgba(188, 19, 254, 0.15); border: 1px dashed var(--accent);
-            padding: 12px; border-radius: 12px; color: var(--accent);
-            text-align: center; margin: 15px 0; cursor: pointer; font-size: 18px;
-        }
-
-        #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .spinner { width: 40px; height: 40px; border: 4px solid var(--accent-glow); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f12; color: white; direction: rtl; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .panel { background: #161b20; padding: 20px; border-radius: 15px; border: 1px solid #bc13fe; margin-bottom: 20px; }
+        h2 { color: #bc13fe; margin-top: 0; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: white; box-sizing: border-box; }
+        button { background: #bc13fe; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        button:hover { background: #9a0dcf; }
+        .app-item { background: #1c2329; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        .del-btn { background: #ff4757; width: auto; padding: 8px 15px; }
+        .loader { text-align: center; padding: 20px; color: #bc13fe; }
     </style>
 </head>
-<body id="mainBody">
+<body>
 
-    <div class="bg-overlay"></div>
-    <div id="loader"><div class="spinner"></div></div>
-
-    <div class="top-actions">
-        <button class="action-btn" onclick="toggleTheme()">🌓</button>
-        <button class="action-btn" onclick="shareStore()">🔗</button>
+<div class="container">
+    <div class="panel">
+        <h2>إضافة تطبيق جديد</h2>
+        <input type="text" id="appName" placeholder="اسم التطبيق">
+        <input type="text" id="appUrl" placeholder="رابط التحميل (URL)">
+        <input type="text" id="appImg" placeholder="رابط صورة الأيقونة">
+        <input type="text" id="appVer" placeholder="الإصدار (مثل v2.0)">
+        <input type="text" id="appCode" placeholder="كود التفعيل (اختياري)">
+        <textarea id="appNotes" rows="3" placeholder="شرح طريقة التحديث أو ملاحظات (اختياري)"></textarea>
+        
+        <label>القسم:</label>
+        <select id="categorySelect"></select>
+        <button onclick="saveApp()">إضافة التطبيق للمتجر</button>
     </div>
 
-    <header class="header">
-        <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
-        <h1>Aws Store</h1>
-    </header>
-
-    <nav class="sticky-nav">
-        <div class="search-wrapper">
-            <input type="text" id="searchInput" class="search-input" placeholder="ابحث عن تطبيق..." oninput="renderApps()">
-        </div>
-        <div class="categories-scroll" id="categoryNav"></div>
-    </nav>
-
-    <main class="main-container" id="contentArea"></main>
-
-    <div id="detailsModal" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="modalAppName" style="color:var(--accent); margin-top:0;">---</h3>
-            <div id="modalCodeSection">
-                <p>🔑 كود التفعيل / التحديث:</p>
-                <div id="modalCode" class="code-box" onclick="copyCode()">---</div>
-            </div>
-            <div id="modalNotesSection">
-                <p>📝 الملاحظات والشرح:</p>
-                <div id="modalNotes" style="font-size:14px; line-height:1.6; opacity:0.9;">---</div>
-            </div>
-            <button class="download-btn" style="width:100%; margin-top:20px;" onclick="closeModal()">إغلاق</button>
-        </div>
+    <div class="panel">
+        <h2>إدارة الأقسام</h2>
+        <input type="text" id="newCatName" placeholder="اسم القسم الجديد">
+        <button onclick="addCategory()" style="background: #2ed573;">إضافة قسم</button>
+        <div id="catList" style="margin-top:15px;"></div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
-            authDomain: "aws-store-aaf40.firebaseapp.com",
-            databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
-            projectId: "aws-store-aaf40",
-            appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
-        };
+    <div class="panel">
+        <h2>التطبيقات المضافة</h2>
+        <div id="appList"><p class="loader">جاري جلب البيانات...</p></div>
+    </div>
+</div>
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let state = { apps: [], categories: [], activeCategory: "الكل" };
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
+        authDomain: "aws-store-aaf40.firebaseapp.com",
+        databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
+        projectId: "aws-store-aaf40",
+        appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
+    };
 
-        db.ref().on('value', snap => {
-            const data = snap.val() || {};
-            state.apps = data.apps ? Object.values(data.apps) : [];
-            state.categories = data.categories ? Object.values(data.categories) : [];
-            document.getElementById('loader').style.display = 'none';
-            renderCategories(); renderApps();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // جلب الأقسام والتطبيقات وتحديث القوائم
+    db.ref().on('value', snap => {
+        const data = snap.val() || {};
+        
+        // تحديث قائمة الأقسام في الـ Select
+        const catSelect = document.getElementById('categorySelect');
+        const catListDiv = document.getElementById('catList');
+        catSelect.innerHTML = "";
+        catListDiv.innerHTML = "";
+        
+        if (data.categories) {
+            Object.keys(data.categories).forEach(id => {
+                const cat = data.categories[id];
+                catSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                catListDiv.innerHTML += `
+                    <div class="app-item">
+                        <span>${cat.name}</span>
+                        <button class="del-btn" onclick="deleteItem('categories/${id}')">حذف</button>
+                    </div>`;
+            });
+        }
+
+        // تحديث قائمة التطبيقات
+        const appListDiv = document.getElementById('appList');
+        appListDiv.innerHTML = "";
+        if (data.apps) {
+            Object.keys(data.apps).forEach(id => {
+                const app = data.apps[id];
+                appListDiv.innerHTML += `
+                    <div class="app-item">
+                        <div>
+                            <strong>${app.name}</strong> <small>(${app.cat})</small>
+                        </div>
+                        <button class="del-btn" onclick="deleteItem('apps/${id}')">حذف</button>
+                    </div>`;
+            });
+        } else {
+            appListDiv.innerHTML = "لا توجد تطبيقات حالياً.";
+        }
+    });
+
+    function saveApp() {
+        const name = document.getElementById('appName').value;
+        const url = document.getElementById('appUrl').value;
+        const img = document.getElementById('appImg').value;
+        const ver = document.getElementById('appVer').value;
+        const cat = document.getElementById('categorySelect').value;
+        const code = document.getElementById('appCode').value;
+        const notes = document.getElementById('appNotes').value;
+
+        if(!name || !url || !cat) return alert("يرجى ملء الاسم والرابط والقسم!");
+
+        const newAppRef = db.ref('apps').push();
+        newAppRef.set({
+            name, url, img, ver, cat, 
+            code: code || "", 
+            notes: notes || ""
+        }).then(() => {
+            alert("تمت الإضافة!");
+            // مسح الخانات بعد الإضافة
+            document.getElementById('appName').value = "";
+            document.getElementById('appUrl').value = "";
+            document.getElementById('appCode').value = "";
+            document.getElementById('appNotes').value = "";
         });
+    }
 
-        function renderCategories() {
-            const nav = document.getElementById('categoryNav');
-            let html = `<div class="cat-chip ${state.activeCategory === 'الكل' ? 'active' : ''}" onclick="setCategory('الكل')">الكل</div>`;
-            state.categories.forEach(cat => {
-                html += `<div class="cat-chip ${state.activeCategory === cat.name ? 'active' : ''}" onclick="setCategory('${cat.name}')">${cat.name}</div>`;
-            });
-            nav.innerHTML = html;
+    function addCategory() {
+        const name = document.getElementById('newCatName').value;
+        if(!name) return;
+        db.ref('categories').push({ name }).then(() => {
+            document.getElementById('newCatName').value = "";
+        });
+    }
+
+    function deleteItem(path) {
+        if(confirm("هل أنت متأكد من الحذف؟")) {
+            db.ref(path).remove();
         }
+    }
+</script>
 
-        function setCategory(catName) { state.activeCategory = catName; renderCategories(); renderApps(); }
-
-        function renderApps() {
-            const container = document.getElementById('contentArea');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            container.innerHTML = "";
-            const cats = state.activeCategory === "الكل" ? state.categories : state.categories.filter(c => c.name === state.activeCategory);
-
-            cats.forEach(cat => {
-                const filtered = state.apps.filter(app => app.cat === cat.name && app.name.toLowerCase().includes(search));
-                if (filtered.length > 0) {
-                    let html = `<h3 style="border-right:4px solid var(--accent); padding-right:10px; margin:30px 0 15px;">${cat.name}</h3><div class="apps-grid">`;
-                    filtered.forEach(app => {
-                        html += `
-                            <div class="app-card">
-                                <img class="app-icon" src="${app.img}" onerror="this.src='https://via.placeholder.com/80'">
-                                <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">${app.name}</div>
-                                <div style="font-size:11px; opacity:0.7;">v ${app.ver || '1.0'}</div>
-                                <div class="btn-group">
-                                    <a href="${app.url}" class="download-btn" target="_blank">📥 تحميل</a>
-                                    <button class="info-btn" onclick="showModal('${app.name}', '${app.code || ''}', '${app.notes || ''}')">ℹ️</button>
-                                </div>
-                            </div>`;
-                    });
-                    html += `</div>`;
-                    container.innerHTML += html;
-                }
-            });
-        }
-
-        function showModal(name, code, notes) {
-            document.getElementById('modalAppName').innerText = name;
-            document.getElementById('modalCodeSection').style.display = code ? 'block' : 'none';
-            document.getElementById('modalCode').innerText = code;
-            document.getElementById('modalNotesSection').style.display = notes ? 'block' : 'none';
-            document.getElementById('modalNotes').innerText = notes;
-            document.getElementById('detailsModal').style.display = 'flex';
-        }
-
-        function closeModal() { document.getElementById('detailsModal').style.display = 'none'; }
-        function copyCode() {
-            const c = document.getElementById('modalCode').innerText;
-            navigator.clipboard.writeText(c);
-            alert("
+</body>
+</html>
