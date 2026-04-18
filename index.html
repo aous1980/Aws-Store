@@ -11,8 +11,8 @@
 
     <style>
         :root {
-            /* الألوان الافتراضية (الوضع الليلي) */
-            --main-bg: radial-gradient(circle at center, #1a2a26 0%, #0b0f12 100%);
+            /* استعادة الخلفية من الكود الأول مع تأثير الإشراق */
+            --main-bg: radial-gradient(circle at center, #16221f 0%, #0b0f12 100%);
             --card-bg: rgba(255, 255, 255, 0.03);
             --text-color: #ffffff;
             --accent: #00ff88; 
@@ -20,7 +20,6 @@
             --glass-border: rgba(255, 255, 255, 0.08);
         }
 
-        /* تنسيقات الوضع النهاري */
         body.light-mode {
             --main-bg: radial-gradient(circle at center, #f0f4f3 0%, #dcdcdc 100%);
             --card-bg: rgba(0, 0, 0, 0.05);
@@ -30,12 +29,13 @@
 
         body {
             background: var(--main-bg);
+            background-attachment: fixed; /* لجعل الخلفية ثابتة أثناء التمرير */
             color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, sans-serif;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
-            transition: background 0.5s ease, color 0.5s ease;
+            transition: all 0.5s ease;
         }
 
         /* شريط الأدوات العلوي */
@@ -45,35 +45,69 @@
             left: 20px;
             display: flex;
             gap: 10px;
+            z-index: 100;
         }
 
         .tool-btn {
             background: var(--card-bg);
             border: 1px solid var(--glass-border);
             color: var(--text-color);
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
             cursor: pointer;
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
             transition: 0.3s;
         }
 
-        .tool-btn:hover { border-color: var(--accent); transform: scale(1.1); }
-
         header { text-align: center; padding: 20px 0; }
-        header img { width: 85px; filter: drop-shadow(0 0 20px var(--accent)); border-radius: 22px; }
+        header img { 
+            width: 85px; 
+            filter: drop-shadow(0 0 20px var(--accent)); 
+            border-radius: 22px; 
+            transition: 0.5s;
+        }
 
         .top-bar { max-width: 700px; margin: 0 auto 25px; display: flex; gap: 12px; padding: 0 10px; }
-        .search-box { flex: 2; background: var(--card-bg); border: 1px solid var(--glass-border); padding: 14px; border-radius: 15px; color: var(--text-color); outline: none; backdrop-filter: blur(15px); }
-        .downloader-badge { flex: 1; background: rgba(0, 210, 255, 0.1); border: 1px solid var(--accent-blue); padding: 10px; border-radius: 15px; color: var(--accent-blue); text-align: center; font-weight: bold; font-size: 0.8rem; }
+        .search-box { 
+            flex: 2; 
+            background: var(--card-bg); 
+            border: 1px solid var(--glass-border); 
+            padding: 14px; 
+            border-radius: 15px; 
+            color: var(--text-color); 
+            outline: none; 
+            backdrop-filter: blur(15px); 
+        }
+
+        .downloader-badge { 
+            flex: 1; 
+            background: rgba(0, 210, 255, 0.1); 
+            border: 1px solid var(--accent-blue); 
+            padding: 10px; 
+            border-radius: 15px; 
+            color: var(--accent-blue); 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 0.8rem; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
         .quick-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
-        .nav-item { background: var(--card-bg); border: 1px solid var(--glass-border); padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.3s; color: var(--text-color); }
+        .nav-item { 
+            background: var(--card-bg); 
+            border: 1px solid var(--glass-border); 
+            padding: 8px 18px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            color: var(--text-color); 
+        }
         .nav-item:hover, .nav-item.active { background: var(--accent); color: #000; }
 
         #categoriesContainer { max-width: 1200px; margin: auto; }
@@ -85,22 +119,57 @@
             .apps-grid { display: flex; overflow-x: auto; padding-bottom: 15px; gap: 15px; scroll-snap-type: x mandatory; }
             .app-card { min-width: 260px; scroll-snap-align: center; }
             .apps-grid::-webkit-scrollbar { display: none; }
+            .header-tools { top: 10px; left: 10px; }
         }
 
-        .app-card { background: var(--card-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; transition: 0.3s; color: var(--text-color); }
-        .app-card:hover { border-color: var(--accent); }
-        .app-icon { width: 85px; height: 85px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .app-card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 25px; 
+            padding: 22px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: 0.3s; 
+            color: var(--text-color);
+            transform-style: preserve-3d;
+        }
+        .app-card:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1); }
+        .app-icon { width: 85px; height: 85px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transform: translateZ(20px); }
 
-        .app-notes { font-size: 0.8rem; opacity: 0.8; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 12px; margin: 12px 0; width: 100%; border-right: 3px solid var(--accent-blue); text-align: right; }
+        .app-notes { 
+            font-size: 0.8rem; 
+            opacity: 0.8; 
+            background: rgba(0,0,0,0.15); 
+            padding: 12px; 
+            border-radius: 12px; 
+            margin: 12px 0; 
+            width: 100%; 
+            border-right: 3px solid var(--accent-blue); 
+            text-align: right; 
+            transform: translateZ(10px);
+        }
 
-        .download-btn { background: linear-gradient(45deg, var(--accent), var(--accent-blue)); color: #000; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; margin-top: auto; }
+        .download-btn { 
+            background: linear-gradient(45deg, var(--accent), var(--accent-blue)); 
+            color: #000; 
+            text-decoration: none; 
+            padding: 12px; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            width: 100%; 
+            margin-top: auto; 
+            transform: translateZ(15px);
+        }
     </style>
 </head>
 <body>
 
     <div class="header-tools">
-        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()" title="تبديل الوضع">🌓</button>
-        <button class="tool-btn" id="shareBtn" onclick="shareStore()" title="مشاركة المتجر">🔗</button>
+        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()">🌓</button>
+        <button class="tool-btn" onclick="shareStore()">🔗</button>
     </div>
 
     <header>
@@ -110,7 +179,10 @@
 
     <div class="top-bar">
         <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن تطبيق..." oninput="filterApps()">
-        <div class="downloader-badge">كود المتجر: 4131623</div> 
+        <div class="downloader-badge">
+            <span style="font-size: 0.65rem; opacity: 0.8;">كود تطبيق Downloader</span>
+            <span>4131623</span>
+        </div> 
     </div>
 
     <div id="quickNav" class="quick-nav"></div>
@@ -162,10 +234,10 @@
                 Object.values(localApps).forEach(app => {
                     if (app.cat === cat.name && app.name.toLowerCase().includes(search.toLowerCase())) {
                         appsHtml += `
-                            <div class="app-card" data-tilt data-tilt-max="8">
+                            <div class="app-card" data-tilt data-tilt-max="10">
                                 <img src="${app.img}" class="app-icon" onerror="this.src='https://i.ibb.co/F4px49v/default-icon.png'">
-                                <div style="font-weight:bold">${app.name}</div>
-                                <div style="color:var(--accent-blue); font-size:0.8rem; margin:5px 0;">V ${app.ver}</div>
+                                <div style="font-weight:bold; font-size: 1.1rem; transform: translateZ(15px);">${app.name}</div>
+                                <div style="color:var(--accent-blue); font-size:0.8rem; margin:5px 0; transform: translateZ(10px);">V ${app.ver}</div>
                                 ${app.notes ? `<div class="app-notes">📝 ${app.notes}</div>` : ''}
                                 <a href="${app.url}" class="download-btn" target="_blank">تحميل</a>
                             </div>`;
@@ -180,23 +252,16 @@
 
         function filterApps() { displayContent('all', document.getElementById('searchInput').value); }
 
-        // وظيفة تبديل الوضع (ليلي/نهاري)
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            document.getElementById('themeBtn').innerText = isLight ? "🌙" : "🌓";
+            document.getElementById('themeBtn').innerText = document.body.classList.contains('light-mode') ? "🌙" : "🌓";
         }
 
-        // وظيفة المشاركة
         function shareStore() {
             if (navigator.share) {
-                navigator.share({
-                    title: 'Aws Store',
-                    text: 'تحميل أفضل التطبيقات والأدوات من متجر Aws Store!',
-                    url: window.location.href
-                }).catch(console.error);
+                navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
             } else {
-                alert("انسخ الرابط لمشاركته: " + window.location.href);
+                alert("رابط المتجر: " + window.location.href);
             }
         }
     </script>
