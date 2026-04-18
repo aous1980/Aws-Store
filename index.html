@@ -3,71 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | المتجر المتكامل</title>
+    <title>Aws Store | المتجر الذكي</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <style>
-        :root { 
-            --accent: #bc13fe; --accent-glow: rgba(188, 19, 254, 0.4);
-            --bg-dark: #0b0f12; --card-bg: rgba(15, 15, 25, 0.85);
-            --text-main: #ffffff; --text-dim: #a0a0a0; --glass-border: rgba(255, 255, 255, 0.1);
+        /* إعدادات الألوان والإشراق */
+        :root {
+            --main-bg: #0b0f12;
+            --accent: #00ff88; /* توهج أخضر فسفوري */
+            --accent-blue: #00d2ff;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
         }
-        body.light-mode {
-            --bg-dark: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #1a1a1a; --text-dim: #555555; --glass-border: rgba(0, 0, 0, 0.1);
-        }
-        body { 
-            background: var(--bg-dark) url('https://cdn.pixground.com/storage/v1/render/image/public/wallpapers/7ce9c239-012c-4b86-a145-21e8edf7be29/p88gGVju6l.jpg?width=1280&quality=85&height=1080&resize=contain') no-repeat center center fixed;
-            background-size: cover; color: var(--text-main); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; min-height: 100vh;
-        }
-        .bg-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: -1; }
-        .top-actions { position: fixed; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 2000; }
-        .action-btn { background: var(--card-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); color: var(--text-main); font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .header { padding: 60px 20px 20px; text-align: center; }
-        .header img { width: 110px; border-radius: 25px; filter: drop-shadow(0 0 15px var(--accent-glow)); }
-        .sticky-nav { position: sticky; top: 0; z-index: 1000; background: rgba(11, 15, 18, 0.85); backdrop-filter: blur(20px); padding: 15px 0; border-bottom: 1px solid var(--glass-border); }
-        .search-wrapper { max-width: 500px; margin: 0 auto 15px; padding: 0 20px; }
-        .search-input { width: 100%; padding: 12px 25px; border-radius: 50px; border: 1px solid var(--accent); background: rgba(0,0,0,0.4); color: #fff; outline: none; text-align: center; box-sizing: border-box; }
-        .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 5px 20px; scrollbar-width: none; }
-        .cat-chip { padding: 8px 22px; border-radius: 50px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); white-space: nowrap; cursor: pointer; color: var(--text-main); }
-        .cat-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
-        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
-        .app-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; text-align: center; backdrop-filter: blur(10px); }
-        .app-icon { width: 75px; height: 75px; border-radius: 20px; object-fit: cover; margin-bottom: 10px; }
-        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .download-btn { background: linear-gradient(45deg, var(--accent), #6a11cb); color: white; text-decoration: none; padding: 10px; border-radius: 12px; font-weight: bold; flex: 1; font-size: 14px; text-align: center; }
-        .info-btn { width: 40px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); border-radius: 12px; cursor: pointer; color: var(--text-main); font-size: 18px; }
 
-        /* نافذة الملاحظات المصلحة */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: var(--bg-dark); border: 2px solid var(--accent); padding: 25px; border-radius: 25px; max-width: 450px; width: 100%; text-align: right; box-shadow: 0 0 30px var(--accent-glow); }
-        .notes-text { font-size: 15px; line-height: 1.8; color: var(--text-main); background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border-right: 4px solid var(--accent); max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+        body {
+            background: radial-gradient(circle at center, #16221f 0%, #0b0f12 100%);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
 
-        #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .spinner { width: 40px; height: 40px; border: 4px solid var(--accent-glow); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* الشعار العلوي بتأثير النيون */
+        header {
+            text-align: center;
+            padding: 40px 0;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header img {
+            width: 100px;
+            filter: drop-shadow(0 0 15px var(--accent));
+            border-radius: 20px;
+            margin-bottom: 15px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            margin: 0;
+        }
+
+        /* حاوية الأقسام */
+        #categoriesContainer {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .category-title {
+            color: var(--accent);
+            border-right: 4px solid var(--accent);
+            padding-right: 15px;
+            margin: 40px 0 20px;
+            font-size: 1.4rem;
+            text-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+        }
+
+        /* شبكة التطبيقات بنظام البطاقات العائمة */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* تأثير الزجاج والتوهج للبطاقة */
+        .app-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            background: rgba(0, 255, 136, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 255, 136, 0.15);
+        }
+
+        .app-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            object-fit: cover;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .app-card:hover .app-icon {
+            transform: scale(1.1) rotate(3deg);
+        }
+
+        .app-name { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+        .app-ver { font-size: 0.8rem; color: var(--accent-blue); margin-bottom: 10px; }
+
+        /* حقل الملاحظات بتصميم أنيق */
+        .app-notes {
+            font-size: 0.85rem;
+            color: #aaa;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            margin-bottom: 15px;
+            min-height: 40px;
+            border-right: 2px solid #444;
+        }
+
+        /* زر التحميل المتدرج */
+        .download-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-blue));
+            color: #000;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            width: 80%;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.5);
+        }
+
+        /* تأثيرات الدخول */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* لضبط المسافات في الجوال */
+        @media (max-width: 600px) {
+            .apps-grid { grid-template-columns: 1fr; }
+            body { padding: 10px; }
+        }
     </style>
 </head>
 <body>
-    <div class="bg-overlay"></div>
-    <div id="loader"><div class="spinner"></div></div>
-    <div class="top-actions">
-        <button class="action-btn" onclick="toggleTheme()">🌓</button>
-        <button class="action-btn" onclick="shareStore()">🔗</button>
-    </div>
-    <header class="header"><img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo"><h1>Aws Store</h1></header>
-    <nav class="sticky-nav"><div class="search-wrapper"><input type="text" id="searchInput" class="search-input" placeholder="ابحث عن تطبيق..." oninput="renderApps()"></div><div class="categories-scroll" id="categoryNav"></div></nav>
-    <main class="main-container" id="contentArea"></main>
 
-    <div id="notesModal" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="modalAppName" style="color:var(--accent); margin-top:0;">اسم التطبيق</h3>
-            <p style="font-weight:bold; margin-bottom:10px;">📝 شرح التحديث والملاحظات:</p>
-            <div id="modalNotes" class="notes-text">لا توجد ملاحظات متاحة.</div>
-            <button class="download-btn" style="width:100%; margin-top:25px; cursor:pointer;" onclick="closeModal()">فهمت ذلك</button>
+    <header>
+        <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
+        <h1>AWS STORE</h1>
+    </header>
+
+    <div id="categoriesContainer">
         </div>
-    </div>
 
     <script>
         const firebaseConfig = {
@@ -77,62 +178,49 @@
             projectId: "aws-store-aaf40",
             appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
         };
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let state = { apps: [], categories: [], activeCategory: "الكل" };
 
         db.ref().on('value', snap => {
             const data = snap.val() || {};
-            state.apps = data.apps ? Object.values(data.apps) : [];
-            state.categories = data.categories ? Object.values(data.categories) : [];
-            document.getElementById('loader').style.display = 'none';
-            renderCategories(); renderApps();
-        });
-
-        function renderCategories() {
-            const nav = document.getElementById('categoryNav');
-            let html = `<div class="cat-chip ${state.activeCategory === 'الكل' ? 'active' : ''}" onclick="setCategory('الكل')">الكل</div>`;
-            state.categories.forEach(cat => { html += `<div class="cat-chip ${state.activeCategory === cat.name ? 'active' : ''}" onclick="setCategory('${cat.name}')">${cat.name}</div>`; });
-            nav.innerHTML = html;
-        }
-
-        function setCategory(cat) { state.activeCategory = cat; renderCategories(); renderApps(); }
-
-        function renderApps() {
-            const container = document.getElementById('contentArea');
-            const search = document.getElementById('searchInput').value.toLowerCase();
+            const container = document.getElementById('categoriesContainer');
             container.innerHTML = "";
-            const cats = state.activeCategory === "الكل" ? state.categories : state.categories.filter(c => c.name === state.activeCategory);
 
-            cats.forEach(cat => {
-                const filtered = state.apps.filter(app => app.cat === cat.name && app.name.toLowerCase().includes(search));
-                if (filtered.length > 0) {
-                    let html = `<h3 style="border-right:4px solid var(--accent); padding-right:10px; margin:30px 0 15px;">${cat.name}</h3><div class="apps-grid">`;
-                    filtered.forEach(app => {
-                        html += `
-                            <div class="app-card">
-                                <img class="app-icon" src="${app.img}" onerror="this.src='https://via.placeholder.com/80'">
-                                <div style="font-weight:bold; font-size:14px;">${app.name}</div>
-                                <div style="font-size:11px; opacity:0.7; margin-bottom:10px;">v ${app.ver || '1.0'}</div>
-                                <div class="btn-group">
-                                    <a href="${app.url}" class="download-btn" target="_blank">📥 تحميل</a>
-                                    <button class="info-btn" onclick="showNotes('${app.name}', \`${app.notes || ''}\`)">ℹ️</button>
-                                </div>
-                            </div>`;
-                    });
-                    html += `</div>`; container.innerHTML += html;
-                }
-            });
-        }
+            if (data.categories) {
+                Object.keys(data.categories).forEach(catId => {
+                    const catName = data.categories[catId].name;
+                    
+                    // إنشاء القسم
+                    const catSection = document.createElement('div');
+                    catSection.innerHTML = `<h2 class="category-title">📂 ${catName}</h2>`;
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'apps-grid';
 
-        function showNotes(name, notes) {
-            document.getElementById('modalAppName').innerText = name;
-            document.getElementById('modalNotes').innerText = notes || "لا توجد ملاحظات إضافية لهذا التطبيق حالياً.";
-            document.getElementById('notesModal').style.display = 'flex';
-        }
-        function closeModal() { document.getElementById('notesModal').style.display = 'none'; }
-        function toggleTheme() { document.body.classList.toggle('light-mode'); }
-        function shareStore() { if (navigator.share) { navigator.share({ title: 'Aws Store', url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href); alert("تم نسخ الرابط!"); } }
+                    // فلترة التطبيقات التابعة لهذا القسم
+                    if (data.apps) {
+                        Object.keys(data.apps).forEach(appId => {
+                            const app = data.apps[appId];
+                            if (app.cat === catName) {
+                                grid.innerHTML += `
+                                    <div class="app-card">
+                                        <img src="${app.img}" class="app-icon" onerror="this.src='https://i.ibb.co/F4px49v/default-icon.png'">
+                                        <div class="app-name">${app.name}</div>
+                                        <div class="app-ver">${app.ver}</div>
+                                        ${app.notes ? `<div class="app-notes">${app.notes}</div>` : ''}
+                                        <a href="${app.url}" class="download-btn" target="_blank">تحميل الآن</a>
+                                    </div>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    catSection.appendChild(grid);
+                    container.appendChild(catSection);
+                });
+            }
+        });
     </script>
 </body>
 </html>
