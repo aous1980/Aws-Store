@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة Aws Store | نظام التعديل</title>
+    <title>إدارة Aws Store | نظام التعديل الشامل</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -18,16 +18,18 @@
         .btn-del { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .app-item { background: #1c2329; padding: 15px; margin: 10px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; transition: 0.3s; }
         .app-item:hover { border-color: #bc13fe; }
-        .loader { text-align: center; color: #bc13fe; font-weight: bold; }
         .edit-mode { border-color: #f1c40f !important; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
+        .loader { text-align: center; color: #bc13fe; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="panel" id="mainForm">
-        <h2 id="formTitle">إضافة تطبيق جديد</h2>
-        <input type="hidden" id="editKey"> <input type="text" id="appName" placeholder="اسم التطبيق">
+    <div class="panel" id="appForm">
+        <h2 id="appFormTitle">إضافة تطبيق جديد</h2>
+        <input type="hidden" id="editAppKey">
+        
+        <input type="text" id="appName" placeholder="اسم التطبيق">
         <input type="text" id="appUrl" placeholder="رابط التحميل">
         <input type="text" id="appImg" placeholder="رابط الأيقونة">
         <input type="text" id="appVer" placeholder="الإصدار">
@@ -37,16 +39,18 @@
         <label>القسم:</label>
         <select id="categorySelect"></select>
         
-        <button class="btn-main" id="submitBtn" onclick="saveData()">إضافة للمتجر</button>
-        <button id="cancelBtn" onclick="resetForm()" style="display:none; background:#555; margin-top:10px;" class="btn-main">إلغاء التعديل</button>
+        <button class="btn-main" id="appSubmitBtn" onclick="saveAppData()">إضافة للمتجر</button>
+        <button id="cancelAppBtn" onclick="resetAppForm()" style="display:none; background:#555; margin-top:10px;" class="btn-main">إلغاء التعديل</button>
     </div>
 
-    <div class="panel">
-        <h2>إدارة الأقسام</h2>
+    <div class="panel" id="catForm">
+        <h2 id="catFormTitle">إدارة الأقسام</h2>
+        <input type="hidden" id="editCatKey">
         <div style="display: flex; gap: 10px;">
-            <input type="text" id="newCatName" placeholder="اسم القسم الجديد" style="margin:0;">
-            <button onclick="addCategory()" style="background: #2ed573; width: 150px;" class="btn-main">إضافة</button>
+            <input type="text" id="newCatName" placeholder="اسم القسم" style="margin:0;">
+            <button onclick="saveCatData()" id="catSubmitBtn" style="background: #2ed573; width: 150px;" class="btn-main">إضافة</button>
         </div>
+        <button id="cancelCatBtn" onclick="resetCatForm()" style="display:none; background:#555; margin-top:10px;" class="btn-main">إلغاء تعديل القسم</button>
         <div id="catList" style="margin-top:20px;"></div>
     </div>
 
@@ -57,7 +61,6 @@
 </div>
 
 <script>
-    // تهيئة Firebase (استخدام بياناتك نفسها)
     const firebaseConfig = {
         apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
         authDomain: "aws-store-aaf40.firebaseapp.com",
@@ -73,7 +76,7 @@
     db.ref().on('value', snap => {
         const data = snap.val() || {};
         
-        // 1. تحديث قائمة الأقسام
+        // 1. تحديث الأقسام
         const catSelect = document.getElementById('categorySelect');
         const catListDiv = document.getElementById('catList');
         catSelect.innerHTML = "";
@@ -86,12 +89,15 @@
                 catListDiv.innerHTML += `
                     <div class="app-item">
                         <span>📂 ${cat.name}</span>
-                        <button class="btn-del" onclick="deleteItem('categories/${id}')">حذف</button>
+                        <div>
+                            <button class="btn-edit" onclick="editCat('${id}', '${cat.name}')">تعديل</button>
+                            <button class="btn-del" onclick="deleteItem('categories/${id}')">حذف</button>
+                        </div>
                     </div>`;
             });
         }
 
-        // 2. تحديث قائمة التطبيقات
+        // 2. تحديث التطبيقات
         const appListDiv = document.getElementById('appList');
         appListDiv.innerHTML = "";
         if (data.apps) {
@@ -109,13 +115,50 @@
                     </div>`;
             });
         } else {
-            appListDiv.innerHTML = "قائمة التطبيقات فارغة.";
+            appListDiv.innerHTML = "القائمة فارغة.";
         }
     });
 
-    // دالة الحفظ (إضافة أو تحديث)
-    function saveData() {
-        const key = document.getElementById('editKey').value;
+    // --- وظائف الأقسام ---
+    function saveCatData() {
+        const key = document.getElementById('editCatKey').value;
+        const name = document.getElementById('newCatName').value;
+        if(!name) return;
+
+        if(key) {
+            db.ref('categories/' + key).update({ name }).then(() => {
+                resetCatForm();
+            });
+        } else {
+            db.ref('categories').push({ name }).then(() => {
+                document.getElementById('newCatName').value = "";
+            });
+        }
+    }
+
+    function editCat(id, name) {
+        document.getElementById('editCatKey').value = id;
+        document.getElementById('newCatName').value = name;
+        document.getElementById('catFormTitle').innerText = "تعديل القسم";
+        document.getElementById('catSubmitBtn').innerText = "تحديث";
+        document.getElementById('catSubmitBtn').style.background = "#f1c40f";
+        document.getElementById('catForm').classList.add('edit-mode');
+        document.getElementById('cancelCatBtn').style.display = "block";
+    }
+
+    function resetCatForm() {
+        document.getElementById('editCatKey').value = "";
+        document.getElementById('newCatName').value = "";
+        document.getElementById('catFormTitle').innerText = "إدارة الأقسام";
+        document.getElementById('catSubmitBtn').innerText = "إضافة";
+        document.getElementById('catSubmitBtn').style.background = "#2ed573";
+        document.getElementById('catForm').classList.remove('edit-mode');
+        document.getElementById('cancelCatBtn').style.display = "none";
+    }
+
+    // --- وظائف التطبيقات ---
+    function saveAppData() {
+        const key = document.getElementById('editAppKey').value;
         const appData = {
             name: document.getElementById('appName').value,
             url: document.getElementById('appUrl').value,
@@ -126,26 +169,23 @@
             notes: document.getElementById('appNotes').value || ""
         };
 
-        if(!appData.name || !appData.url) return alert("يرجى إدخال البيانات الأساسية!");
+        if(!appData.name || !appData.url) return alert("يرجى إدخال البيانات!");
 
         if(key) {
-            // وضع التعديل
             db.ref('apps/' + key).update(appData).then(() => {
-                alert("تم تحديث البيانات!");
-                resetForm();
+                alert("تم التحديث!");
+                resetAppForm();
             });
         } else {
-            // وضع الإضافة
             db.ref('apps').push(appData).then(() => {
-                alert("تمت الإضافة بنجاح!");
-                resetForm();
+                alert("تمت الإضافة!");
+                resetAppForm();
             });
         }
     }
 
-    // تجهيز النموذج للتعديل
     function editApp(id, app) {
-        document.getElementById('editKey').value = id;
+        document.getElementById('editAppKey').value = id;
         document.getElementById('appName').value = app.name;
         document.getElementById('appUrl').value = app.url;
         document.getElementById('appImg').value = app.img;
@@ -154,42 +194,33 @@
         document.getElementById('appNotes').value = app.notes || "";
         document.getElementById('categorySelect').value = app.cat;
 
-        document.getElementById('formTitle').innerText = "تعديل تطبيق: " + app.name;
-        document.getElementById('submitBtn').innerText = "حفظ التعديلات الآن";
-        document.getElementById('submitBtn').style.background = "#f1c40f";
-        document.getElementById('submitBtn').style.color = "#000";
-        document.getElementById('mainForm').classList.add('edit-mode');
-        document.getElementById('cancelBtn').style.display = "block";
-        
+        document.getElementById('appFormTitle').innerText = "تعديل تطبيق: " + app.name;
+        document.getElementById('appSubmitBtn').innerText = "حفظ التعديلات";
+        document.getElementById('appSubmitBtn').style.background = "#f1c40f";
+        document.getElementById('appSubmitBtn').style.color = "#000";
+        document.getElementById('appForm').classList.add('edit-mode');
+        document.getElementById('cancelAppBtn').style.display = "block";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function resetForm() {
-        document.getElementById('editKey').value = "";
+    function resetAppForm() {
+        document.getElementById('editAppKey').value = "";
         document.getElementById('appName').value = "";
         document.getElementById('appUrl').value = "";
         document.getElementById('appImg').value = "";
         document.getElementById('appVer').value = "";
         document.getElementById('appCode').value = "";
         document.getElementById('appNotes').value = "";
-        
-        document.getElementById('formTitle').innerText = "إضافة تطبيق جديد";
-        document.getElementById('submitBtn').innerText = "إضافة للمتجر";
-        document.getElementById('submitBtn').style.background = "#bc13fe";
-        document.getElementById('submitBtn').style.color = "white";
-        document.getElementById('mainForm').classList.remove('edit-mode');
-        document.getElementById('cancelBtn').style.display = "none";
-    }
-
-    function addCategory() {
-        const name = document.getElementById('newCatName').value;
-        if(name) db.ref('categories').push({ name }).then(() => {
-            document.getElementById('newCatName').value = "";
-        });
+        document.getElementById('appFormTitle').innerText = "إضافة تطبيق جديد";
+        document.getElementById('appSubmitBtn').innerText = "إضافة للمتجر";
+        document.getElementById('appSubmitBtn').style.background = "#bc13fe";
+        document.getElementById('appSubmitBtn').style.color = "white";
+        document.getElementById('appForm').classList.remove('edit-mode');
+        document.getElementById('cancelAppBtn').style.display = "none";
     }
 
     function deleteItem(path) {
-        if(confirm("هل أنت متأكد من الحذف النهائي؟")) db.ref(path).remove();
+        if(confirm("هل أنت متأكد من الحذف؟")) db.ref(path).remove();
     }
 </script>
 </body>
