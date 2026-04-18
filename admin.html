@@ -2,29 +2,76 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة تحكم Aws Store</title>
+    <title>لوحة تحكم Aws Store | الاحترافية</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { background: #0b0f12; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 1px solid rgba(0,255,136,0.2); text-align: center; width: 300px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; outline: none; box-sizing: border-box; }
-        button { background: #00ff88; color: black; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
-        #adminPanel { display: none; padding: 20px; width: 90%; max-width: 900px; margin: auto; }
+        :root {
+            --bg: #0b1014;
+            --accent: #00ff88;
+            --text: #ffffff;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid rgba(0,255,136,0.1); }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: var(--accent); font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: #161b22; color: white; box-sizing: border-box; }
+        button { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
+        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        .login-screen { display: flex; justify-content: center; align-items: center; height: 90vh; }
+        #adminDashboard { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loginSection" class="login-box">
-        <h3>تسجيل دخول المدير</h3>
-        <input type="password" id="passInput" placeholder="أدخل كلمة المرور">
-        <button onclick="checkAuth()">دخول</button>
+    <div id="loginSection" class="login-screen">
+        <div class="container" style="max-width: 350px;">
+            <h2 style="text-align: center; color: var(--accent);">تسجيل دخول</h2>
+            <input type="password" id="passInput" placeholder="كلمة المرور">
+            <button onclick="checkAuth()">دخول الآدمن</button>
+        </div>
     </div>
 
-    <div id="adminPanel">
-        <h2 style="color:#00ff88">مرحباً بك في لوحة تحكم Aws Store</h2>
-        <p>تم تسجيل الدخول بنجاح كمدير.</p>
-        <button onclick="location.reload()" style="background:red; color:white; width:auto">تسجيل خروج</button>
+    <div id="adminDashboard" class="container">
+        <h2 style="text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">إضافة تطبيق جديد</h2>
+        
+        <div class="input-group">
+            <label>اسم التطبيق</label>
+            <input type="text" id="appName" placeholder="مثال: YouTube Mod">
+        </div>
+
+        <div class="input-group">
+            <label>رابط أيقونة التطبيق (URL)</label>
+            <input type="text" id="appImg" placeholder="https://...">
+        </div>
+
+        <div class="input-group">
+            <label>رابط التحميل</label>
+            <input type="text" id="appUrl" placeholder="https://...">
+        </div>
+
+        <div class="input-group">
+            <label>رقم الإصدار</label>
+            <input type="text" id="appVer" placeholder="V 2.0.1">
+        </div>
+
+        <div class="input-group">
+            <label>القسم</label>
+            <select id="appCat"></select>
+        </div>
+
+        <div class="input-group">
+            <label>البريد الإلكتروني المرتبط (Gmail)</label>
+            <input type="email" id="appGmail" placeholder="example@gmail.com">
+        </div>
+
+        <div class="input-group">
+            <label>ملاحظات التحديث</label>
+            <textarea id="appNotes" rows="3" placeholder="اكتب ميزات التحديث الجديد هنا..."></textarea>
+        </div>
+
+        <button onclick="saveApp()">نشر التطبيق في المتجر ✅</button>
+        <button onclick="location.reload()" style="background: #ff4444; color: white; margin-top: 20px;">تسجيل الخروج</button>
     </div>
 
     <script>
@@ -38,17 +85,53 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // فحص الباسوورد
         function checkAuth() {
-            const userInput = document.getElementById('passInput').value;
-            const correctPass = "ashd1980"; // الباسوورد الخاص بك
-
-            // التأكد من المطابقة (بدون مسافات)
-            if (userInput.trim() === correctPass) {
+            const pass = document.getElementById('passInput').value;
+            if (pass.trim() === "ashd1980") {
                 document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                // يمكنك هنا استدعاء وظائف جلب البيانات لإدارتها
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadCategories();
             } else {
-                alert("⚠️ كلمة المرور غير صحيحة، حاول مجدداً.");
+                alert("الباسوورد خطأ!");
+            }
+        }
+
+        // جلب الأقسام من Firebase
+        function loadCategories() {
+            db.ref('categories').on('value', snap => {
+                const sel = document.getElementById('appCat');
+                sel.innerHTML = "";
+                const data = snap.val();
+                if (data) {
+                    Object.values(data).forEach(c => {
+                        sel.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+                    });
+                }
+            });
+        }
+
+        // حفظ التطبيق مع خانة الجيميل
+        function saveApp() {
+            const appData = {
+                name: document.getElementById('appName').value,
+                img: document.getElementById('appImg').value,
+                url: document.getElementById('appUrl').value,
+                ver: document.getElementById('appVer').value,
+                cat: document.getElementById('appCat').value,
+                gmail: document.getElementById('appGmail').value, // حفظ الجيميل
+                notes: document.getElementById('appNotes').value
+            };
+
+            if (appData.name && appData.url) {
+                db.ref('apps').push(appData).then(() => {
+                    alert("تم إضافة التطبيق بنجاح!");
+                    // مسح الخانات بعد الإضافة
+                    document.querySelectorAll('input').forEach(i => i.value = "");
+                    document.querySelector('textarea').value = "";
+                });
+            } else {
+                alert("يرجى ملء البيانات الأساسية!");
             }
         }
     </script>
