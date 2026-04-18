@@ -2,137 +2,108 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | المتجر المتكامل</title>
+    <title>إدارة Aws Store | نظام الملاحظات</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { 
-            --accent: #bc13fe; --accent-glow: rgba(188, 19, 254, 0.4);
-            --bg-dark: #0b0f12; --card-bg: rgba(15, 15, 25, 0.85);
-            --text-main: #ffffff; --text-dim: #a0a0a0; --glass-border: rgba(255, 255, 255, 0.1);
-        }
-        body.light-mode {
-            --bg-dark: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #1a1a1a; --text-dim: #555555; --glass-border: rgba(0, 0, 0, 0.1);
-        }
-        body { 
-            background: var(--bg-dark) url('https://cdn.pixground.com/storage/v1/render/image/public/wallpapers/7ce9c239-012c-4b86-a145-21e8edf7be29/p88gGVju6l.jpg?width=1280&quality=85&height=1080&resize=contain') no-repeat center center fixed;
-            background-size: cover; color: var(--text-main); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; min-height: 100vh;
-        }
-        .bg-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: -1; }
-        .top-actions { position: fixed; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 2000; }
-        .action-btn { background: var(--card-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); color: var(--text-main); font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .header { padding: 60px 20px 20px; text-align: center; }
-        .header img { width: 110px; border-radius: 25px; filter: drop-shadow(0 0 15px var(--accent-glow)); }
-        .sticky-nav { position: sticky; top: 0; z-index: 1000; background: rgba(11, 15, 18, 0.85); backdrop-filter: blur(20px); padding: 15px 0; border-bottom: 1px solid var(--glass-border); }
-        .search-wrapper { max-width: 500px; margin: 0 auto 15px; padding: 0 20px; }
-        .search-input { width: 100%; padding: 12px 25px; border-radius: 50px; border: 1px solid var(--accent); background: rgba(0,0,0,0.4); color: #fff; outline: none; text-align: center; box-sizing: border-box; }
-        .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 5px 20px; scrollbar-width: none; }
-        .cat-chip { padding: 8px 22px; border-radius: 50px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); white-space: nowrap; cursor: pointer; color: var(--text-main); }
-        .cat-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
-        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
-        .app-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; text-align: center; backdrop-filter: blur(10px); }
-        .app-icon { width: 75px; height: 75px; border-radius: 20px; object-fit: cover; margin-bottom: 10px; }
-        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .download-btn { background: linear-gradient(45deg, var(--accent), #6a11cb); color: white; text-decoration: none; padding: 10px; border-radius: 12px; font-weight: bold; flex: 1; font-size: 14px; text-align: center; }
-        .info-btn { width: 40px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); border-radius: 12px; cursor: pointer; color: var(--text-main); font-size: 18px; }
-
-        /* نافذة الملاحظات المصلحة */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: var(--bg-dark); border: 2px solid var(--accent); padding: 25px; border-radius: 25px; max-width: 450px; width: 100%; text-align: right; box-shadow: 0 0 30px var(--accent-glow); }
-        .notes-text { font-size: 15px; line-height: 1.8; color: var(--text-main); background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border-right: 4px solid var(--accent); max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
-
-        #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .spinner { width: 40px; height: 40px; border: 4px solid var(--accent-glow); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        body { font-family: 'Segoe UI', sans-serif; background: #0b0f12; color: white; direction: rtl; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .panel { background: #161b20; padding: 25px; border-radius: 15px; border: 1px solid #bc13fe; margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: white; box-sizing: border-box; }
+        .btn-main { background: #bc13fe; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        .app-item { background: #1c2329; padding: 15px; margin: 10px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        .btn-edit { background: #f1c40f; color: black; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-del { background: #ff4757; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="bg-overlay"></div>
-    <div id="loader"><div class="spinner"></div></div>
-    <div class="top-actions">
-        <button class="action-btn" onclick="toggleTheme()">🌓</button>
-        <button class="action-btn" onclick="shareStore()">🔗</button>
-    </div>
-    <header class="header"><img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo"><h1>Aws Store</h1></header>
-    <nav class="sticky-nav"><div class="search-wrapper"><input type="text" id="searchInput" class="search-input" placeholder="ابحث عن تطبيق..." oninput="renderApps()"></div><div class="categories-scroll" id="categoryNav"></div></nav>
-    <main class="main-container" id="contentArea"></main>
-
-    <div id="notesModal" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="modalAppName" style="color:var(--accent); margin-top:0;">اسم التطبيق</h3>
-            <p style="font-weight:bold; margin-bottom:10px;">📝 شرح التحديث والملاحظات:</p>
-            <div id="modalNotes" class="notes-text">لا توجد ملاحظات متاحة.</div>
-            <button class="download-btn" style="width:100%; margin-top:25px; cursor:pointer;" onclick="closeModal()">فهمت ذلك</button>
+    <div class="container">
+        <div class="panel" id="mainForm">
+            <h2 id="formTitle">إضافة تطبيق جديد</h2>
+            <input type="hidden" id="editKey">
+            <input type="text" id="appName" placeholder="اسم التطبيق">
+            <input type="text" id="appUrl" placeholder="رابط التحميل">
+            <input type="text" id="appImg" placeholder="رابط الأيقونة">
+            <input type="text" id="appVer" placeholder="الإصدار">
+            <textarea id="appNotes" rows="4" placeholder="اكتب هنا شرح التحديث أو الملاحظات الهامة للمستخدم..."></textarea>
+            <label>القسم:</label>
+            <select id="categorySelect"></select>
+            <button class="btn-main" id="submitBtn" onclick="saveData()">حفظ البيانات للمتجر</button>
+            <button id="cancelBtn" onclick="resetForm()" style="display:none; background:#555; margin-top:10px;" class="btn-main">إلغاء</button>
         </div>
+
+        <div class="panel">
+            <h2>إدارة الأقسام</h2>
+            <div style="display: flex; gap: 10px;"><input type="text" id="newCatName" placeholder="اسم القسم الجديد" style="margin:0;"><button onclick="addCat()" style="background: #2ed573; width: 120px;" class="btn-main">إضافة</button></div>
+            <div id="catList" style="margin-top:15px;"></div>
+        </div>
+
+        <div class="panel"><h2>قائمة التطبيقات</h2><div id="appList"></div></div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
-            authDomain: "aws-store-aaf40.firebaseapp.com",
-            databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
-            projectId: "aws-store-aaf40",
-            appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let state = { apps: [], categories: [], activeCategory: "الكل" };
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
+        authDomain: "aws-store-aaf40.firebaseapp.com",
+        databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
+        projectId: "aws-store-aaf40",
+        appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        db.ref().on('value', snap => {
-            const data = snap.val() || {};
-            state.apps = data.apps ? Object.values(data.apps) : [];
-            state.categories = data.categories ? Object.values(data.categories) : [];
-            document.getElementById('loader').style.display = 'none';
-            renderCategories(); renderApps();
-        });
-
-        function renderCategories() {
-            const nav = document.getElementById('categoryNav');
-            let html = `<div class="cat-chip ${state.activeCategory === 'الكل' ? 'active' : ''}" onclick="setCategory('الكل')">الكل</div>`;
-            state.categories.forEach(cat => { html += `<div class="cat-chip ${state.activeCategory === cat.name ? 'active' : ''}" onclick="setCategory('${cat.name}')">${cat.name}</div>`; });
-            nav.innerHTML = html;
-        }
-
-        function setCategory(cat) { state.activeCategory = cat; renderCategories(); renderApps(); }
-
-        function renderApps() {
-            const container = document.getElementById('contentArea');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            container.innerHTML = "";
-            const cats = state.activeCategory === "الكل" ? state.categories : state.categories.filter(c => c.name === state.activeCategory);
-
-            cats.forEach(cat => {
-                const filtered = state.apps.filter(app => app.cat === cat.name && app.name.toLowerCase().includes(search));
-                if (filtered.length > 0) {
-                    let html = `<h3 style="border-right:4px solid var(--accent); padding-right:10px; margin:30px 0 15px;">${cat.name}</h3><div class="apps-grid">`;
-                    filtered.forEach(app => {
-                        html += `
-                            <div class="app-card">
-                                <img class="app-icon" src="${app.img}" onerror="this.src='https://via.placeholder.com/80'">
-                                <div style="font-weight:bold; font-size:14px;">${app.name}</div>
-                                <div style="font-size:11px; opacity:0.7; margin-bottom:10px;">v ${app.ver || '1.0'}</div>
-                                <div class="btn-group">
-                                    <a href="${app.url}" class="download-btn" target="_blank">📥 تحميل</a>
-                                    <button class="info-btn" onclick="showNotes('${app.name}', \`${app.notes || ''}\`)">ℹ️</button>
-                                </div>
-                            </div>`;
-                    });
-                    html += `</div>`; container.innerHTML += html;
-                }
+    db.ref().on('value', snap => {
+        const data = snap.val() || {};
+        const catSelect = document.getElementById('categorySelect');
+        const catListDiv = document.getElementById('catList');
+        const appListDiv = document.getElementById('appList');
+        
+        catSelect.innerHTML = ""; catListDiv.innerHTML = ""; appListDiv.innerHTML = "";
+        
+        if(data.categories) {
+            Object.keys(data.categories).forEach(id => {
+                const name = data.categories[id].name;
+                catSelect.innerHTML += `<option value="${name}">${name}</option>`;
+                catListDiv.innerHTML += `<div class="app-item"><span>${name}</span><button class="btn-del" onclick="deleteItem('categories/${id}')">حذف</button></div>`;
             });
         }
-
-        function showNotes(name, notes) {
-            document.getElementById('modalAppName').innerText = name;
-            document.getElementById('modalNotes').innerText = notes || "لا توجد ملاحظات إضافية لهذا التطبيق حالياً.";
-            document.getElementById('notesModal').style.display = 'flex';
+        if(data.apps) {
+            Object.keys(data.apps).forEach(id => {
+                const app = data.apps[id];
+                appListDiv.innerHTML += `<div class="app-item"><span>${app.name} (${app.cat})</span><div><button class="btn-edit" onclick="editApp('${id}', ${JSON.stringify(app).replace(/"/g, '&quot;')})">تعديل</button><button class="btn-del" onclick="deleteItem('apps/${id}')">حذف</button></div></div>`;
+            });
         }
-        function closeModal() { document.getElementById('notesModal').style.display = 'none'; }
-        function toggleTheme() { document.body.classList.toggle('light-mode'); }
-        function shareStore() { if (navigator.share) { navigator.share({ title: 'Aws Store', url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href); alert("تم نسخ الرابط!"); } }
-    </script>
+    });
+
+    function saveData() {
+        const key = document.getElementById('editKey').value;
+        const appData = {
+            name: document.getElementById('appName').value,
+            url: document.getElementById('appUrl').value,
+            img: document.getElementById('appImg').value,
+            ver: document.getElementById('appVer').value,
+            cat: document.getElementById('categorySelect').value,
+            notes: document.getElementById('appNotes').value || ""
+        };
+        if(key) db.ref('apps/' + key).update(appData).then(() => resetForm());
+        else db.ref('apps').push(appData).then(() => resetForm());
+    }
+
+    function editApp(id, app) {
+        document.getElementById('editKey').value = id;
+        document.getElementById('appName').value = app.name;
+        document.getElementById('appUrl').value = app.url;
+        document.getElementById('appImg').value = app.img;
+        document.getElementById('appVer').value = app.ver || "";
+        document.getElementById('appNotes').value = app.notes || "";
+        document.getElementById('categorySelect').value = app.cat;
+        document.getElementById('submitBtn').innerText = "تحديث التعديلات";
+        document.getElementById('cancelBtn').style.display = "block";
+    }
+
+    function resetForm() { document.getElementById('editKey').value = ""; document.getElementById('appName').value = ""; document.getElementById('appUrl').value = ""; document.getElementById('appImg').value = ""; document.getElementById('appVer').value = ""; document.getElementById('appNotes').value = ""; document.getElementById('submitBtn').innerText = "حفظ البيانات للمتجر"; document.getElementById('cancelBtn').style.display = "none"; }
+    function addCat() { const name = document.getElementById('newCatName').value; if(name) db.ref('categories').push({name}).then(()=>document.getElementById('newCatName').value=""); }
+    function deleteItem(p) { if(confirm("حذف؟")) db.ref(p).remove(); }
+</script>
 </body>
 </html>
