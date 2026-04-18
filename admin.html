@@ -2,31 +2,84 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Aws Store | Login Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم كاملة | Aws Store</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <style>
-        body { background: #0b0f12; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 1px solid #00ff88; text-align: center; width: 350px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #161b22; color: white; box-sizing: border-box; }
-        button { background: #00ff88; color: black; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        #adminPanel { display: none; width: 90%; max-width: 800px; background: #161b22; padding: 20px; border-radius: 15px; }
+        :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; --danger: #ff4757; --edit: #00a2ff; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--main-bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .panel { width: 100%; max-width: 600px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .status-bar { font-size: 13px; text-align: center; margin-bottom: 20px; padding: 8px; border-radius: 8px; background: #1c2329; border: 1px solid #232a31; }
+        
+        input, select, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; font-size: 14px; }
+        textarea { height: 100px; resize: none; font-family: inherit; }
+        .save-btn { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+        .logout-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); width: auto; padding: 5px 15px; cursor: pointer; border-radius: 8px; }
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; margin-bottom: 20px; }
+        .item-card { background: #1c2329; padding: 12px 15px; margin: 8px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        
+        .btn-sm { width: auto; padding: 5px 12px; cursor: pointer; border: none; border-radius: 5px; color: #fff; font-size: 12px; margin-right: 5px; display: inline-block; }
+        .del-btn { background: var(--danger); }
+        .edit-btn { background: var(--edit); }
+        
+        .cat-box { border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 15px; }
+        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
+        .cat-item:last-child { border-bottom: none; }
+        .editing-mode { border: 2px solid var(--edit) !important; padding: 20px; border-radius: 12px; }
     </style>
 </head>
 <body>
 
-    <div id="loginSection" class="login-box">
-        <h2 style="color: #00ff88;">Aws Store Admin</h2>
-        <input type="email" id="userEmail" placeholder="البريد الإلكتروني">
-        <input type="password" id="userPass" placeholder="كلمة المرور">
-        <button onclick="checkAuth()">تسجيل الدخول</button>
+    <div id="loginOverlay">
+        <div class="panel" style="max-width: 350px;">
+            <h3 style="text-align:center;">🔐 دخول المسؤول</h3>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" value="aous.safaa.hd.1980@gmail.com">
+            <input type="password" id="loginPass" placeholder="كلمة المرور">
+            <button class="save-btn" onclick="login()">دخول</button>
+            <p id="loginError" style="color:var(--danger); text-align:center; font-size:12px; margin-top:10px;"></p>
+        </div>
     </div>
 
-    <div id="adminPanel">
-        <h2 style="color: #00ff88; text-align: center;">تم تسجيل الدخول بنجاح ✅</h2>
-        <p style="text-align: center;">مرحباً بك: aous.safaa.hd.1980@gmail.com</p>
-        <hr>
-        <button onclick="location.reload()" style="background: #ff4444; color: white;">خروج آمن</button>
+    <div class="header-flex">
+        <h2>🛠️ إدارة Aws Store</h2>
+        <button class="logout-btn" onclick="logout()">خروج</button>
+    </div>
+
+    <div class="panel">
+        <div id="connStatus" class="status-bar">فحص الاتصال...</div>
+        
+        <input type="text" id="appName" placeholder="اسم التطبيق">
+        <input type="text" id="appUrl" placeholder="رابط التحميل">
+        <input type="text" id="appImg" placeholder="رابط الأيقونة">
+        <input type="text" id="appVer" placeholder="الإصدار">
+        
+        <textarea id="appNotes" placeholder="اكتب هنا ملاحظات التحديث وشرح الإضافات الجديدة..."></textarea>
+        
+        <label style="font-size:12px; color:#888;">القسم:</label>
+        <select id="categorySelect"></select>
+
+        <button id="appSubmitBtn" class="save-btn" onclick="saveApp()">🚀 حفظ التطبيق</button>
+        <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء التعديل</button>
+
+        <div class="cat-box" id="catSection">
+            <h4 style="margin:0 0 10px 0; color:var(--accent);">📂 إدارة الأقسام</h4>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="catInput" placeholder="اسم القسم">
+                <button id="catSubmitBtn" onclick="saveCategory()" style="width:100px; background:#333; cursor:pointer;">إضافة</button>
+            </div>
+            <div id="catListDisplay" style="margin-top:15px; background: #0b0f12; border-radius: 8px;"></div>
+        </div>
+    </div>
+
+    <div style="width:100%; max-width:600px;">
+        <h3 style="color:var(--accent);">📦 التطبيقات الحالية</h3>
+        <div id="appsListDisplay"></div>
     </div>
 
     <script>
@@ -37,22 +90,140 @@
             projectId: "aws-store-aaf40",
             appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
         };
-        firebase.initializeApp(firebaseConfig);
 
-        function checkAuth() {
-            // سحب البيانات مع تنظيفها من المسافات وتحويل الإيميل لحروف صغيرة
-            const emailInput = document.getElementById('userEmail').value.trim().toLowerCase();
-            const passInput = document.getElementById('userPass').value.trim();
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
+        let editAppId = null;
+        let editCatId = null;
+
+        // نظام الدخول المباشر بالبيانات الصحيحة
+        function login() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPass').value.trim();
             const correctEmail = "aous.safaa.hd.1980@gmail.com";
             const correctPass = "ashd1980";
 
-            if (emailInput === correctEmail && passInput === correctPass) {
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
+            if (email === correctEmail && pass === correctPass) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                listenToData();
             } else {
-                alert("⚠️ خطأ في البيانات! تأكد من كتابة الإيميل والباسوورد بشكل صحيح.");
+                document.getElementById('loginError').innerText = "بيانات الدخول غير صحيحة";
             }
+        }
+
+        function logout() { location.reload(); }
+
+        function listenToData() {
+            db.ref(".info/connected").on("value", s => {
+                document.getElementById('connStatus').innerHTML = s.val() ? "● متصل بالسحابة" : "○ غير متصل";
+            });
+
+            // جلب الأقسام والتأكد من ظهورها في القائمة المنسدلة
+            db.ref('categories').on('value', s => {
+                const select = document.getElementById('categorySelect');
+                const display = document.getElementById('catListDisplay');
+                select.innerHTML = ""; display.innerHTML = "";
+                s.forEach(c => {
+                    const name = c.val().name;
+                    select.innerHTML += `<option value="${name}">${name}</option>`;
+                    display.innerHTML += `
+                        <div class="cat-item">
+                            <span>${name}</span>
+                            <div>
+                                <button class="btn-sm edit-btn" onclick="startEditCat('${c.key}', '${name}')">تعديل</button>
+                                <button class="btn-sm del-btn" onclick="deleteCat('${c.key}')">حذف</button>
+                            </div>
+                        </div>`;
+                });
+            });
+
+            db.ref('apps').on('value', s => {
+                const display = document.getElementById('appsListDisplay');
+                display.innerHTML = "";
+                s.forEach(c => {
+                    const item = c.val();
+                    display.innerHTML += `
+                        <div class="item-card">
+                            <div><strong>${item.name}</strong> <small>(${item.cat})</small></div>
+                            <div>
+                                <button class="btn-sm edit-btn" onclick="editApp('${c.key}')">تعديل</button>
+                                <button class="btn-sm del-btn" onclick="deleteApp('${c.key}')">حذف</button>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
+        function saveCategory() {
+            const name = document.getElementById('catInput').value.trim();
+            if(!name) return;
+            if(editCatId) {
+                db.ref('categories/' + editCatId).update({ name: name }).then(() => { resetCatForm(); });
+            } else {
+                db.ref('categories').push({ name: name });
+                document.getElementById('catInput').value = "";
+            }
+        }
+
+        function startEditCat(id, currentName) {
+            editCatId = id;
+            document.getElementById('catInput').value = currentName;
+            document.getElementById('catSubmitBtn').innerText = "تحديث";
+            document.getElementById('catSubmitBtn').style.background = "var(--edit)";
+        }
+
+        function resetCatForm() {
+            editCatId = null;
+            document.getElementById('catInput').value = "";
+            document.getElementById('catSubmitBtn').innerText = "إضافة";
+            document.getElementById('catSubmitBtn').style.background = "#333";
+        }
+
+        function deleteCat(id) { if(confirm("حذف القسم؟")) db.ref('categories/'+id).remove(); }
+
+        function saveApp() {
+            const data = {
+                name: document.getElementById('appName').value,
+                url: document.getElementById('appUrl').value,
+                img: document.getElementById('appImg').value,
+                ver: document.getElementById('appVer').value || 'v1.0',
+                notes: document.getElementById('appNotes').value || "",
+                cat: document.getElementById('categorySelect').value
+            };
+            if(!data.name) return alert("الرجاء كتابة اسم التطبيق");
+
+            if(editAppId) {
+                db.ref('apps/'+editAppId).update(data).then(() => { resetAppForm(); alert("تم التحديث"); });
+            } else {
+                db.ref('apps').push(data).then(() => { resetAppForm(); alert("تم الحفظ"); });
+            }
+        }
+
+        function editApp(id) {
+            db.ref('apps/'+id).once('value', s => {
+                const item = s.val();
+                editAppId = id;
+                document.getElementById('appName').value = item.name;
+                document.getElementById('appUrl').value = item.url;
+                document.getElementById('appImg').value = item.img;
+                document.getElementById('appVer').value = item.ver;
+                document.getElementById('appNotes').value = item.notes || "";
+                document.getElementById('categorySelect').value = item.cat;
+                document.getElementById('appSubmitBtn').innerText = "تحديث التطبيق";
+                document.getElementById('appCancelBtn').style.display = "block";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        function deleteApp(id) { if(confirm("حذف التطبيق؟")) db.ref('apps/'+id).remove(); }
+
+        function resetAppForm() {
+            editAppId = null;
+            document.querySelectorAll('input').forEach(i => { if(i.id !== 'loginEmail') i.value = ""; });
+            document.getElementById('appNotes').value = "";
+            document.getElementById('appSubmitBtn').innerText = "🚀 حفظ التطبيق";
+            document.getElementById('appCancelBtn').style.display = "none";
         }
     </script>
 </body>
