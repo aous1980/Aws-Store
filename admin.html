@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة تحكم Aws Store | إصلاح الخانات</title>
+    <title>لوحة تحكم Aws Store | دخول رسمي</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -10,88 +10,44 @@
             --bg: #0b1014;
             --accent: #00ff88;
             --text: #ffffff;
-            --input-bg: #161b22;
         }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; direction: rtl; }
-        .container { max-width: 600px; margin: auto; background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid var(--accent); }
-        
-        .field { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: var(--accent); font-weight: bold; }
-        input, select, textarea { 
-            width: 100%; padding: 12px; border-radius: 10px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            background: var(--input-bg); color: white; 
-            box-sizing: border-box; font-size: 1rem;
-        }
-
-        /* تمييز خانة الجيميل بلون مختلف لسهولة العثور عليها */
-        #appGmail {
-            border: 1px solid var(--00d2ff);
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
-        }
-
-        button { 
-            background: var(--accent); color: #000; border: none; padding: 15px; 
-            border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; 
-            font-size: 1.1rem; transition: 0.3s;
-        }
-        button:hover { transform: scale(1.02); filter: brightness(1.2); }
-        
-        #loginSection { display: flex; justify-content: center; align-items: center; height: 80vh; }
-        #adminDashboard { display: none; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 50px auto; background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); }
+        .field { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; color: var(--accent); }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: #161b22; color: white; box-sizing: border-box; }
+        button { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        button:hover { transform: scale(1.02); }
+        #adminDashboard { display: none; max-width: 800px; }
     </style>
 </head>
 <body>
 
-    <div id="loginSection">
-        <div class="container" style="max-width: 350px;">
-            <h2 style="text-align: center;">قفل الأمان</h2>
-            <input type="password" id="passInput" placeholder="كلمة المرور">
-            <button onclick="checkAuth()">دخول</button>
+    <div id="loginSection" class="container">
+        <h2 style="text-align: center; color: var(--accent);">تسجيل دخول المدير</h2>
+        <div class="field">
+            <label>البريد الإلكتروني:</label>
+            <input type="email" id="loginEmail" placeholder="example@gmail.com">
         </div>
+        <div class="field">
+            <label>كلمة المرور:</label>
+            <input type="password" id="loginPass" placeholder="••••••••">
+        </div>
+        <button onclick="checkAuth()">دخول إلى اللوحة</button>
     </div>
 
     <div id="adminDashboard" class="container">
-        <h2 style="text-align: center; color: var(--accent);">إضافة تطبيق جديد</h2>
-        <hr style="opacity: 0.1; margin-bottom: 20px;">
+        <h2 style="text-align: center; border-bottom: 1px solid var(--accent); padding-bottom: 10px;">إضافة تطبيق جديد</h2>
+        
+        <div class="field"><label>اسم التطبيق</label><input type="text" id="appName"></div>
+        <div class="field"><label>رابط الأيقونة</label><input type="text" id="appImg"></div>
+        <div class="field"><label>رابط التحميل</label><input type="text" id="appUrl"></div>
+        <div class="field"><label>رقم الإصدار</label><input type="text" id="appVer"></div>
+        <div class="field"><label>القسم</label><select id="appCat"></select></div>
+        <div class="field"><label>ملاحظات التحديث</label><textarea id="appNotes" rows="3"></textarea></div>
 
-        <div class="field">
-            <label>اسم التطبيق:</label>
-            <input type="text" id="appName" placeholder="مثال: Aws TV">
-        </div>
-
-        <div class="field">
-            <label>رابط الأيقونة:</label>
-            <input type="text" id="appImg" placeholder="رابط مباشر للصورة">
-        </div>
-
-        <div class="field">
-            <label>رابط التحميل:</label>
-            <input type="text" id="appUrl" placeholder="رابط ملف APK">
-        </div>
-
-        <div class="field">
-            <label>رقم الإصدار:</label>
-            <input type="text" id="appVer" placeholder="V 1.0.0">
-        </div>
-
-        <div class="field">
-            <label>القسم:</label>
-            <select id="appCat"></select>
-        </div>
-
-        <div class="field">
-            <label style="color: #00d2ff;">البريد الإلكتروني (Gmail):</label>
-            <input type="email" id="appGmail" placeholder="username@gmail.com">
-        </div>
-
-        <div class="field">
-            <label>ملاحظات التحديث:</label>
-            <textarea id="appNotes" rows="3" placeholder="ما الجديد في هذا التحديث؟"></textarea>
-        </div>
-
-        <button onclick="saveApp()">نشر التطبيق الآن ✅</button>
-        <button onclick="location.reload()" style="background:none; color:#ff4444; border:1px solid #ff4444; margin-top:15px; font-size: 0.9rem;">خروج</button>
+        <button onclick="saveApp()">نشر التحديث ✅</button>
+        <button onclick="location.reload()" style="background:none; color:red; margin-top:10px;">خروج</button>
     </div>
 
     <script>
@@ -105,19 +61,28 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // بيانات الدخول الخاصة بك
+        const ADMIN_GMAIL = "aous.safaa.hd.1980@gmail.com";
+        const ADMIN_PASS = "ashd1980";
+
         function checkAuth() {
-            if (document.getElementById('passInput').value.trim() === "ashd1980") {
+            const emailInput = document.getElementById('loginEmail').value.trim();
+            const passInput = document.getElementById('loginPass').value.trim();
+
+            if (emailInput === ADMIN_GMAIL && passInput === ADMIN_PASS) {
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('adminDashboard').style.display = 'block';
                 loadCategories();
-            } else { alert("الباسوورد خطأ!"); }
+            } else {
+                alert("⚠️ البيانات غير صحيحة! تأكد من الجيميل والباسوورد.");
+            }
         }
 
         function loadCategories() {
             db.ref('categories').on('value', snap => {
                 const sel = document.getElementById('appCat');
                 sel.innerHTML = "";
-                if (snap.exists()) {
+                if(snap.exists()){
                     Object.values(snap.val()).forEach(c => {
                         sel.innerHTML += `<option value="${c.name}">${c.name}</option>`;
                     });
@@ -132,17 +97,16 @@
                 url: document.getElementById('appUrl').value,
                 ver: document.getElementById('appVer').value,
                 cat: document.getElementById('appCat').value,
-                gmail: document.getElementById('appGmail').value, // هنا يتم سحب قيمة الجيميل
-                notes: document.getElementById('appNotes').value
+                notes: document.getElementById('appNotes').value,
+                admin_email: ADMIN_GMAIL // لربط التطبيق بحسابك تلقائياً
             };
 
             if (data.name && data.url) {
                 db.ref('apps').push(data).then(() => {
-                    alert("تم النشر بنجاح!");
+                    alert("تم الحفظ بنجاح!");
                     document.querySelectorAll('input').forEach(i => i.value = "");
-                    document.getElementById('appNotes').value = "";
                 });
-            } else { alert("يرجى إكمال الحقول الأساسية!"); }
+            } else { alert("يرجى ملء البيانات!"); }
         }
     </script>
 </body>
