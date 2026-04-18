@@ -2,77 +2,191 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة تحكم Aws Store | الاحترافية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aws Store | Ultimate Edition</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+
     <style>
         :root {
-            --bg: #0b1014;
-            --accent: #00ff88;
-            --text: #ffffff;
+            /* استعادة الخلفية من الكود الأول مع تأثير الإشراق */
+            --main-bg: radial-gradient(circle at center, #16221f 0%, #0b0f12 100%);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text-color: #ffffff;
+            --accent: #00ff88; 
+            --accent-blue: #00d2ff;
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid rgba(0,255,136,0.1); }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: var(--accent); font-size: 0.9rem; }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: #161b22; color: white; box-sizing: border-box; }
-        button { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
-        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
-        .login-screen { display: flex; justify-content: center; align-items: center; height: 90vh; }
-        #adminDashboard { display: none; }
+
+        body.light-mode {
+            --main-bg: radial-gradient(circle at center, #f0f4f3 0%, #dcdcdc 100%);
+            --card-bg: rgba(0, 0, 0, 0.05);
+            --text-color: #1a1a1a;
+            --glass-border: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: var(--main-bg);
+            background-attachment: fixed; /* لجعل الخلفية ثابتة أثناء التمرير */
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.5s ease;
+        }
+
+        /* شريط الأدوات العلوي */
+        .header-tools {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .tool-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        header { text-align: center; padding: 20px 0; }
+        header img { 
+            width: 85px; 
+            filter: drop-shadow(0 0 20px var(--accent)); 
+            border-radius: 22px; 
+            transition: 0.5s;
+        }
+
+        .top-bar { max-width: 700px; margin: 0 auto 25px; display: flex; gap: 12px; padding: 0 10px; }
+        .search-box { 
+            flex: 2; 
+            background: var(--card-bg); 
+            border: 1px solid var(--glass-border); 
+            padding: 14px; 
+            border-radius: 15px; 
+            color: var(--text-color); 
+            outline: none; 
+            backdrop-filter: blur(15px); 
+        }
+
+        .downloader-badge { 
+            flex: 1; 
+            background: rgba(0, 210, 255, 0.1); 
+            border: 1px solid var(--accent-blue); 
+            padding: 10px; 
+            border-radius: 15px; 
+            color: var(--accent-blue); 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 0.8rem; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .quick-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+        .nav-item { 
+            background: var(--card-bg); 
+            border: 1px solid var(--glass-border); 
+            padding: 8px 18px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            color: var(--text-color); 
+        }
+        .nav-item:hover, .nav-item.active { background: var(--accent); color: #000; }
+
+        #categoriesContainer { max-width: 1200px; margin: auto; }
+        .category-title { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 12px; margin: 40px 0 20px; font-size: 1.3rem; }
+
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+
+        @media (max-width: 768px) {
+            .apps-grid { display: flex; overflow-x: auto; padding-bottom: 15px; gap: 15px; scroll-snap-type: x mandatory; }
+            .app-card { min-width: 260px; scroll-snap-align: center; }
+            .apps-grid::-webkit-scrollbar { display: none; }
+            .header-tools { top: 10px; left: 10px; }
+        }
+
+        .app-card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 25px; 
+            padding: 22px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: 0.3s; 
+            color: var(--text-color);
+            transform-style: preserve-3d;
+        }
+        .app-card:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1); }
+        .app-icon { width: 85px; height: 85px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transform: translateZ(20px); }
+
+        .app-notes { 
+            font-size: 0.8rem; 
+            opacity: 0.8; 
+            background: rgba(0,0,0,0.15); 
+            padding: 12px; 
+            border-radius: 12px; 
+            margin: 12px 0; 
+            width: 100%; 
+            border-right: 3px solid var(--accent-blue); 
+            text-align: right; 
+            transform: translateZ(10px);
+        }
+
+        .download-btn { 
+            background: linear-gradient(45deg, var(--accent), var(--accent-blue)); 
+            color: #000; 
+            text-decoration: none; 
+            padding: 12px; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            width: 100%; 
+            margin-top: auto; 
+            transform: translateZ(15px);
+        }
     </style>
 </head>
 <body>
 
-    <div id="loginSection" class="login-screen">
-        <div class="container" style="max-width: 350px;">
-            <h2 style="text-align: center; color: var(--accent);">تسجيل دخول</h2>
-            <input type="password" id="passInput" placeholder="كلمة المرور">
-            <button onclick="checkAuth()">دخول الآدمن</button>
-        </div>
+    <div class="header-tools">
+        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()">🌓</button>
+        <button class="tool-btn" onclick="shareStore()">🔗</button>
     </div>
 
-    <div id="adminDashboard" class="container">
-        <h2 style="text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">إضافة تطبيق جديد</h2>
-        
-        <div class="input-group">
-            <label>اسم التطبيق</label>
-            <input type="text" id="appName" placeholder="مثال: YouTube Mod">
-        </div>
+    <header>
+        <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
+        <h1>AWS STORE</h1>
+    </header>
 
-        <div class="input-group">
-            <label>رابط أيقونة التطبيق (URL)</label>
-            <input type="text" id="appImg" placeholder="https://...">
-        </div>
-
-        <div class="input-group">
-            <label>رابط التحميل</label>
-            <input type="text" id="appUrl" placeholder="https://...">
-        </div>
-
-        <div class="input-group">
-            <label>رقم الإصدار</label>
-            <input type="text" id="appVer" placeholder="V 2.0.1">
-        </div>
-
-        <div class="input-group">
-            <label>القسم</label>
-            <select id="appCat"></select>
-        </div>
-
-        <div class="input-group">
-            <label>البريد الإلكتروني المرتبط (Gmail)</label>
-            <input type="email" id="appGmail" placeholder="example@gmail.com">
-        </div>
-
-        <div class="input-group">
-            <label>ملاحظات التحديث</label>
-            <textarea id="appNotes" rows="3" placeholder="اكتب ميزات التحديث الجديد هنا..."></textarea>
-        </div>
-
-        <button onclick="saveApp()">نشر التطبيق في المتجر ✅</button>
-        <button onclick="location.reload()" style="background: #ff4444; color: white; margin-top: 20px;">تسجيل الخروج</button>
+    <div class="top-bar">
+        <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن تطبيق..." oninput="filterApps()">
+        <div class="downloader-badge">
+            <span style="font-size: 0.65rem; opacity: 0.8;">كود تطبيق Downloader</span>
+            <span>4131623</span>
+        </div> 
     </div>
+
+    <div id="quickNav" class="quick-nav"></div>
+    <div id="categoriesContainer"></div>
 
     <script>
         const firebaseConfig = {
@@ -82,56 +196,72 @@
             projectId: "aws-store-aaf40",
             appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
         };
-        firebase.initializeApp(firebaseConfig);
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // فحص الباسوورد
-        function checkAuth() {
-            const pass = document.getElementById('passInput').value;
-            if (pass.trim() === "ashd1980") {
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('adminDashboard').style.display = 'block';
-                loadCategories();
-            } else {
-                alert("الباسوورد خطأ!");
-            }
-        }
+        let localApps = {}, localCats = {};
 
-        // جلب الأقسام من Firebase
-        function loadCategories() {
-            db.ref('categories').on('value', snap => {
-                const sel = document.getElementById('appCat');
-                sel.innerHTML = "";
-                const data = snap.val();
-                if (data) {
-                    Object.values(data).forEach(c => {
-                        sel.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-                    });
-                }
+        db.ref().on('value', snap => {
+            const data = snap.val() || {};
+            localApps = data.apps || {};
+            localCats = data.categories || {};
+            renderNav();
+            displayContent();
+        });
+
+        function renderNav() {
+            const nav = document.getElementById('quickNav');
+            nav.innerHTML = '<div class="nav-item active" id="nav-all" onclick="changeCat(\'all\')">الكل</div>';
+            Object.values(localCats).forEach(c => {
+                nav.innerHTML += `<div class="nav-item" id="nav-${c.name}" onclick="changeCat('${c.name}')">${c.name}</div>`;
             });
         }
 
-        // حفظ التطبيق مع خانة الجيميل
-        function saveApp() {
-            const appData = {
-                name: document.getElementById('appName').value,
-                img: document.getElementById('appImg').value,
-                url: document.getElementById('appUrl').value,
-                ver: document.getElementById('appVer').value,
-                cat: document.getElementById('appCat').value,
-                gmail: document.getElementById('appGmail').value, // حفظ الجيميل
-                notes: document.getElementById('appNotes').value
-            };
+        function changeCat(catName) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('nav-' + (catName === 'all' ? 'all' : catName));
+            if(target) target.classList.add('active');
+            displayContent(catName);
+        }
 
-            if (appData.name && appData.url) {
-                db.ref('apps').push(appData).then(() => {
-                    alert("تم إضافة التطبيق بنجاح!");
-                    // مسح الخانات بعد الإضافة
-                    document.querySelectorAll('input').forEach(i => i.value = "");
-                    document.querySelector('textarea').value = "";
+        function displayContent(filter = 'all', search = '') {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = "";
+            Object.values(localCats).forEach(cat => {
+                if (filter !== 'all' && filter !== cat.name) return;
+                let appsHtml = "";
+                Object.values(localApps).forEach(app => {
+                    if (app.cat === cat.name && app.name.toLowerCase().includes(search.toLowerCase())) {
+                        appsHtml += `
+                            <div class="app-card" data-tilt data-tilt-max="10">
+                                <img src="${app.img}" class="app-icon" onerror="this.src='https://i.ibb.co/F4px49v/default-icon.png'">
+                                <div style="font-weight:bold; font-size: 1.1rem; transform: translateZ(15px);">${app.name}</div>
+                                <div style="color:var(--accent-blue); font-size:0.8rem; margin:5px 0; transform: translateZ(10px);">V ${app.ver}</div>
+                                ${app.notes ? `<div class="app-notes">📝 ${app.notes}</div>` : ''}
+                                <a href="${app.url}" class="download-btn" target="_blank">تحميل</a>
+                            </div>`;
+                    }
                 });
+                if (appsHtml !== "") {
+                    container.innerHTML += `<h2 class="category-title">📂 ${cat.name}</h2><div class="apps-grid">${appsHtml}</div>`;
+                }
+            });
+            VanillaTilt.init(document.querySelectorAll(".app-card"));
+        }
+
+        function filterApps() { displayContent('all', document.getElementById('searchInput').value); }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            document.getElementById('themeBtn').innerText = document.body.classList.contains('light-mode') ? "🌙" : "🌓";
+        }
+
+        function shareStore() {
+            if (navigator.share) {
+                navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
             } else {
-                alert("يرجى ملء البيانات الأساسية!");
+                alert("رابط المتجر: " + window.location.href);
             }
         }
     </script>
