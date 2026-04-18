@@ -3,225 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة Aws Store | نظام التعديل الشامل</title>
+    <title>Aws Store | المتجر المتكامل</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0b0f12; color: white; direction: rtl; padding: 20px; }
-        .container { max-width: 850px; margin: auto; }
-        .panel { background: #161b20; padding: 25px; border-radius: 15px; border: 1px solid #bc13fe; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: #bc13fe; border-bottom: 2px solid #bc13fe; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: white; box-sizing: border-box; font-size: 14px; }
-        .btn-main { background: #bc13fe; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; font-size: 16px; }
-        .btn-main:hover { background: #9a0dcf; transform: translateY(-2px); }
-        .btn-edit { background: #f1c40f; color: #000; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 5px; font-weight: bold; }
-        .btn-del { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .app-item { background: #1c2329; padding: 15px; margin: 10px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; transition: 0.3s; }
-        .app-item:hover { border-color: #bc13fe; }
-        .edit-mode { border-color: #f1c40f !important; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
-        .loader { text-align: center; color: #bc13fe; font-weight: bold; }
+        :root { 
+            --accent: #bc13fe; --accent-glow: rgba(188, 19, 254, 0.4);
+            --bg-dark: #0b0f12; --card-bg: rgba(15, 15, 25, 0.85);
+            --text-main: #ffffff; --text-dim: #a0a0a0; --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        body.light-mode {
+            --bg-dark: #f0f2f5; --card-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #1a1a1a; --text-dim: #555555; --glass-border: rgba(0, 0, 0, 0.1);
+        }
+        body { 
+            background: var(--bg-dark) url('https://cdn.pixground.com/storage/v1/render/image/public/wallpapers/7ce9c239-012c-4b86-a145-21e8edf7be29/p88gGVju6l.jpg?width=1280&quality=85&height=1080&resize=contain') no-repeat center center fixed;
+            background-size: cover; color: var(--text-main); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; min-height: 100vh;
+        }
+        .bg-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: -1; }
+        .top-actions { position: fixed; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 2000; }
+        .action-btn { background: var(--card-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); color: var(--text-main); font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .header { padding: 60px 20px 20px; text-align: center; }
+        .header img { width: 110px; border-radius: 25px; filter: drop-shadow(0 0 15px var(--accent-glow)); }
+        .sticky-nav { position: sticky; top: 0; z-index: 1000; background: rgba(11, 15, 18, 0.85); backdrop-filter: blur(20px); padding: 15px 0; border-bottom: 1px solid var(--glass-border); }
+        .search-wrapper { max-width: 500px; margin: 0 auto 15px; padding: 0 20px; }
+        .search-input { width: 100%; padding: 12px 25px; border-radius: 50px; border: 1px solid var(--accent); background: rgba(0,0,0,0.4); color: #fff; outline: none; text-align: center; box-sizing: border-box; }
+        .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 5px 20px; scrollbar-width: none; }
+        .cat-chip { padding: 8px 22px; border-radius: 50px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); white-space: nowrap; cursor: pointer; color: var(--text-main); }
+        .cat-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
+        .app-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; text-align: center; backdrop-filter: blur(10px); }
+        .app-icon { width: 75px; height: 75px; border-radius: 20px; object-fit: cover; margin-bottom: 10px; }
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .download-btn { background: linear-gradient(45deg, var(--accent), #6a11cb); color: white; text-decoration: none; padding: 10px; border-radius: 12px; font-weight: bold; flex: 1; font-size: 14px; text-align: center; }
+        .info-btn { width: 40px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); border-radius: 12px; cursor: pointer; color: var(--text-main); font-size: 18px; }
+
+        /* نافذة الملاحظات المصلحة */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: var(--bg-dark); border: 2px solid var(--accent); padding: 25px; border-radius: 25px; max-width: 450px; width: 100%; text-align: right; box-shadow: 0 0 30px var(--accent-glow); }
+        .notes-text { font-size: 15px; line-height: 1.8; color: var(--text-main); background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border-right: 4px solid var(--accent); max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+
+        #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--accent-glow); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="panel" id="appForm">
-        <h2 id="appFormTitle">إضافة تطبيق جديد</h2>
-        <input type="hidden" id="editAppKey">
-        
-        <input type="text" id="appName" placeholder="اسم التطبيق">
-        <input type="text" id="appUrl" placeholder="رابط التحميل">
-        <input type="text" id="appImg" placeholder="رابط الأيقونة">
-        <input type="text" id="appVer" placeholder="الإصدار">
-        <input type="text" id="appCode" placeholder="كود التفعيل (اختياري)">
-        <textarea id="appNotes" rows="3" placeholder="ملاحظات وشرح التحديث..."></textarea>
-        
-        <label>القسم:</label>
-        <select id="categorySelect"></select>
-        
-        <button class="btn-main" id="appSubmitBtn" onclick="saveAppData()">إضافة للمتجر</button>
-        <button id="cancelAppBtn" onclick="resetAppForm()" style="display:none; background:#555; margin-top:10px;" class="btn-main">إلغاء التعديل</button>
+    <div class="bg-overlay"></div>
+    <div id="loader"><div class="spinner"></div></div>
+    <div class="top-actions">
+        <button class="action-btn" onclick="toggleTheme()">🌓</button>
+        <button class="action-btn" onclick="shareStore()">🔗</button>
     </div>
+    <header class="header"><img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo"><h1>Aws Store</h1></header>
+    <nav class="sticky-nav"><div class="search-wrapper"><input type="text" id="searchInput" class="search-input" placeholder="ابحث عن تطبيق..." oninput="renderApps()"></div><div class="categories-scroll" id="categoryNav"></div></nav>
+    <main class="main-container" id="contentArea"></main>
 
-    <div class="panel" id="catForm">
-        <h2 id="catFormTitle">إدارة الأقسام</h2>
-        <input type="hidden" id="editCatKey">
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="newCatName" placeholder="اسم القسم" style="margin:0;">
-            <button onclick="saveCatData()" id="catSubmitBtn" style="background: #2ed573; width: 150px;" class="btn-main">إضافة</button>
+    <div id="notesModal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="modalAppName" style="color:var(--accent); margin-top:0;">اسم التطبيق</h3>
+            <p style="font-weight:bold; margin-bottom:10px;">📝 شرح التحديث والملاحظات:</p>
+            <div id="modalNotes" class="notes-text">لا توجد ملاحظات متاحة.</div>
+            <button class="download-btn" style="width:100%; margin-top:25px; cursor:pointer;" onclick="closeModal()">فهمت ذلك</button>
         </div>
-        <button id="cancelCatBtn" onclick="resetCatForm()" style="display:none; background:#555; margin-top:10px;" class="btn-main">إلغاء تعديل القسم</button>
-        <div id="catList" style="margin-top:20px;"></div>
     </div>
 
-    <div class="panel">
-        <h2>التطبيقات الحالية</h2>
-        <div id="appList"><p class="loader">جاري المزامنة...</p></div>
-    </div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
-        authDomain: "aws-store-aaf40.firebaseapp.com",
-        databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
-        projectId: "aws-store-aaf40",
-        appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // جلب البيانات وتحديث الواجهة
-    db.ref().on('value', snap => {
-        const data = snap.val() || {};
-        
-        // 1. تحديث الأقسام
-        const catSelect = document.getElementById('categorySelect');
-        const catListDiv = document.getElementById('catList');
-        catSelect.innerHTML = "";
-        catListDiv.innerHTML = "";
-        
-        if (data.categories) {
-            Object.keys(data.categories).forEach(id => {
-                const cat = data.categories[id];
-                catSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
-                catListDiv.innerHTML += `
-                    <div class="app-item">
-                        <span>📂 ${cat.name}</span>
-                        <div>
-                            <button class="btn-edit" onclick="editCat('${id}', '${cat.name}')">تعديل</button>
-                            <button class="btn-del" onclick="deleteItem('categories/${id}')">حذف</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // 2. تحديث التطبيقات
-        const appListDiv = document.getElementById('appList');
-        appListDiv.innerHTML = "";
-        if (data.apps) {
-            Object.keys(data.apps).forEach(id => {
-                const app = data.apps[id];
-                appListDiv.innerHTML += `
-                    <div class="app-item">
-                        <div>
-                            <strong>${app.name}</strong> <small style="color:#bc13fe">[${app.cat}]</small>
-                        </div>
-                        <div>
-                            <button class="btn-edit" onclick="editApp('${id}', ${JSON.stringify(app).replace(/"/g, '&quot;')})">تعديل</button>
-                            <button class="btn-del" onclick="deleteItem('apps/${id}')">حذف</button>
-                        </div>
-                    </div>`;
-            });
-        } else {
-            appListDiv.innerHTML = "القائمة فارغة.";
-        }
-    });
-
-    // --- وظائف الأقسام ---
-    function saveCatData() {
-        const key = document.getElementById('editCatKey').value;
-        const name = document.getElementById('newCatName').value;
-        if(!name) return;
-
-        if(key) {
-            db.ref('categories/' + key).update({ name }).then(() => {
-                resetCatForm();
-            });
-        } else {
-            db.ref('categories').push({ name }).then(() => {
-                document.getElementById('newCatName').value = "";
-            });
-        }
-    }
-
-    function editCat(id, name) {
-        document.getElementById('editCatKey').value = id;
-        document.getElementById('newCatName').value = name;
-        document.getElementById('catFormTitle').innerText = "تعديل القسم";
-        document.getElementById('catSubmitBtn').innerText = "تحديث";
-        document.getElementById('catSubmitBtn').style.background = "#f1c40f";
-        document.getElementById('catForm').classList.add('edit-mode');
-        document.getElementById('cancelCatBtn').style.display = "block";
-    }
-
-    function resetCatForm() {
-        document.getElementById('editCatKey').value = "";
-        document.getElementById('newCatName').value = "";
-        document.getElementById('catFormTitle').innerText = "إدارة الأقسام";
-        document.getElementById('catSubmitBtn').innerText = "إضافة";
-        document.getElementById('catSubmitBtn').style.background = "#2ed573";
-        document.getElementById('catForm').classList.remove('edit-mode');
-        document.getElementById('cancelCatBtn').style.display = "none";
-    }
-
-    // --- وظائف التطبيقات ---
-    function saveAppData() {
-        const key = document.getElementById('editAppKey').value;
-        const appData = {
-            name: document.getElementById('appName').value,
-            url: document.getElementById('appUrl').value,
-            img: document.getElementById('appImg').value,
-            ver: document.getElementById('appVer').value,
-            cat: document.getElementById('categorySelect').value,
-            code: document.getElementById('appCode').value || "",
-            notes: document.getElementById('appNotes').value || ""
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
+            authDomain: "aws-store-aaf40.firebaseapp.com",
+            databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
+            projectId: "aws-store-aaf40",
+            appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let state = { apps: [], categories: [], activeCategory: "الكل" };
 
-        if(!appData.name || !appData.url) return alert("يرجى إدخال البيانات!");
+        db.ref().on('value', snap => {
+            const data = snap.val() || {};
+            state.apps = data.apps ? Object.values(data.apps) : [];
+            state.categories = data.categories ? Object.values(data.categories) : [];
+            document.getElementById('loader').style.display = 'none';
+            renderCategories(); renderApps();
+        });
 
-        if(key) {
-            db.ref('apps/' + key).update(appData).then(() => {
-                alert("تم التحديث!");
-                resetAppForm();
-            });
-        } else {
-            db.ref('apps').push(appData).then(() => {
-                alert("تمت الإضافة!");
-                resetAppForm();
+        function renderCategories() {
+            const nav = document.getElementById('categoryNav');
+            let html = `<div class="cat-chip ${state.activeCategory === 'الكل' ? 'active' : ''}" onclick="setCategory('الكل')">الكل</div>`;
+            state.categories.forEach(cat => { html += `<div class="cat-chip ${state.activeCategory === cat.name ? 'active' : ''}" onclick="setCategory('${cat.name}')">${cat.name}</div>`; });
+            nav.innerHTML = html;
+        }
+
+        function setCategory(cat) { state.activeCategory = cat; renderCategories(); renderApps(); }
+
+        function renderApps() {
+            const container = document.getElementById('contentArea');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            container.innerHTML = "";
+            const cats = state.activeCategory === "الكل" ? state.categories : state.categories.filter(c => c.name === state.activeCategory);
+
+            cats.forEach(cat => {
+                const filtered = state.apps.filter(app => app.cat === cat.name && app.name.toLowerCase().includes(search));
+                if (filtered.length > 0) {
+                    let html = `<h3 style="border-right:4px solid var(--accent); padding-right:10px; margin:30px 0 15px;">${cat.name}</h3><div class="apps-grid">`;
+                    filtered.forEach(app => {
+                        html += `
+                            <div class="app-card">
+                                <img class="app-icon" src="${app.img}" onerror="this.src='https://via.placeholder.com/80'">
+                                <div style="font-weight:bold; font-size:14px;">${app.name}</div>
+                                <div style="font-size:11px; opacity:0.7; margin-bottom:10px;">v ${app.ver || '1.0'}</div>
+                                <div class="btn-group">
+                                    <a href="${app.url}" class="download-btn" target="_blank">📥 تحميل</a>
+                                    <button class="info-btn" onclick="showNotes('${app.name}', \`${app.notes || ''}\`)">ℹ️</button>
+                                </div>
+                            </div>`;
+                    });
+                    html += `</div>`; container.innerHTML += html;
+                }
             });
         }
-    }
 
-    function editApp(id, app) {
-        document.getElementById('editAppKey').value = id;
-        document.getElementById('appName').value = app.name;
-        document.getElementById('appUrl').value = app.url;
-        document.getElementById('appImg').value = app.img;
-        document.getElementById('appVer').value = app.ver || "";
-        document.getElementById('appCode').value = app.code || "";
-        document.getElementById('appNotes').value = app.notes || "";
-        document.getElementById('categorySelect').value = app.cat;
-
-        document.getElementById('appFormTitle').innerText = "تعديل تطبيق: " + app.name;
-        document.getElementById('appSubmitBtn').innerText = "حفظ التعديلات";
-        document.getElementById('appSubmitBtn').style.background = "#f1c40f";
-        document.getElementById('appSubmitBtn').style.color = "#000";
-        document.getElementById('appForm').classList.add('edit-mode');
-        document.getElementById('cancelAppBtn').style.display = "block";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function resetAppForm() {
-        document.getElementById('editAppKey').value = "";
-        document.getElementById('appName').value = "";
-        document.getElementById('appUrl').value = "";
-        document.getElementById('appImg').value = "";
-        document.getElementById('appVer').value = "";
-        document.getElementById('appCode').value = "";
-        document.getElementById('appNotes').value = "";
-        document.getElementById('appFormTitle').innerText = "إضافة تطبيق جديد";
-        document.getElementById('appSubmitBtn').innerText = "إضافة للمتجر";
-        document.getElementById('appSubmitBtn').style.background = "#bc13fe";
-        document.getElementById('appSubmitBtn').style.color = "white";
-        document.getElementById('appForm').classList.remove('edit-mode');
-        document.getElementById('cancelAppBtn').style.display = "none";
-    }
-
-    function deleteItem(path) {
-        if(confirm("هل أنت متأكد من الحذف؟")) db.ref(path).remove();
-    }
-</script>
+        function showNotes(name, notes) {
+            document.getElementById('modalAppName').innerText = name;
+            document.getElementById('modalNotes').innerText = notes || "لا توجد ملاحظات إضافية لهذا التطبيق حالياً.";
+            document.getElementById('notesModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('notesModal').style.display = 'none'; }
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+        function shareStore() { if (navigator.share) { navigator.share({ title: 'Aws Store', url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href); alert("تم نسخ الرابط!"); } }
+    </script>
 </body>
 </html>
