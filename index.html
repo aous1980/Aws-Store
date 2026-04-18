@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | المتجر الرسمي</title>
+    <title>Aws Store | Ultra Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
 
     <style>
         :root {
@@ -14,155 +15,204 @@
             --accent: #00ff88; 
             --accent-blue: #00d2ff;
             --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.08);
             --text: #ffffff;
         }
 
         body {
-            background: radial-gradient(circle at center, #16221f 0%, #0b0f12 100%);
+            background: radial-gradient(circle at center, #1a2a26 0%, #0b0f12 100%);
             color: var(--text);
             font-family: 'Segoe UI', Tahoma, sans-serif;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        header {
-            text-align: center;
-            padding: 20px 0;
-        }
-
+        header { text-align: center; padding: 30px 0; }
         header img {
-            width: 90px;
-            filter: drop-shadow(0 0 15px var(--accent));
-            border-radius: 20px;
+            width: 100px;
+            filter: drop-shadow(0 0 20px var(--accent));
+            border-radius: 25px;
+            transition: 0.5s;
         }
+        header img:hover { transform: rotate(360deg) scale(1.1); }
 
-        /* شريط البحث وكود الداونلودر المحدث */
-        .search-container {
-            max-width: 650px;
-            margin: 20px auto;
+        /* شريط البحث والداونلودر */
+        .top-bar {
+            max-width: 700px;
+            margin: 0 auto 30px;
             display: flex;
-            gap: 12px;
+            gap: 15px;
             padding: 0 15px;
-            align-items: center;
         }
 
         .search-box {
             flex: 2;
             background: var(--glass);
             border: 1px solid var(--glass-border);
-            padding: 14px;
-            border-radius: 15px;
+            padding: 15px 20px;
+            border-radius: 18px;
             color: white;
             outline: none;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            transition: 0.3s;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.02);
+        }
+
+        .search-box:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.15);
         }
 
         .downloader-badge {
             flex: 1;
-            background: rgba(0, 210, 255, 0.1);
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(0, 255, 136, 0.1));
             border: 1px solid var(--accent-blue);
             padding: 12px;
-            border-radius: 15px;
+            border-radius: 18px;
             color: var(--accent-blue);
             text-align: center;
             font-weight: bold;
-            font-size: 0.9rem;
-            white-space: nowrap;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .quick-nav {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .nav-item {
             background: var(--glass);
             border: 1px solid var(--glass-border);
-            padding: 8px 18px;
-            border-radius: 20px;
+            padding: 10px 24px;
+            border-radius: 30px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.4s;
+            font-weight: 500;
         }
 
-        .nav-item:hover {
+        .nav-item:hover, .nav-item.active {
             background: var(--accent);
             color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
         }
 
+        /* شبكة التطبيقات */
+        #categoriesContainer { max-width: 1200px; margin: auto; }
         .category-title {
             color: var(--accent);
-            border-right: 4px solid var(--accent);
+            border-right: 5px solid var(--accent);
             padding-right: 15px;
-            margin: 40px 0 20px;
+            margin: 50px 0 25px;
+            font-size: 1.5rem;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
         }
 
         .apps-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 30px;
         }
 
+        /* بطاقة التطبيق المطورة - Tilt Effect */
         .app-card {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 22px;
-            padding: 22px;
+            border-radius: 28px;
+            padding: 25px;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: 0.3s;
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: border 0.3s;
         }
 
-        .app-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .app-card:hover { border-color: var(--accent); }
 
-        .app-icon { width: 85px; height: 85px; border-radius: 18px; margin-bottom: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
+        .app-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 22px;
+            margin-bottom: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            transform: translateZ(30px); /* يبرز الأيقونة للأمام */
+        }
 
-        /* صندوق ملاحظات التحديث */
+        .app-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            transform: translateZ(20px);
+        }
+
+        .app-ver {
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            margin: 5px 0;
+            transform: translateZ(15px);
+        }
+
         .app-notes {
             font-size: 0.85rem;
-            color: #ccc;
-            background: rgba(0,0,0,0.3);
-            padding: 12px;
-            border-radius: 12px;
+            color: #bbb;
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 15px;
             margin: 15px 0;
             width: 100%;
-            border-right: 3px solid var(--accent-blue);
+            border-right: 4px solid var(--accent-blue);
             text-align: right;
-            line-height: 1.4;
+            line-height: 1.5;
+            transform: translateZ(10px);
         }
 
         .download-btn {
-            background: linear-gradient(135deg, var(--accent), var(--accent-blue));
+            background: linear-gradient(45deg, var(--accent), var(--accent-blue));
             color: #000;
             text-decoration: none;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 14px;
+            border-radius: 15px;
             font-weight: bold;
             width: 100%;
             margin-top: auto;
-            transition: 0.2s;
+            transform: translateZ(25px);
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
-        .download-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .download-btn:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
     <header>
         <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
-        <h1>AWS STORE</h1>
+        <h1 style="letter-spacing: 3px;">AWS STORE</h1>
     </header>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن تطبيق..." oninput="filterApps()">
-        <div class="downloader-badge">كود المتجر: 4131623</div> 
+    <div class="top-bar">
+        <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن تطبيقك المفضل..." oninput="filterApps()">
+        <div class="downloader-badge">
+            <span style="font-size: 0.7rem; opacity: 0.8;">كود تطبيق Downloader</span>
+            <span style="font-size: 1.1rem; letter-spacing: 1px;">4131623</span>
+        </div> 
     </div>
 
     <div id="quickNav" class="quick-nav"></div>
@@ -177,7 +227,7 @@
             appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let localApps = {};
@@ -187,17 +237,22 @@
             const data = snap.val() || {};
             localApps = data.apps || {};
             localCats = data.categories || {};
-            
             renderNav();
             displayContent();
         });
 
         function renderNav() {
             const nav = document.getElementById('quickNav');
-            nav.innerHTML = '<div class="nav-item" onclick="displayContent(\'all\')">الكل</div>';
+            nav.innerHTML = '<div class="nav-item active" id="nav-all" onclick="changeCat(\'all\')">الكل</div>';
             Object.values(localCats).forEach(c => {
-                nav.innerHTML += `<div class="nav-item" onclick="displayContent('${c.name}')">${c.name}</div>`;
+                nav.innerHTML += `<div class="nav-item" id="nav-${c.name}" onclick="changeCat('${c.name}')">${c.name}</div>`;
             });
+        }
+
+        function changeCat(catName) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + (catName === 'all' ? 'all' : catName)).classList.add('active');
+            displayContent(catName);
         }
 
         function displayContent(filter = 'all', search = '') {
@@ -209,17 +264,14 @@
 
                 let appsHtml = "";
                 Object.values(localApps).forEach(app => {
-                    const matchSearch = app.name.toLowerCase().includes(search.toLowerCase());
-                    if (app.cat === cat.name && matchSearch) {
+                    if (app.cat === cat.name && app.name.toLowerCase().includes(search.toLowerCase())) {
                         appsHtml += `
-                            <div class="app-card">
+                            <div class="app-card" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.1">
                                 <img src="${app.img}" class="app-icon" onerror="this.src='https://i.ibb.co/F4px49v/default-icon.png'">
-                                <div style="font-weight:bold; font-size:1.1rem;">${app.name}</div>
-                                <div style="color:var(--accent-blue); font-size:0.8rem; margin: 4px 0;">إصدار ${app.ver}</div>
-                                
-                                ${app.notes ? `<div class="app-notes">📝 ملاحظات التحديث:<br>${app.notes}</div>` : ''}
-                                
-                                <a href="${app.url}" class="download-btn" target="_blank">تحميل الآن</a>
+                                <div class="app-name">${app.name}</div>
+                                <div class="app-ver">إصدار ${app.ver}</div>
+                                ${app.notes ? `<div class="app-notes">📑 ملاحظات التحديث:<br>${app.notes}</div>` : ''}
+                                <a href="${app.url}" class="download-btn" target="_blank">تحميل سريع</a>
                             </div>
                         `;
                     }
@@ -227,11 +279,13 @@
 
                 if (appsHtml !== "") {
                     container.innerHTML += `
-                        <h2 class="category-title">📂 ${cat.name}</h2>
+                        <h2 class="category-title" style="animation: fadeInUp 0.5s ease">📂 ${cat.name}</h2>
                         <div class="apps-grid">${appsHtml}</div>
                     `;
                 }
             });
+            // إعادة تفعيل تأثير Tilt للعناصر الجديدة
+            VanillaTilt.init(document.querySelectorAll(".app-card"));
         }
 
         function filterApps() {
