@@ -3,233 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | Ultimate Edition</title>
-    
+    <title>Akad Digital Store</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
-
     <style>
-        :root {
-            --main-bg: #0b0f12;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --text-color: #ffffff;
-            --accent: #00ff88; 
-            --accent-blue: #00d2ff;
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        /* تدرج لوني متحرك في الخلفية */
-        body {
-            background: linear-gradient(-45deg, #0b0f12, #1a2a24, #0b0f12, #111d2b);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* أنيميشن لظهور العناصر */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .header-tools {
-            position: fixed; top: 20px; left: 20px;
-            display: flex; gap: 10px; z-index: 100;
-        }
-
-        .tool-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-color);
-            width: 42px; height: 42px; border-radius: 12px;
-            cursor: pointer; backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.3s;
-        }
-
-        header { text-align: center; padding: 40px 0; animation: fadeInUp 0.8s ease; }
-        header img { 
-            width: 95px; filter: drop-shadow(0 0 15px var(--accent)); 
-            border-radius: 25px; transition: 0.5s;
-        }
-
-        .top-bar { max-width: 700px; margin: 0 auto 25px; display: flex; gap: 12px; animation: fadeInUp 1s ease; }
-        .search-box { 
-            flex: 2; background: var(--card-bg); border: 1px solid var(--glass-border); 
-            padding: 14px; border-radius: 15px; color: var(--text-color); 
-            outline: none; backdrop-filter: blur(15px); transition: 0.3s;
-        }
-        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,255,136,0.2); }
-
-        .downloader-badge { 
-            flex: 1; background: rgba(0, 210, 255, 0.1); border: 1px solid var(--accent-blue); 
-            padding: 10px; border-radius: 15px; color: var(--accent-blue); 
-            text-align: center; font-weight: bold; font-size: 0.8rem;
-        }
-
-        .quick-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; animation: fadeInUp 1.2s ease; }
-        .nav-item { 
-            background: var(--card-bg); border: 1px solid var(--glass-border); 
-            padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.3s; color: var(--text-color); 
-        }
-        .nav-item.active { background: var(--accent); color: #000; font-weight: bold; }
-
-        #categoriesContainer { max-width: 1200px; margin: auto; }
-        .category-title { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 12px; margin: 40px 0 20px; font-size: 1.3rem; }
-
-        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-
-        .app-card { 
-            background: var(--card-bg); backdrop-filter: blur(20px); 
-            border: 1px solid var(--glass-border); border-radius: 25px; 
-            padding: 22px; text-align: center; display: flex; flex-direction: column; 
-            align-items: center; transition: 0.4s; color: var(--text-color);
-            animation: fadeInUp 0.5s ease backwards;
-        }
-        .app-card:hover { border-color: var(--accent); transform: translateY(-10px) !important; box-shadow: 0 15px 35px rgba(0, 255, 136, 0.15); }
-
-        .app-icon { width: 85px; height: 85px; border-radius: 22px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-
-        /* أيقونات الميزات */
-        .features-row { display: flex; gap: 8px; margin: 10px 0; }
-        .feat-tag { font-size: 10px; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
-
-        .app-notes { 
-            font-size: 0.8rem; opacity: 0.8; background: rgba(0,0,0,0.2); 
-            padding: 12px; border-radius: 12px; margin: 12px 0; width: 100%; 
-            border-right: 3px solid var(--accent-blue); text-align: right; line-height: 1.4;
-        }
-
-        .download-btn { 
-            background: linear-gradient(45deg, var(--accent), var(--accent-blue)); 
-            color: #000; text-decoration: none; padding: 12px; border-radius: 12px; 
-            font-weight: bold; width: 100%; margin-top: auto; transition: 0.3s;
-        }
-        .download-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
-
-        @media (max-width: 768px) {
-            .apps-grid { display: flex; overflow-x: auto; padding: 10px; gap: 15px; scroll-snap-type: x mandatory; }
-            .app-card { min-width: 270px; scroll-snap-align: center; }
-            .apps-grid::-webkit-scrollbar { height: 4px; }
-            .apps-grid::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-        }
+        :root { --accent: #00ff88; --bg: #0b0f12; --card: #161b20; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: var(--card); border-radius: 15px; padding: 15px; border: 1px solid #2d353b; text-align: center; }
+        .img-box { background: white; border-radius: 10px; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .img-box img { max-height: 90%; max-width: 90%; }
+        .btn { display: block; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px; }
+        .btn-wa { background: #25d366; color: white; }
+        .btn-dl { background: var(--accent); color: black; }
     </style>
 </head>
 <body>
 
-    <div class="header-tools">
-        <button class="tool-btn" onclick="shareStore()">🔗</button>
-    </div>
+<h1 style="text-align:center; color:var(--accent);">AKAD DIGITAL STORE</h1>
+<div id="cats" style="text-align:center; margin-bottom:20px;"></div>
+<div class="grid" id="products"></div>
 
-    <header>
-        <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
-        <h1 style="letter-spacing: 3px; margin-top: 15px;">AWS STORE</h1>
-        <p style="font-size: 0.9rem; opacity: 0.6;">عالم التطبيقات بين يديك</p>
-    </header>
+<script>
+    // إعدادات Firebase الثابتة الخاصة بك
+    const config = {
+        apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
+        databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
+        projectId: "aws-store-aaf40"
+    };
+    firebase.initializeApp(config);
+    const db = firebase.database();
 
-    <div class="top-bar">
-        <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن تطبيقك المفضل..." oninput="filterApps()">
-        <div class="downloader-badge">
-            <span style="font-size: 0.65rem; opacity: 0.8;">Downloader Code</span>
-            <span>4131623</span>
-        </div> 
-    </div>
-
-    <div id="quickNav" class="quick-nav"></div>
-    <div id="categoriesContainer"></div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBcWwHSDX9kWVxbw1DLgGkTJoYFSBsdeuk",
-            authDomain: "aws-store-aaf40.firebaseapp.com",
-            databaseURL: "https://aws-store-aaf40-default-rtdb.firebaseio.com",
-            projectId: "aws-store-aaf40",
-            appId: "1:962301504605:web:96661f5c465b2cfd4331b4"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        let localApps = {}, localCats = {};
-
-        db.ref().on('value', snap => {
-            const data = snap.val() || {};
-            localApps = data.apps || {};
-            localCats = data.categories || {};
-            renderNav();
-            displayContent();
+    // جلب المنتجات (سيعيد عرض كل ما أضفته سابقاً)
+    db.ref('apps').on('value', s => {
+        const grid = document.getElementById('products');
+        grid.innerHTML = "";
+        s.forEach(p => {
+            const d = p.val();
+            const isApp = d.url && d.url !== "#";
+            grid.innerHTML += `
+                <div class="card">
+                    <div class="img-box"><img src="${d.img || 'https://via.placeholder.com/100'}"></div>
+                    <h3>${d.name}</h3>
+                    <p style="color:var(--accent)">${d.ver || ''}</p>
+                    ${isApp ? `<a href="${d.url}" class="btn btn-dl">⬇ تحميل</a>` : ''}
+                    <a href="https://wa.me/9647700000000?text=طلب: ${d.name}" class="btn btn-wa">💬 طلب واتساب</a>
+                </div>`;
         });
-
-        function renderNav() {
-            const nav = document.getElementById('quickNav');
-            nav.innerHTML = '<div class="nav-item active" id="nav-all" onclick="changeCat(\'all\')">الكل</div>';
-            Object.values(localCats).forEach(c => {
-                nav.innerHTML += `<div class="nav-item" id="nav-${c.name}" onclick="changeCat('${c.name}')">${c.name}</div>`;
-            });
-        }
-
-        function changeCat(catName) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById('nav-' + (catName === 'all' ? 'all' : catName));
-            if(target) target.classList.add('active');
-            displayContent(catName);
-        }
-
-        function displayContent(filter = 'all', search = '') {
-            const container = document.getElementById('categoriesContainer');
-            container.innerHTML = "";
-            let delay = 0;
-
-            Object.values(localCats).forEach(cat => {
-                if (filter !== 'all' && filter !== cat.name) return;
-                let appsHtml = "";
-                Object.values(localApps).forEach(app => {
-                    if (app.cat === cat.name && app.name.toLowerCase().includes(search.toLowerCase())) {
-                        delay += 0.1;
-                        appsHtml += `
-                            <div class="app-card" data-tilt data-tilt-max="7" style="animation-delay: ${delay}s">
-                                <img src="${app.img}" class="app-icon" onerror="this.src='https://i.ibb.co/F4px49v/default-icon.png'">
-                                <div style="font-weight:bold; font-size: 1.1rem;">${app.name}</div>
-                                
-                                <div class="features-row">
-                                    <span class="feat-tag">🚀 سريع</span>
-                                    <span class="feat-tag">🛡️ آمن</span>
-                                    <span class="feat-tag">📺 4K</span>
-                                </div>
-
-                                <div style="color:var(--accent-blue); font-size:0.8rem; margin:5px 0;">Version ${app.ver}</div>
-                                ${app.notes ? `<div class="app-notes">${app.notes}</div>` : ''}
-                                <a href="${app.url}" class="download-btn" target="_blank">تحميل الآن</a>
-                            </div>`;
-                    }
-                });
-                if (appsHtml !== "") {
-                    container.innerHTML += `<h2 class="category-title">📂 ${cat.name}</h2><div class="apps-grid">${appsHtml}</div>`;
-                }
-            });
-            VanillaTilt.init(document.querySelectorAll(".app-card"));
-        }
-
-        function filterApps() { displayContent('all', document.getElementById('searchInput').value); }
-
-        function shareStore() {
-            if (navigator.share) {
-                navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
-            } else {
-                prompt("انسخ رابط المتجر:", window.location.href);
-            }
-        }
-    </script>
+    });
+</script>
 </body>
 </html>
