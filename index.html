@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aws Store | Ultimate Edition</title>
+    <title>Aws Store | استعادة البيانات</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -26,6 +26,7 @@
             color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, sans-serif;
             margin: 0; padding: 20px; min-height: 100vh;
+            direction: rtl;
         }
 
         @keyframes gradientBG {
@@ -34,51 +35,35 @@
             100% { background-position: 0% 50%; }
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        header { text-align: center; padding: 30px 0; }
+        header img { width: 90px; filter: drop-shadow(0 0 15px var(--accent)); border-radius: 20px; }
 
-        header { text-align: center; padding: 40px 0; animation: fadeInUp 0.8s ease; }
-        header img { width: 95px; filter: drop-shadow(0 0 15px var(--accent)); border-radius: 25px; }
-
-        .top-bar { max-width: 700px; margin: 0 auto 25px; display: flex; gap: 12px; animation: fadeInUp 1s ease; }
-        .search-box { flex: 2; background: var(--card-bg); border: 1px solid var(--glass-border); padding: 14px; border-radius: 15px; color: var(--text-color); outline: none; backdrop-filter: blur(15px); }
-
-        .quick-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
-        .nav-item { background: var(--card-bg); border: 1px solid var(--glass-border); padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
+        .quick-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .nav-item { background: var(--card-bg); border: 1px solid var(--glass-border); padding: 8px 18px; border-radius: 20px; cursor: pointer; color: white; transition: 0.3s; }
         .nav-item.active { background: var(--accent); color: #000; font-weight: bold; }
 
-        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: auto; }
         .app-card { 
             background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 25px; 
-            padding: 22px; text-align: center; transition: 0.4s; animation: fadeInUp 0.5s ease backwards;
+            padding: 20px; text-align: center; transition: 0.4s; position: relative;
         }
-        .app-card:hover { border-color: var(--accent); transform: translateY(-10px) !important; }
+        .app-icon { width: 80px; height: 80px; border-radius: 20px; margin-bottom: 15px; background: #fff; padding: 5px; object-fit: contain; }
 
-        .app-icon { width: 85px; height: 85px; border-radius: 22px; margin-bottom: 15px; background: #fff; padding: 5px; }
-
-        .app-notes { font-size: 0.8rem; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; margin: 10px 0; border-right: 3px solid var(--accent-blue); }
-
-        .btn-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        .download-btn { background: linear-gradient(45deg, var(--accent), var(--accent-blue)); color: #000; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: bold; transition: 0.3s; }
-        .wa-btn { background: #25d366; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: bold; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 15px; }
+        .download-btn { background: linear-gradient(45deg, var(--accent), var(--accent-blue)); color: #000; text-decoration: none; padding: 10px; border-radius: 12px; font-weight: bold; }
+        .wa-btn { background: #25d366; color: #fff; text-decoration: none; padding: 10px; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <header>
         <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
-        <h1 style="letter-spacing: 3px; margin-top: 15px;">AWS STORE</h1>
-        <p style="font-size: 0.9rem; opacity: 0.6;">عالم التقنية الرقمية بين يديك</p>
+        <h1 style="margin-top: 10px;">AWS STORE</h1>
+        <p style="opacity: 0.7;">جاري استعادة جميع الإضافات...</p>
     </header>
 
-    <div class="top-bar">
-        <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن جهاز أو تطبيق..." oninput="filterApps()">
-    </div>
-
     <div id="quickNav" class="quick-nav"></div>
-    <div id="categoriesContainer" style="max-width: 1200px; margin: auto;"></div>
+    <div id="mainDisplay" class="apps-grid"></div>
 
     <script>
         const firebaseConfig = {
@@ -87,62 +72,51 @@
             projectId: "aws-store-aaf40"
         };
 
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let localApps = {}, localCats = {}, currentFilter = 'all';
+        let currentCat = 'الكل';
 
-        db.ref().on('value', snap => {
-            const data = snap.val() || {};
-            localApps = data.apps || {};
-            localCats = data.categories || {};
-            renderNav();
-            displayContent(currentFilter);
-        });
-
-        function renderNav() {
-            const nav = document.getElementById('quickNav');
-            nav.innerHTML = `<div class="nav-item ${currentFilter==='all'?'active':''}" onclick="changeCat('all')">الكل</div>`;
-            Object.values(localCats).forEach(c => {
-                nav.innerHTML += `<div class="nav-item ${currentFilter===c.name?'active':''}" onclick="changeCat('${c.name}')">${c.name}</div>`;
-            });
-        }
-
-        function changeCat(name) { currentFilter = name; renderNav(); displayContent(name); }
-
-        function displayContent(filter = 'all', search = '') {
-            const container = document.getElementById('categoriesContainer');
-            container.innerHTML = "";
-            
-            Object.values(localCats).forEach(cat => {
-                if (filter !== 'all' && filter !== cat.name) return;
+        // دالة العرض الرئيسية
+        function loadData() {
+            db.ref().on('value', snap => {
+                const data = snap.val() || {};
+                const apps = data.apps || {};
+                const cats = data.categories || {};
                 
-                let appsHtml = "";
-                Object.values(localApps).forEach(app => {
-                    if (app.cat === cat.name && app.name.toLowerCase().includes(search.toLowerCase())) {
+                // تحديث القائمة العلوية
+                const nav = document.getElementById('quickNav');
+                nav.innerHTML = `<div class="nav-item ${currentCat==='الكل'?'active':''}" onclick="setFilter('الكل')">الكل</div>`;
+                Object.values(cats).forEach(c => {
+                    nav.innerHTML += `<div class="nav-item ${currentCat===c.name?'active':''}" onclick="setFilter('${c.name}')">${c.name}</div>`;
+                });
+
+                // عرض المنتجات
+                const display = document.getElementById('mainDisplay');
+                display.innerHTML = "";
+                
+                Object.values(apps).forEach(app => {
+                    if(currentCat === 'الكل' || app.cat === currentCat) {
                         const hasUrl = app.url && app.url !== "#" && app.url !== "";
-                        appsHtml += `
+                        display.innerHTML += `
                             <div class="app-card" data-tilt>
                                 <img src="${app.img || 'https://via.placeholder.com/100'}" class="app-icon">
                                 <div style="font-weight:bold; font-size: 1.1rem;">${app.name}</div>
-                                <div style="color:var(--accent-blue); font-size:0.9rem; margin:5px 0;">${app.ver || ''}</div>
-                                ${app.notes ? `<div class="app-notes">${app.notes}</div>` : ''}
+                                <div style="color:var(--accent-blue); font-size:0.8rem; margin:5px 0;">${app.ver || ''}</div>
                                 <div class="btn-group">
-                                    ${hasUrl ? `<a href="${app.url}" class="download-btn">⬇ تحميل الآن</a>` : ''}
-                                    <a href="https://wa.me/9647700000000?text=طلب: ${app.name}" class="wa-btn">💬 طلب عبر واتساب</a>
+                                    ${hasUrl ? `<a href="${app.url}" class="download-btn">⬇ تحميل</a>` : ''}
+                                    <a href="https://wa.me/9647700000000?text=طلب: ${app.name}" class="wa-btn">💬 طلب واتساب</a>
                                 </div>
                             </div>`;
                     }
                 });
-                
-                if (appsHtml !== "") {
-                    container.innerHTML += `<h2 style="color:var(--accent); border-right:4px solid var(--accent); padding-right:15px; margin:40px 0 20px;">📂 ${cat.name}</h2><div class="apps-grid">${appsHtml}</div>`;
-                }
+                VanillaTilt.init(document.querySelectorAll(".app-card"));
             });
-            VanillaTilt.init(document.querySelectorAll(".app-card"));
         }
 
-        function filterApps() { displayContent(currentFilter, document.getElementById('searchInput').value); }
+        function setFilter(name) { currentCat = name; loadData(); }
+        
+        loadData();
     </script>
 </body>
 </html>
