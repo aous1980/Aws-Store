@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم كاملة | Aws Store (مع ترتيب الأقسام)</title>
+    <title>لوحة تحكم كاملة | Aws Store (ترتيب الأقسام يعمل)</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -28,11 +28,12 @@
         .del-btn { background: var(--danger); }
         .edit-btn { background: var(--edit); }
         .move-btn { background: #555; color: white; }
+        .move-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         
         .cat-box { border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 15px; }
         .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
         .cat-item:last-child { border-bottom: none; }
-        .order-controls { display: flex; gap: 5px; margin-left: 10px; }
+        .order-controls { display: flex; gap: 5px; }
     </style>
 </head>
 <body>
@@ -69,7 +70,7 @@
         <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء التعديل</button>
 
         <div class="cat-box" id="catSection">
-            <h4 style="margin:0 0 10px 0; color:var(--accent);">📂 إدارة الأقسام (اسحب لترتيب)</h4>
+            <h4 style="margin:0 0 10px 0; color:var(--accent);">📂 إدارة الأقسام (استخدم الأسهم للترتيب)</h4>
             <div style="display:flex; gap:5px;">
                 <input type="text" id="catInput" placeholder="اسم القسم">
                 <button id="catSubmitBtn" onclick="saveCategory()" style="width:100px; background:#333; cursor:pointer;">إضافة</button>
@@ -97,8 +98,9 @@
 
         let editAppId = null;
         let editCatId = null;
-        let currentCategories = []; // تخزين الأقسام مع معرفاتها
+        let currentCategories = []; // { id, name, order }
 
+        // ========== نظام الدخول ==========
         function login() {
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const pass = document.getElementById('loginPass').value.trim();
@@ -115,47 +117,122 @@
 
         function logout() { location.reload(); }
 
+        // ========== دالة إعادة ترقيم الأقسام بالكامل (الحل السحري) ==========
+        function reorderAllCategories() {
+            // ترتيب المصفوفة حسب order الحالي
+            currentCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            // إعادة تعيين order من 1 إلى العدد الكلي
+            const updates = {};
+            currentCategories.forEach((cat, index) => {
+                const newOrder = index + 1; // 1, 2, 3, ...
+                if (cat.order !== newOrder) {
+                    updates[`categories/${cat.id}/order`] = newOrder;
+                    cat.order = newOrder;
+                }
+            });
+            
+            // حفظ التغييرات في Firebase
+            if (Object.keys(updates).length > 0) {
+                db.ref().update(updates).then(() => {
+                    console.log("تم إعادة ترتيب الأقسام بنجاح");
+                }).catch(err => console.error("خطأ في الحفظ:", err));
+            }
+        }
+
+        // ========== دالة تحريك القسم ==========
+        function moveCategory(id, direction) {
+            // العثور على موقع القسم الحالي
+            const currentIndex = currentCategories.findIndex(cat => cat.id === id);
+            if (currentIndex === -1) return;
+            
+            let newIndex = currentIndex;
+            if (direction === 'up' && currentIndex > 0) newIndex = currentIndex - 1;
+            if (direction === 'down' && currentIndex < currentCategories.length - 1) newIndex = currentIndex + 1;
+            
+            if (newIndex === currentIndex) return;
+            
+            // تبديل المواقع في المصفوفة
+            const temp = currentCategories[currentIndex];
+            currentCategories[currentIndex] = currentCategories[newIndex];
+            currentCategories[newIndex] = temp;
+            
+            // إعادة الترقيم بالكامل
+            reorderAllCategories();
+        }
+
+        // ========== قراءة البيانات من Firebase ==========
         function listenToData() {
             db.ref(".info/connected").on("value", s => {
                 document.getElementById('connStatus').innerHTML = s.val() ? "● متصل بالسحابة" : "○ غير متصل";
             });
 
-            // قراءة الأقسام مع ترتيبها
+            // قراءة الأقسام
             db.ref('categories').on('value', s => {
                 const select = document.getElementById('categorySelect');
                 const display = document.getElementById('catListDisplay');
                 select.innerHTML = ""; 
                 display.innerHTML = "";
                 
-                let catsArray = [];
+                currentCategories = [];
                 s.forEach(c => {
-                    catsArray.push({ id: c.key, name: c.val().name, order: c.val().order || 0 });
+                    currentCategories.push({ 
+                        id: c.key, 
+                        name: c.val().name, 
+                        order: c.val().order || 0 
+                    });
                 });
                 
-                // ترتيب حسب حقل order (تصاعدي)
-                catsArray.sort((a, b) => (a.order || 0) - (b.order || 0));
-                currentCategories = catsArray;
+                // ترتيب حسب order (تصاعدي)
+                currentCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
                 
-                catsArray.forEach((cat, index) => {
+                // التأكد من أن الأرقام متسلسلة (1,2,3...)
+                let needsReorder = false;
+                currentCategories.forEach((cat, idx) => {
+                    const expectedOrder = idx + 1;
+                    if (cat.order !== expectedOrder) {
+                        cat.order = expectedOrder;
+                        needsReorder = true;
+                    }
+                });
+                
+                if (needsReorder) {
+                    const updates = {};
+                    currentCategories.forEach(cat => {
+                        updates[`categories/${cat.id}/order`] = cat.order;
+                    });
+                    db.ref().update(updates);
+                }
+                
+                // عرض الأقسام في الواجهة
+                currentCategories.forEach((cat, index) => {
                     select.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
                     
-                    // واجهة القسم مع أزرار التحريك
                     display.innerHTML += `
-                        <div class="cat-item" data-id="${cat.id}">
-                            <span>${cat.name}</span>
+                        <div class="cat-item">
+                            <span><strong>${index + 1}.</strong> ${cat.name}</span>
                             <div class="order-controls">
-                                <button class="btn-sm move-btn" onclick="moveCategory('${cat.id}', 'up', ${index})" ${index === 0 ? 'disabled style="opacity:0.5;"' : ''}>⬆️</button>
-                                <button class="btn-sm move-btn" onclick="moveCategory('${cat.id}', 'down', ${index})" ${index === catsArray.length-1 ? 'disabled style="opacity:0.5;"' : ''}>⬇️</button>
+                                <button class="btn-sm move-btn" onclick="moveCategory('${cat.id}', 'up')" ${index === 0 ? 'disabled' : ''}>⬆️ أعلى</button>
+                                <button class="btn-sm move-btn" onclick="moveCategory('${cat.id}', 'down')" ${index === currentCategories.length - 1 ? 'disabled' : ''}>⬇️ أسفل</button>
                                 <button class="btn-sm edit-btn" onclick="startEditCat('${cat.id}', '${cat.name}')">تعديل</button>
                                 <button class="btn-sm del-btn" onclick="deleteCat('${cat.id}')">حذف</button>
                             </div>
                         </div>`;
                 });
+                
+                if (currentCategories.length === 0) {
+                    display.innerHTML = '<p style="padding:10px; text-align:center; color:#888;">لا توجد أقسام، أضف قسمًا جديدًا</p>';
+                }
             });
 
+            // قراءة التطبيقات
             db.ref('apps').on('value', s => {
                 const display = document.getElementById('appsListDisplay');
                 display.innerHTML = "";
+                if (!s.exists()) {
+                    display.innerHTML = '<p style="padding:10px; text-align:center; color:#888;">لا توجد تطبيقات</p>';
+                    return;
+                }
                 s.forEach(c => {
                     const item = c.val();
                     display.innerHTML += `
@@ -170,42 +247,24 @@
             });
         }
 
-        // دالة لتحريك القسم (حفظ الترتيب في Firebase)
-        function moveCategory(id, direction, currentIndex) {
-            if (direction === 'up' && currentIndex === 0) return;
-            if (direction === 'down' && currentIndex === currentCategories.length - 1) return;
-            
-            let newOrderArray = [...currentCategories];
-            const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-            
-            // تبديل الـ order
-            const tempOrder = newOrderArray[currentIndex].order;
-            newOrderArray[currentIndex].order = newOrderArray[targetIndex].order;
-            newOrderArray[targetIndex].order = tempOrder;
-            
-            // تحديث في Firebase
-            const updates = {};
-            updates[`categories/${newOrderArray[currentIndex].id}/order`] = newOrderArray[currentIndex].order;
-            updates[`categories/${newOrderArray[targetIndex].id}/order`] = newOrderArray[targetIndex].order;
-            
-            db.ref().update(updates).then(() => {
-                console.log("تم تحديث الترتيب");
-                // لا حاجة لإعادة تحميل، الـ on('value') سيتعامل مع الباقي
-            });
-        }
-
+        // ========== إدارة الأقسام ==========
         function saveCategory() {
             const name = document.getElementById('catInput').value.trim();
-            if(!name) return;
+            if(!name) return alert("الرجاء إدخال اسم القسم");
             
             if(editCatId) {
-                db.ref('categories/' + editCatId).update({ name: name }).then(() => { resetCatForm(); });
+                // تعديل اسم القسم
+                db.ref('categories/' + editCatId).update({ name: name }).then(() => {
+                    resetCatForm();
+                    alert("تم تحديث اسم القسم");
+                });
             } else {
-                // حساب ترتيب جديد (أكبر order + 1)
-                let maxOrder = 0;
-                currentCategories.forEach(c => { if((c.order || 0) > maxOrder) maxOrder = c.order || 0; });
-                db.ref('categories').push({ name: name, order: maxOrder + 1 });
-                document.getElementById('catInput').value = "";
+                // إضافة قسم جديد - order = العدد الحالي + 1
+                const newOrder = currentCategories.length + 1;
+                db.ref('categories').push({ name: name, order: newOrder }).then(() => {
+                    document.getElementById('catInput').value = "";
+                    alert("تم إضافة القسم");
+                });
             }
         }
 
@@ -223,8 +282,16 @@
             document.getElementById('catSubmitBtn').style.background = "#333";
         }
 
-        function deleteCat(id) { if(confirm("حذف القسم؟")) db.ref('categories/'+id).remove(); }
+        function deleteCat(id) { 
+            if(confirm("هل أنت متأكد من حذف هذا القسم؟")) {
+                db.ref('categories/'+id).remove().then(() => {
+                    // بعد الحذف، نعيد ترتيب الأقسام المتبقية
+                    setTimeout(() => reorderAllCategories(), 500);
+                });
+            }
+        }
 
+        // ========== إدارة التطبيقات ==========
         function saveApp() {
             const data = {
                 name: document.getElementById('appName').value,
@@ -235,11 +302,18 @@
                 cat: document.getElementById('categorySelect').value
             };
             if(!data.name) return alert("الرجاء كتابة اسم التطبيق");
+            if(!data.url) return alert("الرجاء كتابة رابط التحميل");
 
             if(editAppId) {
-                db.ref('apps/'+editAppId).update(data).then(() => { resetAppForm(); alert("تم التحديث"); });
+                db.ref('apps/'+editAppId).update(data).then(() => { 
+                    resetAppForm(); 
+                    alert("تم تحديث التطبيق"); 
+                });
             } else {
-                db.ref('apps').push(data).then(() => { resetAppForm(); alert("تم الحفظ"); });
+                db.ref('apps').push(data).then(() => { 
+                    resetAppForm(); 
+                    alert("تم حفظ التطبيق"); 
+                });
             }
         }
 
@@ -259,11 +333,17 @@
             });
         }
 
-        function deleteApp(id) { if(confirm("حذف التطبيق؟")) db.ref('apps/'+id).remove(); }
+        function deleteApp(id) { 
+            if(confirm("هل أنت متأكد من حذف هذا التطبيق؟")) 
+                db.ref('apps/'+id).remove(); 
+        }
 
         function resetAppForm() {
             editAppId = null;
-            document.querySelectorAll('input').forEach(i => { if(i.id !== 'loginEmail') i.value = ""; });
+            document.getElementById('appName').value = "";
+            document.getElementById('appUrl').value = "";
+            document.getElementById('appImg').value = "";
+            document.getElementById('appVer').value = "";
             document.getElementById('appNotes').value = "";
             document.getElementById('appSubmitBtn').innerText = "🚀 حفظ التطبيق";
             document.getElementById('appCancelBtn').style.display = "none";
