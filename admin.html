@@ -3,84 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم كاملة | Aws Store</title>
+    <title>Aws Store | Ultimate Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
     <style>
-        :root { --main-bg: #0b0f12; --card-bg: #161b20; --accent: #00ff88; --text: #ffffff; --danger: #ff4757; --edit: #00a2ff; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--main-bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        /* المتغيرات للوضع الليلي والنهاري */
+        :root {
+            --main-bg: #0b0f12;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #ffffff;
+            --accent: #00ff88; 
+            --accent-blue: #00d2ff;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="light"] {
+            --main-bg: #f0f2f5;
+            --card-bg: rgba(0, 0, 0, 0.04);
+            --text-color: #1a1a2e;
+            --accent: #00b894;
+            --accent-blue: #0984e3;
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background: var(--main-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* تدرج خلفية متحرك للوضع الليلي فقط */
+        body:not([data-theme="light"]) {
+            background: linear-gradient(-45deg, #0b0f12, #1a2a24, #0b0f12, #111d2b);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-tools {
+            position: fixed; top: 20px; left: 20px;
+            display: flex; gap: 10px; z-index: 100;
+        }
+
+        .tool-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            font-size: 20px;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        header { text-align: center; padding: 40px 0; animation: fadeInUp 0.8s ease; }
+        header img { 
+            width: 95px; filter: drop-shadow(0 0 15px var(--accent)); 
+            border-radius: 25px; transition: 0.5s;
+        }
+
+        .top-bar { max-width: 700px; margin: 0 auto 25px; display: flex; gap: 12px; animation: fadeInUp 1s ease; }
+        .search-box { 
+            flex: 2; background: var(--input-bg); border: 1px solid var(--glass-border); 
+            padding: 14px; border-radius: 15px; color: var(--text-color); 
+            outline: none; backdrop-filter: blur(15px); transition: 0.3s;
+        }
+        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0,255,136,0.2); }
+
+        .downloader-badge { 
+            flex: 1; background: rgba(0, 210, 255, 0.1); border: 1px solid var(--accent-blue); 
+            padding: 10px; border-radius: 15px; color: var(--accent-blue); 
+            text-align: center; font-weight: bold; font-size: 0.8rem;
+        }
+
+        /* منطقة الأقسام القابلة للسحب */
+        .quick-nav { 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            margin-bottom: 30px; 
+            animation: fadeInUp 1.2s ease;
+        }
         
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-bg); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .panel { width: 100%; max-width: 600px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #2d353b; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .status-bar { font-size: 13px; text-align: center; margin-bottom: 20px; padding: 8px; border-radius: 8px; background: #1c2329; border: 1px solid #232a31; }
+        .nav-item { 
+            background: var(--card-bg); 
+            border: 1px solid var(--glass-border); 
+            padding: 8px 18px; 
+            border-radius: 20px; 
+            cursor: grab;
+            transition: 0.3s; 
+            color: var(--text-color);
+            user-select: none;
+        }
         
-        input, select, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2d353b; background: #1c2329; color: #fff; outline: none; box-sizing: border-box; font-size: 14px; }
-        textarea { height: 100px; resize: none; font-family: inherit; }
-        .save-btn { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
-        .logout-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); width: auto; padding: 5px 15px; cursor: pointer; border-radius: 8px; }
+        .nav-item:active { cursor: grabbing; }
         
-        .header-flex { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; margin-bottom: 20px; }
-        .item-card { background: #1c2329; padding: 12px 15px; margin: 8px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d353b; }
+        .nav-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
         
-        .btn-sm { width: auto; padding: 5px 12px; cursor: pointer; border: none; border-radius: 5px; color: #fff; font-size: 12px; margin-right: 5px; display: inline-block; }
-        .del-btn { background: var(--danger); }
-        .edit-btn { background: var(--edit); }
-        
-        .cat-box { border: 1px dashed #444; padding: 15px; border-radius: 10px; margin-top: 15px; }
-        .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
-        .cat-item:last-child { border-bottom: none; }
-        .editing-mode { border: 2px solid var(--edit) !important; padding: 20px; border-radius: 12px; }
+        .nav-item.active { 
+            background: var(--accent); 
+            color: #000; 
+            font-weight: bold; 
+        }
+
+        /* أيقونة السحب */
+        .drag-icon {
+            margin-left: 8px;
+            font-size: 12px;
+            opacity: 0.6;
+            cursor: grab;
+        }
+
+        #categoriesContainer { max-width: 1200px; margin: auto; }
+        .category-title { 
+            color: var(--accent); 
+            border-right: 4px solid var(--accent); 
+            padding-right: 12px; 
+            margin: 40px 0 20px; 
+            font-size: 1.3rem; 
+        }
+
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+
+        .app-card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 25px; 
+            padding: 22px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: 0.4s; 
+            color: var(--text-color);
+            animation: fadeInUp 0.5s ease backwards;
+        }
+        .app-card:hover { border-color: var(--accent); transform: translateY(-10px) !important; box-shadow: 0 15px 35px rgba(0, 255, 136, 0.15); }
+
+        .app-icon { width: 85px; height: 85px; border-radius: 22px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+
+        .features-row { display: flex; gap: 8px; margin: 10px 0; }
+        .feat-tag { font-size: 10px; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
+
+        .app-notes { 
+            font-size: 0.8rem; 
+            opacity: 0.8; 
+            background: rgba(0,0,0,0.2); 
+            padding: 12px; 
+            border-radius: 12px; 
+            margin: 12px 0; 
+            width: 100%; 
+            border-right: 3px solid var(--accent-blue); 
+            text-align: right; 
+            line-height: 1.4;
+        }
+
+        .download-btn { 
+            background: linear-gradient(45deg, var(--accent), var(--accent-blue)); 
+            color: #000; 
+            text-decoration: none; 
+            padding: 12px; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            width: 100%; 
+            margin-top: auto; 
+            transition: 0.3s;
+        }
+        .download-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        /* زر تبديل الوضع */
+        .theme-switch {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+
+        .theme-switch:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .apps-grid { display: flex; overflow-x: auto; padding: 10px; gap: 15px; scroll-snap-type: x mandatory; }
+            .app-card { min-width: 270px; scroll-snap-align: center; }
+            .apps-grid::-webkit-scrollbar { height: 4px; }
+            .apps-grid::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="loginOverlay">
-        <div class="panel" style="max-width: 350px;">
-            <h3 style="text-align:center;">🔐 دخول المسؤول</h3>
-            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" value="aous.safaa.hd.1980@gmail.com">
-            <input type="password" id="loginPass" placeholder="كلمة المرور">
-            <button class="save-btn" onclick="login()">دخول</button>
-            <p id="loginError" style="color:var(--danger); text-align:center; font-size:12px; margin-top:10px;"></p>
-        </div>
+    <div class="header-tools">
+        <button class="tool-btn" onclick="shareStore()" title="مشاركة المتجر">🔗</button>
+        <button class="tool-btn" onclick="resetOrder()" title="إعادة ترتيب الأقسام الافتراضي">🔄</button>
     </div>
 
-    <div class="header-flex">
-        <h2>🛠️ إدارة Aws Store</h2>
-        <button class="logout-btn" onclick="logout()">خروج</button>
+    <header>
+        <img src="https://i.ibb.co/MxWwN7d8/aws-stor.png" alt="Logo">
+        <h1 style="letter-spacing: 3px; margin-top: 15px;">AWS STORE</h1>
+        <p style="font-size: 0.9rem; opacity: 0.6;">عالم التطبيقات بين يديك</p>
+    </header>
+
+    <div class="top-bar">
+        <input type="text" id="searchInput" class="search-box" placeholder="ابحث عن تطبيقك المفضل..." oninput="filterApps()">
+        <div class="downloader-badge">
+            <span style="font-size: 0.65rem; opacity: 0.8;">Downloader Code</span>
+            <span>4131623</span>
+        </div> 
     </div>
 
-    <div class="panel">
-        <div id="connStatus" class="status-bar">فحص الاتصال...</div>
-        
-        <input type="text" id="appName" placeholder="اسم التطبيق">
-        <input type="text" id="appUrl" placeholder="رابط التحميل">
-        <input type="text" id="appImg" placeholder="رابط الأيقونة">
-        <input type="text" id="appVer" placeholder="الإصدار">
-        
-        <textarea id="appNotes" placeholder="اكتب هنا ملاحظات التحديث وشرح الإضافات الجديدة..."></textarea>
-        
-        <label style="font-size:12px; color:#888;">القسم:</label>
-        <select id="categorySelect"></select>
+    <div id="quickNav" class="quick-nav"></div>
+    <div id="categoriesContainer"></div>
 
-        <button id="appSubmitBtn" class="save-btn" onclick="saveApp()">🚀 حفظ التطبيق</button>
-        <button id="appCancelBtn" style="display:none; background:#444;" onclick="resetAppForm()">إلغاء التعديل</button>
-
-        <div class="cat-box" id="catSection">
-            <h4 style="margin:0 0 10px 0; color:var(--accent);">📂 إدارة الأقسام</h4>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="catInput" placeholder="اسم القسم">
-                <button id="catSubmitBtn" onclick="saveCategory()" style="width:100px; background:#333; cursor:pointer;">إضافة</button>
-            </div>
-            <div id="catListDisplay" style="margin-top:15px; background: #0b0f12; border-radius: 8px;"></div>
-        </div>
-    </div>
-
-    <div style="width:100%; max-width:600px;">
-        <h3 style="color:var(--accent);">📦 التطبيقات الحالية</h3>
-        <div id="appsListDisplay"></div>
-    </div>
+    <button class="theme-switch" id="themeToggle" onclick="toggleTheme()">🌙</button>
 
     <script>
         const firebaseConfig = {
@@ -94,137 +275,259 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let editAppId = null;
-        let editCatId = null;
+        let localApps = {}, localCats = [];
+        let categoriesOrder = []; // ترتيب الأقسام المحفوظ
 
-        // نظام الدخول المباشر بالبيانات الصحيحة
-        function login() {
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('loginPass').value.trim();
-            const correctEmail = "aous.safaa.hd.1980@gmail.com";
-            const correctPass = "ashd1980";
-
-            if (email === correctEmail && pass === correctPass) {
-                document.getElementById('loginOverlay').style.display = 'none';
-                listenToData();
+        // ========== نظام الوضع الليلي/النهاري ==========
+        function initTheme() {
+            const savedTheme = localStorage.getItem('aws_store_theme');
+            if (savedTheme === 'light') {
+                document.body.setAttribute('data-theme', 'light');
+                document.getElementById('themeToggle').innerHTML = '🌞';
             } else {
-                document.getElementById('loginError').innerText = "بيانات الدخول غير صحيحة";
+                document.body.removeAttribute('data-theme');
+                document.getElementById('themeToggle').innerHTML = '🌙';
             }
         }
 
-        function logout() { location.reload(); }
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('aws_store_theme', 'dark');
+                document.getElementById('themeToggle').innerHTML = '🌙';
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                localStorage.setItem('aws_store_theme', 'light');
+                document.getElementById('themeToggle').innerHTML = '🌞';
+            }
+        }
 
-        function listenToData() {
-            db.ref(".info/connected").on("value", s => {
-                document.getElementById('connStatus').innerHTML = s.val() ? "● متصل بالسحابة" : "○ غير متصل";
-            });
+        // ========== نظام ترتيب الأقسام ==========
+        function saveOrderToLocalStorage(order) {
+            localStorage.setItem('aws_categories_order', JSON.stringify(order));
+        }
 
-            // جلب الأقسام والتأكد من ظهورها في القائمة المنسدلة
-            db.ref('categories').on('value', s => {
-                const select = document.getElementById('categorySelect');
-                const display = document.getElementById('catListDisplay');
-                select.innerHTML = ""; display.innerHTML = "";
-                s.forEach(c => {
-                    const name = c.val().name;
-                    select.innerHTML += `<option value="${name}">${name}</option>`;
-                    display.innerHTML += `
-                        <div class="cat-item">
-                            <span>${name}</span>
-                            <div>
-                                <button class="btn-sm edit-btn" onclick="startEditCat('${c.key}', '${name}')">تعديل</button>
-                                <button class="btn-sm del-btn" onclick="deleteCat('${c.key}')">حذف</button>
-                            </div>
-                        </div>`;
+        function loadOrderFromLocalStorage() {
+            const saved = localStorage.getItem('aws_categories_order');
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        function renderNav() {
+            const nav = document.getElementById('quickNav');
+            nav.innerHTML = '';
+            
+            // إضافة قسم "الكل" أولاً (لا يمكن سحبه)
+            const allDiv = document.createElement('div');
+            allDiv.className = 'nav-item active';
+            allDiv.id = 'nav-all';
+            allDiv.setAttribute('data-cat', 'all');
+            allDiv.innerHTML = 'الكل';
+            allDiv.onclick = () => changeCat('all');
+            nav.appendChild(allDiv);
+            
+            // ترتيب الأقسام حسب الترتيب المحفوظ
+            let sortedCats = [...localCats];
+            if (categoriesOrder.length > 0) {
+                sortedCats.sort((a, b) => {
+                    const indexA = categoriesOrder.indexOf(a.name);
+                    const indexB = categoriesOrder.indexOf(b.name);
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
                 });
+            }
+            
+            sortedCats.forEach(cat => {
+                const catDiv = document.createElement('div');
+                catDiv.className = 'nav-item';
+                catDiv.id = `nav-${cat.name}`;
+                catDiv.setAttribute('data-cat', cat.name);
+                catDiv.innerHTML = `<span class="drag-icon">⋮⋮</span> ${cat.name}`;
+                catDiv.onclick = (e) => {
+                    if (e.target.classList.contains('drag-icon')) return;
+                    changeCat(cat.name);
+                };
+                nav.appendChild(catDiv);
             });
+            
+            // تفعيل السحب والإفلات بعد إضافة العناصر
+            initDragAndDrop();
+        }
 
-            db.ref('apps').on('value', s => {
-                const display = document.getElementById('appsListDisplay');
-                display.innerHTML = "";
-                s.forEach(c => {
-                    const item = c.val();
-                    display.innerHTML += `
-                        <div class="item-card">
-                            <div><strong>${item.name}</strong> <small>(${item.cat})</small></div>
-                            <div>
-                                <button class="btn-sm edit-btn" onclick="editApp('${c.key}')">تعديل</button>
-                                <button class="btn-sm del-btn" onclick="deleteApp('${c.key}')">حذف</button>
-                            </div>
-                        </div>`;
+        function initDragAndDrop() {
+            const nav = document.getElementById('quickNav');
+            const items = Array.from(nav.children);
+            // استبعاد عنصر "الكل" من السحب
+            const draggableItems = items.filter(item => item.id !== 'nav-all');
+            
+            draggableItems.forEach(item => {
+                item.setAttribute('draggable', 'true');
+                item.ondragstart = dragStart;
+                item.ondragover = dragOver;
+                item.ondrop = drop;
+                item.ondragend = dragEnd;
+            });
+        }
+
+        let draggedItem = null;
+
+        function dragStart(e) {
+            draggedItem = this;
+            e.dataTransfer.setData('text/plain', '');
+            this.classList.add('dragging');
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            if (!draggedItem || draggedItem === this) return;
+            
+            const nav = document.getElementById('quickNav');
+            const items = Array.from(nav.children);
+            const draggedIndex = items.indexOf(draggedItem);
+            const targetIndex = items.indexOf(this);
+            
+            if (draggedIndex < targetIndex) {
+                this.parentNode.insertBefore(draggedItem, this.nextSibling);
+            } else {
+                this.parentNode.insertBefore(draggedItem, this);
+            }
+            
+            // تحديث ترتيب الأقسام
+            updateCategoriesOrder();
+        }
+
+        function dragEnd(e) {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        function updateCategoriesOrder() {
+            const nav = document.getElementById('quickNav');
+            const items = Array.from(nav.children);
+            const newOrder = [];
+            items.forEach(item => {
+                const catName = item.getAttribute('data-cat');
+                if (catName && catName !== 'all') {
+                    newOrder.push(catName);
+                }
+            });
+            categoriesOrder = newOrder;
+            saveOrderToLocalStorage(newOrder);
+            // إعادة عرض المحتوى مع الترتيب الجديد
+            displayContent(getCurrentFilter(), getCurrentSearch());
+        }
+
+        function resetOrder() {
+            categoriesOrder = [];
+            saveOrderToLocalStorage([]);
+            renderNav();
+            displayContent('all', '');
+            document.getElementById('searchInput').value = '';
+        }
+
+        // ========== دوال العرض الأساسية ==========
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        function getCurrentFilter() { return currentFilter; }
+        function getCurrentSearch() { return currentSearch; }
+
+        function changeCat(catName) {
+            currentFilter = catName;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('nav-' + (catName === 'all' ? 'all' : catName));
+            if(target) target.classList.add('active');
+            displayContent(catName, currentSearch);
+        }
+
+        function filterApps() {
+            currentSearch = document.getElementById('searchInput').value;
+            displayContent(currentFilter, currentSearch);
+        }
+
+        function displayContent(filter = 'all', search = '') {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = "";
+            
+            // ترتيب الأقسام للعرض
+            let catsToShow = [...localCats];
+            if (categoriesOrder.length > 0) {
+                catsToShow.sort((a, b) => {
+                    const indexA = categoriesOrder.indexOf(a.name);
+                    const indexB = categoriesOrder.indexOf(b.name);
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
                 });
+            }
+            
+            let delay = 0;
+            
+            catsToShow.forEach(cat => {
+                if (filter !== 'all' && filter !== cat.name) return;
+                let appsHtml = "";
+                Object.values(localApps).forEach(app => {
+                    if (app.cat === cat.name && app.name.toLowerCase().includes(search.toLowerCase())) {
+                        delay += 0.1;
+                        appsHtml += `
+                            <div class="app-card" data-tilt data-tilt-max="7" style="animation-delay: ${delay}s">
+                                <img src="${app.img}" class="app-icon" onerror="this.src='https://i.ibb.co/F4px49v/default-icon.png'">
+                                <div style="font-weight:bold; font-size: 1.1rem;">${app.name}</div>
+                                <div class="features-row">
+                                    <span class="feat-tag">🚀 سريع</span>
+                                    <span class="feat-tag">🛡️ آمن</span>
+                                    <span class="feat-tag">📺 4K</span>
+                                </div>
+                                <div style="color:var(--accent-blue); font-size:0.8rem; margin:5px 0;">Version ${app.ver}</div>
+                                ${app.notes ? `<div class="app-notes">${app.notes}</div>` : ''}
+                                <a href="${app.url}" class="download-btn" target="_blank">تحميل الآن</a>
+                            </div>`;
+                    }
+                });
+                if (appsHtml !== "") {
+                    container.innerHTML += `<h2 class="category-title">📂 ${cat.name}</h2><div class="apps-grid">${appsHtml}</div>`;
+                }
             });
-        }
-
-        function saveCategory() {
-            const name = document.getElementById('catInput').value.trim();
-            if(!name) return;
-            if(editCatId) {
-                db.ref('categories/' + editCatId).update({ name: name }).then(() => { resetCatForm(); });
-            } else {
-                db.ref('categories').push({ name: name });
-                document.getElementById('catInput').value = "";
+            
+            if (VanillaTilt) {
+                VanillaTilt.init(document.querySelectorAll(".app-card"));
             }
         }
 
-        function startEditCat(id, currentName) {
-            editCatId = id;
-            document.getElementById('catInput').value = currentName;
-            document.getElementById('catSubmitBtn').innerText = "تحديث";
-            document.getElementById('catSubmitBtn').style.background = "var(--edit)";
-        }
-
-        function resetCatForm() {
-            editCatId = null;
-            document.getElementById('catInput').value = "";
-            document.getElementById('catSubmitBtn').innerText = "إضافة";
-            document.getElementById('catSubmitBtn').style.background = "#333";
-        }
-
-        function deleteCat(id) { if(confirm("حذف القسم؟")) db.ref('categories/'+id).remove(); }
-
-        function saveApp() {
-            const data = {
-                name: document.getElementById('appName').value,
-                url: document.getElementById('appUrl').value,
-                img: document.getElementById('appImg').value,
-                ver: document.getElementById('appVer').value || 'v1.0',
-                notes: document.getElementById('appNotes').value || "",
-                cat: document.getElementById('categorySelect').value
-            };
-            if(!data.name) return alert("الرجاء كتابة اسم التطبيق");
-
-            if(editAppId) {
-                db.ref('apps/'+editAppId).update(data).then(() => { resetAppForm(); alert("تم التحديث"); });
+        function shareStore() {
+            if (navigator.share) {
+                navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
             } else {
-                db.ref('apps').push(data).then(() => { resetAppForm(); alert("تم الحفظ"); });
+                prompt("انسخ رابط المتجر:", window.location.href);
             }
         }
 
-        function editApp(id) {
-            db.ref('apps/'+id).once('value', s => {
-                const item = s.val();
-                editAppId = id;
-                document.getElementById('appName').value = item.name;
-                document.getElementById('appUrl').value = item.url;
-                document.getElementById('appImg').value = item.img;
-                document.getElementById('appVer').value = item.ver;
-                document.getElementById('appNotes').value = item.notes || "";
-                document.getElementById('categorySelect').value = item.cat;
-                document.getElementById('appSubmitBtn').innerText = "تحديث التطبيق";
-                document.getElementById('appCancelBtn').style.display = "block";
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        }
+        // ========== الاستماع لقاعدة البيانات ==========
+        db.ref().on('value', snap => {
+            const data = snap.val() || {};
+            localApps = data.apps || {};
+            
+            // تحويل الأقسام من كائن إلى مصفوفة
+            const catsObj = data.categories || {};
+            localCats = Object.values(catsObj);
+            
+            // تحميل الترتيب المحفوظ
+            const savedOrder = loadOrderFromLocalStorage();
+            if (savedOrder && savedOrder.length > 0) {
+                categoriesOrder = savedOrder;
+            }
+            
+            renderNav();
+            displayContent(currentFilter, currentSearch);
+        });
 
-        function deleteApp(id) { if(confirm("حذف التطبيق؟")) db.ref('apps/'+id).remove(); }
-
-        function resetAppForm() {
-            editAppId = null;
-            document.querySelectorAll('input').forEach(i => { if(i.id !== 'loginEmail') i.value = ""; });
-            document.getElementById('appNotes').value = "";
-            document.getElementById('appSubmitBtn').innerText = "🚀 حفظ التطبيق";
-            document.getElementById('appCancelBtn').style.display = "none";
-        }
+        // تهيئة الوضع عند التحميل
+        initTheme();
     </script>
 </body>
 </html>
