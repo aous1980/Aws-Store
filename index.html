@@ -8,10 +8,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
     <style>
-        /* المتغيرات للوضع الليلي والنهاري */
         :root {
             --main-bg: #0b0f12;
             --card-bg: rgba(255, 255, 255, 0.05);
@@ -19,7 +17,6 @@
             --accent: #00ff88; 
             --accent-blue: #00d2ff;
             --glass-border: rgba(255, 255, 255, 0.1);
-            --input-bg: rgba(255, 255, 255, 0.08);
         }
 
         [data-theme="light"] {
@@ -29,7 +26,6 @@
             --accent: #00b894;
             --accent-blue: #0984e3;
             --glass-border: rgba(0, 0, 0, 0.1);
-            --input-bg: rgba(0, 0, 0, 0.05);
         }
 
         body {
@@ -42,7 +38,6 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* تدرج خلفية متحرك للوضع الليلي فقط */
         body:not([data-theme="light"]) {
             background: linear-gradient(-45deg, #0b0f12, #1a2a24, #0b0f12, #111d2b);
             background-size: 400% 400%;
@@ -80,11 +75,6 @@
             font-size: 20px;
         }
 
-        .tool-btn:hover {
-            border-color: var(--accent);
-            transform: scale(1.05);
-        }
-
         header { text-align: center; padding: 40px 0; animation: fadeInUp 0.8s ease; }
         header img { 
             width: 95px; filter: drop-shadow(0 0 15px var(--accent)); 
@@ -93,7 +83,7 @@
 
         .top-bar { max-width: 700px; margin: 0 auto 25px; display: flex; gap: 12px; animation: fadeInUp 1s ease; }
         .search-box { 
-            flex: 2; background: var(--input-bg); border: 1px solid var(--glass-border); 
+            flex: 2; background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); 
             padding: 14px; border-radius: 15px; color: var(--text-color); 
             outline: none; backdrop-filter: blur(15px); transition: 0.3s;
         }
@@ -105,143 +95,48 @@
             text-align: center; font-weight: bold; font-size: 0.8rem;
         }
 
-        /* منطقة الأقسام القابلة للسحب */
-        .quick-nav { 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-            margin-bottom: 30px; 
-            animation: fadeInUp 1.2s ease;
-        }
-        
+        .quick-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; animation: fadeInUp 1.2s ease; }
         .nav-item { 
-            background: var(--card-bg); 
-            border: 1px solid var(--glass-border); 
-            padding: 8px 18px; 
-            border-radius: 20px; 
-            cursor: grab;
-            transition: 0.3s; 
-            color: var(--text-color);
-            user-select: none;
+            background: var(--card-bg); border: 1px solid var(--glass-border); 
+            padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.3s; color: var(--text-color); 
         }
-        
-        .nav-item:active { cursor: grabbing; }
-        
-        .nav-item.dragging {
-            opacity: 0.5;
-            cursor: grabbing;
-        }
-        
-        .nav-item.active { 
-            background: var(--accent); 
-            color: #000; 
-            font-weight: bold; 
-        }
-
-        /* أيقونة السحب */
-        .drag-icon {
-            margin-left: 8px;
-            font-size: 12px;
-            opacity: 0.6;
-            cursor: grab;
-        }
+        .nav-item.active { background: var(--accent); color: #000; font-weight: bold; }
 
         #categoriesContainer { max-width: 1200px; margin: auto; }
-        .category-title { 
-            color: var(--accent); 
-            border-right: 4px solid var(--accent); 
-            padding-right: 12px; 
-            margin: 40px 0 20px; 
-            font-size: 1.3rem; 
-        }
+        .category-title { color: var(--accent); border-right: 4px solid var(--accent); padding-right: 12px; margin: 40px 0 20px; font-size: 1.3rem; }
 
         .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
 
         .app-card { 
-            background: var(--card-bg); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid var(--glass-border); 
-            border-radius: 25px; 
-            padding: 22px; 
-            text-align: center; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            transition: 0.4s; 
-            color: var(--text-color);
+            background: var(--card-bg); backdrop-filter: blur(20px); 
+            border: 1px solid var(--glass-border); border-radius: 25px; 
+            padding: 22px; text-align: center; display: flex; flex-direction: column; 
+            align-items: center; transition: 0.4s; color: var(--text-color);
             animation: fadeInUp 0.5s ease backwards;
         }
         .app-card:hover { border-color: var(--accent); transform: translateY(-10px) !important; box-shadow: 0 15px 35px rgba(0, 255, 136, 0.15); }
 
         .app-icon { width: 85px; height: 85px; border-radius: 22px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-
         .features-row { display: flex; gap: 8px; margin: 10px 0; }
         .feat-tag { font-size: 10px; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
-
-        .app-notes { 
-            font-size: 0.8rem; 
-            opacity: 0.8; 
-            background: rgba(0,0,0,0.2); 
-            padding: 12px; 
-            border-radius: 12px; 
-            margin: 12px 0; 
-            width: 100%; 
-            border-right: 3px solid var(--accent-blue); 
-            text-align: right; 
-            line-height: 1.4;
-        }
-
-        .download-btn { 
-            background: linear-gradient(45deg, var(--accent), var(--accent-blue)); 
-            color: #000; 
-            text-decoration: none; 
-            padding: 12px; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            width: 100%; 
-            margin-top: auto; 
-            transition: 0.3s;
-        }
-        .download-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
-
-        /* زر تبديل الوضع */
+        .app-notes { font-size: 0.8rem; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; margin: 12px 0; width: 100%; border-right: 3px solid var(--accent-blue); text-align: right; line-height: 1.4; }
+        .download-btn { background: linear-gradient(45deg, var(--accent), var(--accent-blue)); color: #000; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; margin-top: auto; transition: 0.3s; }
+        
         .theme-switch {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: var(--accent);
-            border: none;
-            cursor: pointer;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: 0.3s;
-        }
-
-        .theme-switch:hover {
-            transform: scale(1.1);
+            position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%;
+            background: var(--accent); border: none; cursor: pointer; font-size: 24px;
+            display: flex; align-items: center; justify-content: center; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         @media (max-width: 768px) {
             .apps-grid { display: flex; overflow-x: auto; padding: 10px; gap: 15px; scroll-snap-type: x mandatory; }
             .app-card { min-width: 270px; scroll-snap-align: center; }
-            .apps-grid::-webkit-scrollbar { height: 4px; }
-            .apps-grid::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
         }
     </style>
 </head>
 <body>
-
     <div class="header-tools">
-        <button class="tool-btn" onclick="shareStore()" title="مشاركة المتجر">🔗</button>
-        <button class="tool-btn" onclick="resetOrder()" title="إعادة ترتيب الأقسام الافتراضي">🔄</button>
+        <button class="tool-btn" onclick="shareStore()">🔗</button>
     </div>
 
     <header>
@@ -260,7 +155,6 @@
 
     <div id="quickNav" class="quick-nav"></div>
     <div id="categoriesContainer"></div>
-
     <button class="theme-switch" id="themeToggle" onclick="toggleTheme()">🌙</button>
 
     <script>
@@ -275,10 +169,11 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let localApps = {}, localCats = [];
-        let categoriesOrder = []; // ترتيب الأقسام المحفوظ
+        let localApps = {};
+        let localCats = []; // مصفوفة الأقسام
+        let currentFilter = 'all';
+        let currentSearch = '';
 
-        // ========== نظام الوضع الليلي/النهاري ==========
         function initTheme() {
             const savedTheme = localStorage.getItem('aws_store_theme');
             if (savedTheme === 'light') {
@@ -289,10 +184,8 @@
                 document.getElementById('themeToggle').innerHTML = '🌙';
             }
         }
-
         function toggleTheme() {
-            const currentTheme = document.body.getAttribute('data-theme');
-            if (currentTheme === 'light') {
+            if (document.body.getAttribute('data-theme') === 'light') {
                 document.body.removeAttribute('data-theme');
                 localStorage.setItem('aws_store_theme', 'dark');
                 document.getElementById('themeToggle').innerHTML = '🌙';
@@ -303,176 +196,43 @@
             }
         }
 
-        // ========== نظام ترتيب الأقسام ==========
-        function saveOrderToLocalStorage(order) {
-            localStorage.setItem('aws_categories_order', JSON.stringify(order));
-        }
-
-        function loadOrderFromLocalStorage() {
-            const saved = localStorage.getItem('aws_categories_order');
-            return saved ? JSON.parse(saved) : null;
-        }
-
         function renderNav() {
             const nav = document.getElementById('quickNav');
-            nav.innerHTML = '';
+            nav.innerHTML = '<div class="nav-item active" onclick="changeCat(\'all\')">الكل</div>';
             
-            // إضافة قسم "الكل" أولاً (لا يمكن سحبه)
-            const allDiv = document.createElement('div');
-            allDiv.className = 'nav-item active';
-            allDiv.id = 'nav-all';
-            allDiv.setAttribute('data-cat', 'all');
-            allDiv.innerHTML = 'الكل';
-            allDiv.onclick = () => changeCat('all');
-            nav.appendChild(allDiv);
-            
-            // ترتيب الأقسام حسب الترتيب المحفوظ
-            let sortedCats = [...localCats];
-            if (categoriesOrder.length > 0) {
-                sortedCats.sort((a, b) => {
-                    const indexA = categoriesOrder.indexOf(a.name);
-                    const indexB = categoriesOrder.indexOf(b.name);
-                    if (indexA === -1) return 1;
-                    if (indexB === -1) return -1;
-                    return indexA - indexB;
-                });
-            }
-            
-            sortedCats.forEach(cat => {
-                const catDiv = document.createElement('div');
-                catDiv.className = 'nav-item';
-                catDiv.id = `nav-${cat.name}`;
-                catDiv.setAttribute('data-cat', cat.name);
-                catDiv.innerHTML = `<span class="drag-icon">⋮⋮</span> ${cat.name}`;
-                catDiv.onclick = (e) => {
-                    if (e.target.classList.contains('drag-icon')) return;
-                    changeCat(cat.name);
-                };
-                nav.appendChild(catDiv);
-            });
-            
-            // تفعيل السحب والإفلات بعد إضافة العناصر
-            initDragAndDrop();
-        }
-
-        function initDragAndDrop() {
-            const nav = document.getElementById('quickNav');
-            const items = Array.from(nav.children);
-            // استبعاد عنصر "الكل" من السحب
-            const draggableItems = items.filter(item => item.id !== 'nav-all');
-            
-            draggableItems.forEach(item => {
-                item.setAttribute('draggable', 'true');
-                item.ondragstart = dragStart;
-                item.ondragover = dragOver;
-                item.ondrop = drop;
-                item.ondragend = dragEnd;
+            localCats.forEach(cat => {
+                nav.innerHTML += `<div class="nav-item" onclick="changeCat('${cat.name}')">${cat.name}</div>`;
             });
         }
-
-        let draggedItem = null;
-
-        function dragStart(e) {
-            draggedItem = this;
-            e.dataTransfer.setData('text/plain', '');
-            this.classList.add('dragging');
-        }
-
-        function dragOver(e) {
-            e.preventDefault();
-        }
-
-        function drop(e) {
-            e.preventDefault();
-            if (!draggedItem || draggedItem === this) return;
-            
-            const nav = document.getElementById('quickNav');
-            const items = Array.from(nav.children);
-            const draggedIndex = items.indexOf(draggedItem);
-            const targetIndex = items.indexOf(this);
-            
-            if (draggedIndex < targetIndex) {
-                this.parentNode.insertBefore(draggedItem, this.nextSibling);
-            } else {
-                this.parentNode.insertBefore(draggedItem, this);
-            }
-            
-            // تحديث ترتيب الأقسام
-            updateCategoriesOrder();
-        }
-
-        function dragEnd(e) {
-            this.classList.remove('dragging');
-            draggedItem = null;
-        }
-
-        function updateCategoriesOrder() {
-            const nav = document.getElementById('quickNav');
-            const items = Array.from(nav.children);
-            const newOrder = [];
-            items.forEach(item => {
-                const catName = item.getAttribute('data-cat');
-                if (catName && catName !== 'all') {
-                    newOrder.push(catName);
-                }
-            });
-            categoriesOrder = newOrder;
-            saveOrderToLocalStorage(newOrder);
-            // إعادة عرض المحتوى مع الترتيب الجديد
-            displayContent(getCurrentFilter(), getCurrentSearch());
-        }
-
-        function resetOrder() {
-            categoriesOrder = [];
-            saveOrderToLocalStorage([]);
-            renderNav();
-            displayContent('all', '');
-            document.getElementById('searchInput').value = '';
-        }
-
-        // ========== دوال العرض الأساسية ==========
-        let currentFilter = 'all';
-        let currentSearch = '';
-
-        function getCurrentFilter() { return currentFilter; }
-        function getCurrentSearch() { return currentSearch; }
 
         function changeCat(catName) {
             currentFilter = catName;
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById('nav-' + (catName === 'all' ? 'all' : catName));
-            if(target) target.classList.add('active');
-            displayContent(catName, currentSearch);
+            if(catName === 'all') document.querySelector('.nav-item').classList.add('active');
+            else {
+                const items = document.querySelectorAll('.nav-item');
+                for(let i=1; i<items.length; i++) {
+                    if(items[i].innerText === catName) items[i].classList.add('active');
+                }
+            }
+            displayContent();
         }
 
         function filterApps() {
             currentSearch = document.getElementById('searchInput').value;
-            displayContent(currentFilter, currentSearch);
+            displayContent();
         }
 
-        function displayContent(filter = 'all', search = '') {
+        function displayContent() {
             const container = document.getElementById('categoriesContainer');
             container.innerHTML = "";
-            
-            // ترتيب الأقسام للعرض
-            let catsToShow = [...localCats];
-            if (categoriesOrder.length > 0) {
-                catsToShow.sort((a, b) => {
-                    const indexA = categoriesOrder.indexOf(a.name);
-                    const indexB = categoriesOrder.indexOf(b.name);
-                    if (indexA === -1) return 1;
-                    if (indexB === -1) return -1;
-                    return indexA - indexB;
-                });
-            }
-            
             let delay = 0;
-            
-            catsToShow.forEach(cat => {
-                if (filter !== 'all' && filter !== cat.name) return;
+
+            localCats.forEach(cat => {
+                if (currentFilter !== 'all' && currentFilter !== cat.name) return;
                 let appsHtml = "";
                 Object.values(localApps).forEach(app => {
-                    if (app.cat === cat.name && app.name.toLowerCase().includes(search.toLowerCase())) {
+                    if (app.cat === cat.name && app.name.toLowerCase().includes(currentSearch.toLowerCase())) {
                         delay += 0.1;
                         appsHtml += `
                             <div class="app-card" data-tilt data-tilt-max="7" style="animation-delay: ${delay}s">
@@ -493,40 +253,35 @@
                     container.innerHTML += `<h2 class="category-title">📂 ${cat.name}</h2><div class="apps-grid">${appsHtml}</div>`;
                 }
             });
-            
-            if (VanillaTilt) {
-                VanillaTilt.init(document.querySelectorAll(".app-card"));
-            }
+            VanillaTilt.init(document.querySelectorAll(".app-card"));
         }
 
         function shareStore() {
-            if (navigator.share) {
-                navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
-            } else {
-                prompt("انسخ رابط المتجر:", window.location.href);
-            }
+            if (navigator.share) navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
+            else prompt("انسخ رابط المتجر:", window.location.href);
         }
 
-        // ========== الاستماع لقاعدة البيانات ==========
+        // الاستماع لقاعدة البيانات وترتيب الأقسام حسب 'order'
         db.ref().on('value', snap => {
             const data = snap.val() || {};
             localApps = data.apps || {};
             
-            // تحويل الأقسام من كائن إلى مصفوفة
             const catsObj = data.categories || {};
-            localCats = Object.values(catsObj);
-            
-            // تحميل الترتيب المحفوظ
-            const savedOrder = loadOrderFromLocalStorage();
-            if (savedOrder && savedOrder.length > 0) {
-                categoriesOrder = savedOrder;
+            let catsArray = [];
+            for(let key in catsObj) {
+                catsArray.push({
+                    name: catsObj[key].name,
+                    order: catsObj[key].order || 0
+                });
             }
+            // الترتيب حسب الرقم (الأصغر أولاً)
+            catsArray.sort((a, b) => a.order - b.order);
+            localCats = catsArray;
             
             renderNav();
-            displayContent(currentFilter, currentSearch);
+            displayContent();
         });
 
-        // تهيئة الوضع عند التحميل
         initTheme();
     </script>
 </body>
