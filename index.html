@@ -170,7 +170,7 @@
         const db = firebase.database();
 
         let localApps = {};
-        let localCats = []; // مصفوفة الأقسام
+        let localCats = [];
         let currentFilter = 'all';
         let currentSearch = '';
 
@@ -184,6 +184,7 @@
                 document.getElementById('themeToggle').innerHTML = '🌙';
             }
         }
+        
         function toggleTheme() {
             if (document.body.getAttribute('data-theme') === 'light') {
                 document.body.removeAttribute('data-theme');
@@ -208,10 +209,11 @@
         function changeCat(catName) {
             currentFilter = catName;
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(catName === 'all') document.querySelector('.nav-item').classList.add('active');
-            else {
+            if(catName === 'all') {
+                document.querySelector('.nav-item').classList.add('active');
+            } else {
                 const items = document.querySelectorAll('.nav-item');
-                for(let i=1; i<items.length; i++) {
+                for(let i = 1; i < items.length; i++) {
                     if(items[i].innerText === catName) items[i].classList.add('active');
                 }
             }
@@ -253,15 +255,21 @@
                     container.innerHTML += `<h2 class="category-title">📂 ${cat.name}</h2><div class="apps-grid">${appsHtml}</div>`;
                 }
             });
-            VanillaTilt.init(document.querySelectorAll(".app-card"));
+            
+            if (typeof VanillaTilt !== 'undefined') {
+                VanillaTilt.init(document.querySelectorAll(".app-card"));
+            }
         }
 
         function shareStore() {
-            if (navigator.share) navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
-            else prompt("انسخ رابط المتجر:", window.location.href);
+            if (navigator.share) {
+                navigator.share({ title: 'Aws Store', url: window.location.href }).catch(console.error);
+            } else {
+                prompt("انسخ رابط المتجر:", window.location.href);
+            }
         }
 
-        // الاستماع لقاعدة البيانات وترتيب الأقسام حسب 'order'
+        // الاستماع لقاعدة البيانات وترتيب الأقسام حسب order
         db.ref().on('value', snap => {
             const data = snap.val() || {};
             localApps = data.apps || {};
